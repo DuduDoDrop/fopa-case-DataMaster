@@ -1,0 +1,34 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/fila-revisao",
+ "status": 200,
+ "corpo": {
+  "itens": [
+   {
+    "id": 1,
+    "controle": "12345678000102-1-000002/2026",
+    "slug": "12345678000102-1-000002-2026",
+    "orgao": "MUNICIPIO DE TESTE",
+    "uf": "SP",
+    "municipio": "Teste",
+    "fim_prazo": "2026-10-11T08:40:42.263729+00:00",
+    "verificacao_id": 2,
+    "pergunta_id": "Q5",
+    "pergunta": "Qual o Valor Mínimo de Contratação ?",
+    "critico": true,
+    "motivo": "conflito entre documentos",
+    "criado_em": "2026-09-26T08:40:42.295768+00:00",
+    "veredito": "REVISAR",
+    "alertas": [],
+    "arquivo_id": 2,
+    "pagina_final": 1,
+    "ausencia": null,
+    "resposta": "resposta Q5",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q5",
+    "conflito": "edital diz 60, TR diz 90"
+   }
+  ]
+ }
+}

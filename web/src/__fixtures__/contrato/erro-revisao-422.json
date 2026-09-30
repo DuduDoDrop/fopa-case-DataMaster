@@ -1,0 +1,24 @@
+{
+ "metodo": "POST",
+ "caminho": "/api/revisoes",
+ "status": 422,
+ "corpo": {
+  "detail": [
+   {
+    "type": "value_error",
+    "loc": [
+     "body"
+    ],
+    "msg": "Value error, decisão 'corrigida' exige resposta_corrigida",
+    "input": {
+     "verificacao_id": 3,
+     "pergunta_id": "Q2",
+     "decisao": "corrigida"
+    },
+    "ctx": {
+     "error": {}
+    }
+   }
+  ]
+ }
+}

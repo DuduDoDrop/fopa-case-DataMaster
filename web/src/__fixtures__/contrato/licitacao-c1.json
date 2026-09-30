@@ -1,0 +1,863 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/licitacoes/12345678000101-1-000001-2026",
+ "status": 200,
+ "corpo": {
+  "licitacao": {
+   "controle": "12345678000101-1-000001/2026",
+   "slug": "12345678000101-1-000001-2026",
+   "orgao": "MUNICIPIO DE TESTE",
+   "uf": "SP",
+   "municipio": "Teste",
+   "local": "Teste/SP",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "cessão onerosa da folha de pagamento",
+   "situacao": "Divulgada no PNCP",
+   "fim_prazo": "2026-09-29T08:40:42.257704+00:00",
+   "fim_prazo_tem_hora": true,
+   "publicado_em": "2026-09-01",
+   "link": "https://pncp.gov.br/app/editais/x",
+   "estado": "verificada",
+   "estado_motivo": "importada do acervo v2 com verificação",
+   "estado_desde": "2026-09-26T08:40:42.161932+00:00",
+   "escopo_dentro": true,
+   "escopo_motivo": "folha de pagamento",
+   "ensaio": false,
+   "reserva_demo": false,
+   "procedencia_incerta": false,
+   "gemea_de": null,
+   "prioridade": 0,
+   "tentativas": 0,
+   "proxima_tentativa_em": null,
+   "atualizado_pncp": null,
+   "visto_em": null,
+   "criado_em": "2026-09-26T08:40:42.161932+00:00",
+   "atualizado_em": "2026-09-26T08:40:42.257704+00:00",
+   "extraida": true,
+   "verificacao_id": 1,
+   "verificado_em": "2026-09-24T02:37:13+00:00",
+   "versao_regras": "legado:b2f45a260a5a2e69aa2b5426edf206980c4d1f933a9883a71837a3503a494c68",
+   "respondidas": 14,
+   "ancoradas": 14,
+   "aprovadas": 13,
+   "revisar": 4,
+   "reprovadas": 0,
+   "nao_localizado": 3,
+   "taxa_ancorada": 1.0,
+   "conflitos": 0,
+   "alertas_globais": [
+    "RN-15: 2 pergunta(s) sem resposta"
+   ],
+   "tags": [],
+   "degradada": false,
+   "injecao_suspeita": false,
+   "execucao_id": 1,
+   "procedencia": "agente",
+   "provedor": "claude-code",
+   "modelo": "claude-opus-5-5",
+   "brl": null,
+   "brl_legado": null,
+   "preco_conhecido": false,
+   "procedencia_completa": true,
+   "n_arquivos": 2,
+   "n_arquivos_ok": 1,
+   "tem_relatorio": true,
+   "revisao_pendente": false,
+   "ano": 2026,
+   "seq": 1,
+   "cnpj": "12345678000101",
+   "rotulo": "Pregão - Teste-SP",
+   "escopo_versao": "legado",
+   "origem": "legado",
+   "solicitante": null,
+   "lease_por": null,
+   "lease_ate": null,
+   "leitura_vigente_id": 1,
+   "anotacoes_analista": null,
+   "modo": "agente",
+   "effort": "agente",
+   "lote": 17,
+   "k_rag": null,
+   "versao_prompt": null,
+   "chamadas": 1,
+   "tok_entrada": null,
+   "tok_saida": null,
+   "tok_cache_escrita": null,
+   "tok_cache_leitura": null,
+   "tok_raciocinio": null,
+   "segundos": null,
+   "usd": null,
+   "usd_brl": null,
+   "custo_formula": null,
+   "fonte_migracao": {
+    "chave": "agente:Pregão - Teste-SP",
+    "pasta": "Pregão - Teste-SP",
+    "finalizado": {
+     "em": "2026-09-23T23:37:13-0300",
+     "revisar": 0,
+     "aprovadas": 17,
+     "licitacao": "Pregão - Teste-SP",
+     "reprovadas": 0,
+     "taxa_ancorada": 1.0,
+     "nao_localizado": 2,
+     "reaproveitado_de": null
+    },
+    "auditoria_sha256": "b2f45a260a5a2e69aa2b5426edf206980c4d1f933a9883a71837a3503a494c68",
+    "respostas_json_sha256": "61841d3770ddca4d6a758a53748277d42a5322b50b7dc405e02ef158bb1b1bb6"
+   },
+   "canonica": true,
+   "execucao_status": "ok",
+   "execucao_iniciada_em": "2026-09-24T02:37:13+00:00",
+   "execucao_finalizada_em": "2026-09-24T02:37:13+00:00",
+   "leitura_id": 1,
+   "versao_ocr": "host-5.4.0.20240606+tessdata_fast:c4932b937207 (inferida)",
+   "tessdata_sha256": "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb",
+   "procedencia_texto": "legado_paginas_json",
+   "modo_sugerido": "contexto-completo",
+   "chars_total": 34,
+   "leitura_condicoes": {
+    "furtivos": [],
+    "paginas_ocr": 0,
+    "arquivos_ocr": []
+   },
+   "assinatura_conjunto": "79cbb21953153d64fca01afd568790a76883b52f51d52908df24e4bd6acc7747",
+   "n_paginas": 2,
+   "n_paginas_ocr": 0,
+   "condicoes": {
+    "ocr": {
+     "paginas": 0,
+     "arquivos": []
+    },
+    "tags": [],
+    "modelo": {
+     "effort": "agente",
+     "modelo": "claude-opus-5-5",
+     "provedor": "claude-code",
+     "secundario": false
+    },
+    "motivos": [],
+    "degradada": false,
+    "abstencoes": [
+     "Q6",
+     "Q16"
+    ],
+    "documentos": {
+     "obtidos": 1,
+     "faltando": [],
+     "esperados": 1
+    },
+    "corpus_horas": 2.0,
+    "texto_furtivo": []
+   },
+   "q13_estruturada": {
+    "soma": 1250,
+    "tipo": "faixa salarial",
+    "grupos": [
+     {
+      "nome": "",
+      "soma": 1250,
+      "linhas": [
+       {
+        "valor": null,
+        "rotulo": "até R$ 2.000,00",
+        "quantidade": 800
+       },
+       {
+        "valor": null,
+        "rotulo": "de R$ 2.000,01 a R$ 5.000,00",
+        "quantidade": 400
+       },
+       {
+        "valor": null,
+        "rotulo": "acima de R$ 5.000,00",
+        "quantidade": 50
+       }
+      ],
+      "confere": true,
+      "total_declarado": 1250
+     }
+    ],
+    "confere": true,
+    "parcial": false,
+    "completa": true,
+    "por_faixa": true,
+    "rotulo_soma": "total, conferido linha a linha",
+    "total_declarado": 1250
+   },
+   "itens_api_usados": false,
+   "html_uri": "html/12345678000101-1-000001-2026/1.html",
+   "publicado_em_site": "2026-09-26T08:40:42.292762+00:00",
+   "n_verificacoes": 2,
+   "revisoes_abertas": 0,
+   "tem_itens_api": false,
+   "no_recorte": true
+  },
+  "respostas": [
+   {
+    "pergunta_id": "Q1",
+    "pergunta": "Qual a Data da Licitação ?",
+    "critico": true,
+    "resposta": "resposta Q1",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q1",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q2",
+    "pergunta": "O que diz o Objeto do Edital ?",
+    "critico": false,
+    "resposta": "resposta Q2",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q2",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q3",
+    "pergunta": "Qual a Modalidade de Contratação ?",
+    "critico": false,
+    "resposta": "resposta Q3",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q3",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q4",
+    "pergunta": "Qual o Tipo do Pregão ?",
+    "critico": false,
+    "resposta": "Não localizado",
+    "arquivo_citado": null,
+    "pagina_citada": null,
+    "trecho_literal": null,
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q5",
+    "pergunta": "Qual o Valor Mínimo de Contratação ?",
+    "critico": true,
+    "resposta": "resposta Q5",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q5",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q6",
+    "pergunta": "Qual o valor dos Lances Mínimos ?",
+    "critico": false,
+    "resposta": "Não localizado",
+    "arquivo_citado": null,
+    "pagina_citada": null,
+    "trecho_literal": null,
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q7",
+    "pergunta": "Qual é o Prazo de Assinatura do Contrato ?",
+    "critico": false,
+    "resposta": "resposta Q7",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q7",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q8",
+    "pergunta": "Qual é o Prazo de Pagamento ?",
+    "critico": false,
+    "resposta": "resposta Q8",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q8",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q9",
+    "pergunta": "Qual o prazo de vigência do contrato ?",
+    "critico": true,
+    "resposta": "resposta Q9",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q9",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q10",
+    "pergunta": "Qual o prazo de início de serviços ?",
+    "critico": false,
+    "resposta": "resposta Q10",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 2,
+    "trecho_literal": "trecho Q10",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q11",
+    "pergunta": "Quais são as obrigações do banco vencedor ?",
+    "critico": false,
+    "resposta": "resposta Q11",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q11",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q12",
+    "pergunta": "Qual é a infraestrutura solicitada ?",
+    "critico": true,
+    "resposta": "resposta Q12",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": null,
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q13",
+    "pergunta": "Qual a quantidade de servidores aberta por faixa salarial ?",
+    "critico": true,
+    "resposta": "Distribuição por faixa salarial: até R$ 2.000,00: 800 servidores; de R$ 2.000,01 a R$ 5.000,00: 400 servidores; acima de R$ 5.000,00: 50 servidores. Total: 1.250 servidores.",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "800 servidores",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q14",
+    "pergunta": "Qual a Quantidade total de servidores ?",
+    "critico": true,
+    "resposta": "resposta Q14",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q14",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q15",
+    "pergunta": "Quais são as condições do consignado ?",
+    "critico": false,
+    "resposta": "resposta Q15",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q15",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q16",
+    "pergunta": "Existe necessidade do vencedor realizar prova de vida dos servidores ?",
+    "critico": false,
+    "resposta": "Não localizado",
+    "arquivo_citado": null,
+    "pagina_citada": null,
+    "trecho_literal": null,
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   },
+   {
+    "pergunta_id": "Q17",
+    "pergunta": "Existe necessidade do vencedor apresentar alguma garantia ?",
+    "critico": true,
+    "resposta": "resposta Q17",
+    "arquivo_citado": "01 - Edital.pdf",
+    "pagina_citada": 1,
+    "trecho_literal": "trecho Q17",
+    "conflito": null,
+    "confianca": "alta",
+    "completada": false
+   }
+  ],
+  "verificacao_respostas": [
+   {
+    "pergunta_id": "Q1",
+    "veredito": "APROVADO",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q2",
+    "veredito": "APROVADO",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q3",
+    "veredito": "APROVADO",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q4",
+    "veredito": "APROVADO",
+    "arquivo_canonico": null,
+    "arquivo_id": null,
+    "pagina_final": null,
+    "pagina_citada": null,
+    "alertas": [
+     "não se aplica a esta modalidade — credenciamento não tem tipo de pregão"
+    ],
+    "ausencia": "nao_se_aplica"
+   },
+   {
+    "pergunta_id": "Q5",
+    "veredito": "APROVADO",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q6",
+    "veredito": "APROVADO",
+    "arquivo_canonico": null,
+    "arquivo_id": null,
+    "pagina_final": null,
+    "pagina_citada": null,
+    "alertas": [],
+    "ausencia": "sem_evidencia"
+   },
+   {
+    "pergunta_id": "Q7",
+    "veredito": "APROVADO",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q8",
+    "veredito": "APROVADO",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q9",
+    "veredito": "REVISAR",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q10",
+    "veredito": "REVISAR",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 2,
+    "alertas": [
+     "página corrigida de 2 para 1"
+    ],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q11",
+    "veredito": "REVISAR",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q12",
+    "veredito": "REVISAR",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [
+     "respondeu sem trecho literal"
+    ],
+    "ausencia": "falta_evidencia"
+   },
+   {
+    "pergunta_id": "Q13",
+    "veredito": "APROVADO",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q14",
+    "veredito": "APROVADO",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q15",
+    "veredito": "APROVADO",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   },
+   {
+    "pergunta_id": "Q16",
+    "veredito": "APROVADO",
+    "arquivo_canonico": null,
+    "arquivo_id": null,
+    "pagina_final": null,
+    "pagina_citada": null,
+    "alertas": [],
+    "ausencia": "sem_evidencia"
+   },
+   {
+    "pergunta_id": "Q17",
+    "veredito": "APROVADO",
+    "arquivo_canonico": "01 - Edital.pdf",
+    "arquivo_id": 1,
+    "pagina_final": 1,
+    "pagina_citada": 1,
+    "alertas": [],
+    "ausencia": null
+   }
+  ],
+  "arquivos": [
+   {
+    "id": 1,
+    "seq": 1,
+    "tipo": "Edital",
+    "titulo": "01 - Edital.pdf",
+    "nome": "01 - Edital.pdf",
+    "status": "ok",
+    "motivo": null,
+    "paginas": 3,
+    "chars": 900,
+    "sha256": "be9f7016526bd75f",
+    "bytes": 14,
+    "bytes_aproximado": false,
+    "formato_real": null,
+    "requer_ocr": false,
+    "pai_id": null,
+    "alias_de": null,
+    "baixado_em": null,
+    "tem_pdf": true
+   },
+   {
+    "id": 4,
+    "seq": 9,
+    "tipo": "Anexo",
+    "titulo": null,
+    "nome": "09 - Planilha 100%.xlsx",
+    "status": "recusado_politica",
+    "motivo": "não é PDF",
+    "paginas": null,
+    "chars": null,
+    "sha256": null,
+    "bytes": null,
+    "bytes_aproximado": false,
+    "formato_real": null,
+    "requer_ocr": null,
+    "pai_id": null,
+    "alias_de": null,
+    "baixado_em": null,
+    "tem_pdf": false
+   }
+  ],
+  "execucao": {
+   "id": 1,
+   "origem": "agente",
+   "provedor": "claude-code",
+   "modelo": "claude-opus-5-5",
+   "modo": "agente",
+   "effort": "agente",
+   "lote": 17,
+   "k_rag": null,
+   "rotulo": null,
+   "versao_prompt": null,
+   "chamadas": 1,
+   "tok_entrada": null,
+   "tok_saida": null,
+   "tok_cache_escrita": null,
+   "tok_cache_leitura": null,
+   "tok_raciocinio": null,
+   "segundos": null,
+   "usd": null,
+   "brl": null,
+   "usd_brl": null,
+   "preco_conhecido": false,
+   "status": "ok",
+   "erro": null,
+   "canonica": true,
+   "procedencia_completa": true,
+   "brl_legado": null,
+   "custo_formula": null,
+   "reaproveitado_de": null,
+   "iniciado_em": "2026-09-24T02:37:13+00:00",
+   "finalizado_em": "2026-09-24T02:37:13+00:00",
+   "workflow_execucao_id": 6,
+   "chamadas_modelo": [
+    {
+     "id": 1,
+     "lote_ids": [
+      "Q1",
+      "Q2"
+     ],
+     "stop_reason": null,
+     "http_status": null,
+     "tentativas": null,
+     "tok_entrada": null,
+     "tok_saida": null,
+     "tok_cache_escrita": null,
+     "tok_cache_leitura": null,
+     "segundos": null,
+     "usd": 0.29,
+     "brl": 1.5,
+     "preco_conhecido": true,
+     "em": "2026-09-26T08:40:42.318372+00:00"
+    }
+   ]
+  },
+  "leitura": {
+   "id": 1,
+   "preparado_em": "2026-09-24T01:14:17+00:00",
+   "segundos": 0.2,
+   "versao_ocr": "host-5.4.0.20240606+tessdata_fast:c4932b937207 (inferida)",
+   "tessdata_sha256": "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb",
+   "condicoes": {
+    "furtivos": [],
+    "paginas_ocr": 0,
+    "arquivos_ocr": []
+   },
+   "modo_sugerido": "contexto-completo",
+   "chars_total": 34,
+   "procedencia_texto": "legado_paginas_json",
+   "vigente": true,
+   "assinatura_conjunto": "79cbb21953153d64fca01afd568790a76883b52f51d52908df24e4bd6acc7747",
+   "n_paginas": 2
+  },
+  "historico": [
+   {
+    "id": 1,
+    "execucao_id": 1,
+    "versao_regras": "legado:b2f45a260a5a2e69aa2b5426edf206980c4d1f933a9883a71837a3503a494c68",
+    "verificado_em": "2026-09-24T02:37:13+00:00",
+    "aprovadas": 13,
+    "revisar": 4,
+    "reprovadas": 0,
+    "nao_localizado": 3,
+    "ancoradas": 14,
+    "respondidas": 14,
+    "taxa_ancorada": 1.0,
+    "tags": [],
+    "degradada": false,
+    "vigente": true,
+    "origem": "agente",
+    "provedor": "claude-code",
+    "modelo": "claude-opus-5-5",
+    "vereditos": {
+     "Q1": "APROVADO",
+     "Q2": "APROVADO",
+     "Q3": "APROVADO",
+     "Q4": "APROVADO",
+     "Q5": "APROVADO",
+     "Q6": "APROVADO",
+     "Q7": "APROVADO",
+     "Q8": "APROVADO",
+     "Q9": "REVISAR",
+     "Q10": "REVISAR",
+     "Q11": "REVISAR",
+     "Q12": "REVISAR",
+     "Q13": "APROVADO",
+     "Q14": "APROVADO",
+     "Q15": "APROVADO",
+     "Q16": "APROVADO",
+     "Q17": "APROVADO"
+    }
+   },
+   {
+    "id": 4,
+    "execucao_id": 1,
+    "versao_regras": "regras-anteriores-00",
+    "verificado_em": "2026-09-22T02:37:13+00:00",
+    "aprovadas": 12,
+    "revisar": 5,
+    "reprovadas": 0,
+    "nao_localizado": 3,
+    "ancoradas": 14,
+    "respondidas": 14,
+    "taxa_ancorada": 1.0,
+    "tags": [],
+    "degradada": false,
+    "vigente": false,
+    "origem": "agente",
+    "provedor": "claude-code",
+    "modelo": "claude-opus-5-5",
+    "vereditos": {
+     "Q1": "APROVADO",
+     "Q2": "APROVADO",
+     "Q3": "REVISAR",
+     "Q4": "APROVADO",
+     "Q5": "APROVADO",
+     "Q6": "APROVADO",
+     "Q7": "APROVADO",
+     "Q8": "APROVADO",
+     "Q9": "REVISAR",
+     "Q10": "REVISAR",
+     "Q11": "REVISAR",
+     "Q12": "REVISAR",
+     "Q13": "APROVADO",
+     "Q14": "APROVADO",
+     "Q15": "APROVADO",
+     "Q16": "APROVADO",
+     "Q17": "APROVADO"
+    }
+   }
+  ],
+  "eventos": [
+   {
+    "id": 2,
+    "de": null,
+    "para": "verificada",
+    "motivo": "importado do acervo v2 (snapshot 2026-09-24_0150)",
+    "dados": {
+     "pastas": [
+      "Pregão - Teste-SP"
+     ],
+     "canonica": "Pregão - Teste-SP",
+     "importacao": 1,
+     "estado_motivo": "importada do acervo v2 com verificação",
+     "canonica_motivo": "única pasta"
+    },
+    "n8n_execution_id": null,
+    "em": "2026-09-26T08:40:42.161932+00:00"
+   }
+  ],
+  "gabarito": [
+   {
+    "pergunta_id": "Q1",
+    "critica": true,
+    "resposta_referencia": "01/12/2026 às 09h00",
+    "fatos_obrigatorios": null,
+    "fatos_desejaveis": null,
+    "fonte": null
+   }
+  ],
+  "revisoes": [
+   {
+    "id": 2,
+    "verificacao_id": 1,
+    "pergunta_id": "Q9",
+    "motivo": "página corrigida pelo verificador",
+    "status": "aceita",
+    "resposta_corrigida": null,
+    "nota": "conferido na p. 1",
+    "decidido_por": "operador@teste.br",
+    "decidido_em": "2026-09-26T07:40:42.298315+00:00",
+    "criado_em": "2026-09-26T08:40:42.298315+00:00"
+   }
+  ],
+  "execucoes_workflow": [
+   {
+    "id": 6,
+    "workflow": "W20",
+    "n8n_execution_id": null,
+    "script_legado": null,
+    "gatilho": "fila",
+    "iniciado_em": "2026-09-26T07:40:42.314727+00:00",
+    "duracao_s": null,
+    "status": "ok",
+    "erro": null,
+    "cego": null,
+    "custo_brl": 1.5,
+    "chamadas": 1,
+    "sem_preco": 0
+   }
+  ],
+  "jev": {
+   "escopo": {
+    "p_folha": 0.93,
+    "discorda": false,
+    "candidata": false,
+    "p_filtro_ok": 0.93
+   },
+   "sustenta": {
+    "Q1": {
+     "p_sustenta": 0.97,
+     "resposta": "sustenta",
+     "confianca": 0.95,
+     "contexto_enviado": "pagina"
+    },
+    "Q2": {
+     "p_sustenta": 0.12,
+     "resposta": "contradiz",
+     "confianca": 0.88,
+     "contexto_enviado": "janela 3p (de 12)"
+    },
+    "Q10": {
+     "p_sustenta": 0.88,
+     "resposta": "sustenta",
+     "confianca": 0.9,
+     "contexto_enviado": "documento"
+    }
+   }
+  },
+  "furtivos": [],
+  "furtivos_varredura": null,
+  "pedido_ia": null
+ }
+}

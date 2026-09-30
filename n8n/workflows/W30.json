@@ -1,0 +1,1162 @@
+{
+  "name": "W30 Reverificar em lote",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W30 Reverificar em lote — as regras mudaram, as respostas não\nSubstitui o `13_reverificar.py` sem apagar procedência: cada reverificação é uma verificação NOVA (a antiga fica no histórico) e só vira vigente pelo W24 modo republicar. Raiz: Error Workflow = W90.\n\n- **Reverificar = regras atuais sobre o texto congelado; sem modelo, sem OCR novo** (ADR-011) — worker /reverificar: api/worker.py:125-175 (reconstrói como scripts/13_reverificar.py:44-80, nunca `extrair()`)\n- **Só vigentes com `versao_regras` diferente da do worker e com leitura congelada**; legado sem `leitura_id` fica \"pendente de leitura\" (plano §5 W30; §9 passo 3)\n- **Mudança de números é decisão, não efeito colateral** (ADR-014): Manual = o acervo publicado inteiro; `controles` = só esses\n- **Em série** (Loop batch 1): uma reverificação por vez; 409 \"já verificada nesta versão\" republica a que já existe (retomada)\n- **Custo R$ 0** (execucoes_workflow W30) e **UM e-mail de resumo na fila** (tipo 'reverificacao', db/024; o W50 envia)",
+        "height": 380,
+        "width": 820
+      },
+      "id": "9473734d-55da-597a-a39c-05c5a251ef8e",
+      "name": "Sobre o W30",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -868
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "6d4a72b2-f090-591c-b170-1f60f2942a54",
+      "name": "Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -86
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "controles",
+              "type": "array"
+            },
+            {
+              "name": "todos",
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "id": "38875cf4-4108-51ae-917d-31b0b486e9ed",
+      "name": "Chamado por outro fluxo",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        254
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Quem reverifica o acervo INTEIRO é o operador, pelo gatilho Manual (ADR-014: mudar número é decisão).\n// Chamado por outro fluxo (W11 \"Reverificar\", testes): só os `controles` dados, ou todos com `todos: true` EXPLÍCITO.\n// Sem lista e sem `todos` = nenhum. Nunca \"todos\" por omissão: em 24/09 um teste que pedia 2 licitações chegou\n// aqui sem os itens e reverificou o acervo publicado inteiro (execução 436, desfeita à mão).\nconst RE = /^\\d{14}-\\d+-\\d+\\/\\d{4}$/;\nconst j = $input.first().json || {};\nconst manual = $('Manual').isExecuted;\nlet controles = j.controles ?? null;\nif (typeof controles === 'string') {\n  const t = controles.trim();\n  try { controles = t.startsWith('[') ? JSON.parse(t) : t.split(',').map((s) => s.trim()).filter(Boolean); }\n  catch (e) { throw new Error('controles ilegível: ' + t.slice(0, 120)); }\n}\nif (controles !== null && !Array.isArray(controles)) controles = [controles];\nif (Array.isArray(controles)) {\n  controles = [...new Set(controles.map((c) => String(c).trim()))];\n  const ruins = controles.filter((c) => !RE.test(c));\n  if (ruins.length) throw new Error('controle fora do formato CNPJ-1-SEQ/ANO: ' + ruins.join(', '));\n}\nconst todos = controles === null && (manual || j.todos === true || j.todos === 'true');\nif (controles === null && !todos) controles = [];\nreturn [{ json: { controles, todos, gatilho: manual ? 'manual' : $execution.mode } }];\n"
+      },
+      "id": "f4e0de8e-b4e8-551a-9341-d50199aeb4d4",
+      "name": "Parâmetros",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        84
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — toda rodada deixa rastro em execucoes_workflow; o W30 não chama modelo: custo R$ 0 (plano §5 W30)\nINSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status, argumentos, custo_brl)\nVALUES ('W30', $1, $2, 'em_curso', $3::jsonb, 0)\nRETURNING id AS execucao_workflow_id",
+        "options": {
+          "queryReplacement": "={{ [ $execution.id, $json.gatilho, JSON.stringify({ controles: $json.controles, todos: $json.todos }) ] }}"
+        }
+      },
+      "id": "551a01ad-4cfd-5c6b-9925-67a31fee71eb",
+      "name": "Abrir execução W30",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        576,
+        84
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.FOPA_WORKER_URL }}/versao",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "1a52ef60-35cd-5c95-a5a0-fd353bab0735",
+      "name": "GET /versao",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        864,
+        84
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o alvo são as VIGENTES com regras de outra versão e texto congelado (plano §5 W30 passo 2); as sem leitura\n-- (legado das 11 via API sem paginas.json) ficam \"pendentes de leitura\" e só entram depois de W22 + decisão (seção 9)\nSELECT count(*) FILTER (WHERE v.versao_regras <> $1 AND v.leitura_id IS NOT NULL) AS a_reverificar,\n       count(*) FILTER (WHERE v.leitura_id IS NULL) AS pendentes_de_leitura,\n       count(*) FILTER (WHERE v.versao_regras = $1) AS ja_na_versao,\n       count(*) AS vigentes\n  FROM verificacoes v\n WHERE v.vigente AND ($2::jsonb IS NULL OR v.controle IN (SELECT jsonb_array_elements_text($2::jsonb)))",
+        "options": {
+          "queryReplacement": "={{ [ $json.versao_regras, $('Parâmetros').first().json.controles === null ? null : JSON.stringify($('Parâmetros').first().json.controles) ] }}"
+        }
+      },
+      "id": "1318f245-facc-5249-9675-27ae52b6d53b",
+      "name": "Panorama",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1152,
+        84
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7f105f02-f495-5430-9904-e155ec1f1f42",
+              "leftValue": "={{ Number($json.a_reverificar) > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "264c3ef1-c912-52f8-a908-9104d2e1190f",
+      "name": "Há o que reverificar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        84
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT v.controle, v.id AS vigente_id, v.execucao_id, v.versao_regras AS versao_antes, l.estado::text AS estado\n  FROM verificacoes v JOIN licitacoes l ON l.controle = v.controle\n WHERE v.vigente AND v.versao_regras <> $1 AND v.leitura_id IS NOT NULL\n   AND ($2::jsonb IS NULL OR v.controle IN (SELECT jsonb_array_elements_text($2::jsonb)))\n ORDER BY v.controle",
+        "options": {
+          "queryReplacement": "={{ [ $('GET /versao').first().json.versao_regras, $('Parâmetros').first().json.controles === null ? null : JSON.stringify($('Parâmetros').first().json.controles) ] }}"
+        }
+      },
+      "id": "c868dfed-456c-5d50-94eb-3fa6a1936d7b",
+      "name": "Vigentes a reverificar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1728,
+        -120
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "afcee46c-9b6f-587f-99b5-4b08c1c9985b",
+      "name": "Loop vigentes",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2016,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Uma licitação por volta (em série): a reverificação é CPU do worker e o W24 troca a vigente dela.\nconst a = $input.first().json;\nreturn [{ json: { controle: a.controle, vigente_id: Number(a.vigente_id), execucao_id: Number(a.execucao_id),\n  versao_antes: a.versao_antes, estado: a.estado } }];\n"
+      },
+      "id": "26051f0c-367c-5863-88ba-7aa2fcf6c38f",
+      "name": "Alvo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        152
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/reverificar",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ controle: $json.controle }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "f5c7afa3-18e7-5e49-b69c-a7dc18df49fd",
+      "name": "POST /reverificar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2592,
+        152
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "63883c89-66f7-5305-af29-6360f1b22965",
+                    "leftValue": "={{ $json.statusCode === 200 && !!($json.body && $json.body.verificacao_id) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "verificação nova"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d724a8d2-0869-5063-83f0-0a780d1d0890",
+                    "leftValue": "={{ $json.statusCode === 409 && String(($json.body && $json.body.detail) || '').includes('já foi verificada') }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "já verificada nesta versão"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "falhou"
+        }
+      },
+      "id": "6e06404d-f910-560f-b8fb-58eb421c34c7",
+      "name": "Reverificou?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2880,
+        152
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Retomada: uma rodada anterior reverificou e o W24 não chegou a republicar; a verificação da versão atual já existe\n-- (UNIQUE execucao_id + versao_regras, db/005) e é ela que se republica — nada se reverifica duas vezes.\nSELECT v.id AS verificacao_id\n  FROM verificacoes v\n WHERE v.execucao_id = $1::bigint AND v.versao_regras = $2 AND NOT v.vigente\n ORDER BY v.id DESC LIMIT 1",
+        "options": {
+          "queryReplacement": "={{ [ $('Alvo').first().json.execucao_id, $('GET /versao').first().json.versao_regras ] }}"
+        }
+      },
+      "id": "0c5f1cdd-6d2a-5585-85e3-83b5777eac8c",
+      "name": "Verificação já gravada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        424
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "74f8f299-8eed-52e5-a293-8cfaa8409c5a",
+              "leftValue": "={{ !!$json.verificacao_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "eeefa789-57db-5340-ae9b-ddef6d963b5c",
+      "name": "Achou a verificação?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3456,
+        424
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W24}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "controle": "={{ $('Alvo').first().json.controle }}",
+            "verificacao_id": "={{ Number($json.verificacao_id ?? ($json.body && $json.body.verificacao_id)) }}",
+            "modo": "republicar",
+            "notificar": false
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "controle",
+              "displayName": "controle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "verificacao_id",
+              "displayName": "verificacao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "modo",
+              "displayName": "modo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "notificar",
+              "displayName": "notificar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "f8a46c66-9044-5279-88a4-e5e9f9b487c1",
+      "name": "Republicar (W24)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3744,
+        16
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// O que aconteceu com ESTA licitação (o item volta ao laço; o resumo sai quando o laço termina).\nconst a = $('Alvo').first().json;\nconst j = $input.first().json || {};\nlet r;\nif (j.modo !== undefined && j.ok !== undefined) {                   // voltou do W24\n  const mudaram = Object.keys((j.diff && j.diff.vereditos) || {});\n  r = { controle: a.controle, ok: j.ok === true, antes: a.vigente_id, depois: j.verificacao_id ? Number(j.verificacao_id) : null,\n        versao_antes: a.versao_antes, mudaram, diff: j.diff || null, email_id: j.email_id ?? null,\n        estado: j.estado ?? null, motivo: j.motivo ?? null };\n} else if (Object.keys(j).length === 0) {                            // 409 e nada a republicar\n  r = { controle: a.controle, ok: true, pulada: true, antes: a.vigente_id, depois: null, mudaram: [],\n        motivo: 'já verificada nesta versão das regras e sem verificação pendente de republicar' };\n} else {                                                             // /reverificar falhou\n  let motivo;\n  if (j.error) motivo = 'worker sem resposta: ' + String(j.error.message || JSON.stringify(j.error)).slice(0, 240);\n  else motivo = `/reverificar HTTP ${j.statusCode}: ` + (typeof j.body === 'string' ? j.body : JSON.stringify(j.body ?? '')).slice(0, 300);\n  r = { controle: a.controle, ok: false, antes: a.vigente_id, depois: null, mudaram: [], motivo };\n}\nreturn [{ json: { resultado: r } }];\n"
+      },
+      "id": "1abd2069-e9d0-543b-a47b-6a92bd30701a",
+      "name": "Registrar resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4032,
+        152
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — antes/depois da rodada (plano §5 W30 passo 4): quantas reverificadas, quantas mudaram de veredito, falhas,\n// pendentes de leitura. Custo R$ 0: nem modelo nem OCR.\nconst pan = $('Panorama').first().json;\nconst versao = $('GET /versao').first().json.versao_regras;\nconst rs = $input.all().map((i) => i.json && i.json.resultado).filter(Boolean);\nconst republicadas = rs.filter((r) => r.ok && r.depois && !r.pulada);\nconst falhas = rs.filter((r) => !r.ok);\nreturn [{ json: {\n  versao_regras: versao,\n  status: falhas.length ? 'erro' : 'ok',\n  contadores: {\n    vigentes: Number(pan.vigentes), a_reverificar: Number(pan.a_reverificar), ja_na_versao: Number(pan.ja_na_versao),\n    pendentes_de_leitura: Number(pan.pendentes_de_leitura), reverificadas: rs.length,\n    republicadas: republicadas.length, com_veredito_mudado: republicadas.filter((r) => r.mudaram.length).length,\n    vereditos_mudados: republicadas.reduce((t, r) => t + r.mudaram.length, 0),\n    puladas: rs.filter((r) => r.pulada).length, falhas: falhas.length,\n  },\n  resultados: rs,\n  erro: falhas.length ? falhas.map((f) => `${f.controle}: ${f.motivo}`).join(' | ').slice(0, 2000) : null,\n} }];\n"
+      },
+      "id": "8abb0e59-d46c-5255-97f5-e260b68c860b",
+      "name": "Resumo da rodada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        764
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE execucoes_workflow\n   SET status = $2, erro = $3, custo_brl = 0, contadores = $4::jsonb,\n       duracao_s = round(extract(epoch FROM now() - iniciado_em)::numeric, 3)\n WHERE id = $1::bigint\nRETURNING id AS execucao_workflow_id, status, duracao_s",
+        "options": {
+          "queryReplacement": "={{ [ $('Abrir execução W30').first().json.execucao_workflow_id, $json.status, $json.erro, JSON.stringify(Object.assign({ versao_regras: $json.versao_regras }, $json.contadores, { resultados: $json.resultados.map(r => ({ controle: r.controle, ok: r.ok, antes: r.antes, depois: r.depois, mudaram: r.mudaram, pulada: r.pulada === true, motivo: r.motivo })) })) ] }}"
+        }
+      },
+      "id": "338b6fed-2c5c-5da5-ac11-68ce2a651cd1",
+      "name": "Fechar execução W30",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2592,
+        764
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\nconst site = String($env.FOPA_SITE_PUBLIC_URL || '').replace(/\\/+$/, '');\nconst n8nBase = String($env.WEBHOOK_URL || '').replace(/\\/+$/, '');\nconst linkExecucao = `${n8nBase}/workflow/${$workflow.id}/executions/${$execution.id}`;\n// regra — UM e-mail por rodada (plano §5 W30 passo 4), na fila; o W50 envia. Cada licitação republicada já tem o seu\n// 'republicada' com o diff; este é o panorama.\nconst s = $('Resumo da rodada').first().json;\nconst c = s.contadores;\nconst vr = String(s.versao_regras || '').slice(0, 12);\nconst assunto = `[FOPA] Reverificação: ${c.republicadas} republicada(s), ${c.com_veredito_mudado} com veredito mudado`\n  + (c.falhas ? `, ${c.falhas} falha(s)` : '') + ` · regras ${vr}`;\nconst linhas = s.resultados.map((r) => {\n  const slug = String(r.controle).replace('/', '-');\n  const o = r.pulada ? 'pulada' : (r.ok ? 'republicada' : 'FALHOU');\n  return `<tr><td><a href=\"${esc(site)}/licitacao/${esc(slug)}\">${esc(r.controle)}</a></td><td>${esc(o)}</td>`\n    + `<td>${esc(r.antes ?? '—')} → ${esc(r.depois ?? '—')}</td>`\n    + `<td>${r.mudaram.length ? esc(r.mudaram.join(', ')) : '—'}</td><td>${esc(r.motivo || '')}</td></tr>`;\n}).join('');\nconst corpo = [\n  `<p>Regras atuais: <code>${esc(s.versao_regras)}</code>. Reverificação sem modelo e sem OCR novo (ADR-011): custo R$ 0,00.</p>`,\n  `<p>${c.vigentes} vigente(s) no alcance · ${c.a_reverificar} em versão antiga · ${c.ja_na_versao} já na versão · `\n    + `${c.pendentes_de_leitura} pendente(s) de leitura (sem texto congelado, não reverificáveis).</p>`,\n  `<p>${c.reverificadas} reverificada(s): ${c.republicadas} republicada(s), ${c.com_veredito_mudado} com veredito mudado `\n    + `(${c.vereditos_mudados} veredito(s) no total), ${c.puladas} pulada(s), ${c.falhas} falha(s).</p>`,\n  linhas ? `<table border=\"1\" cellpadding=\"4\" cellspacing=\"0\"><tr><th>Controle</th><th>Resultado</th><th>Verificação</th>`\n    + `<th>Mudaram</th><th>Motivo</th></tr>${linhas}</table>` : '<p>Nada a reverificar.</p>',\n  `<p><a href=\"${esc(site)}/execucoes\">Execuções no site</a> · <a href=\"${esc(linkExecucao)}\">execução ${esc($execution.id)} no n8n</a></p>`,\n].join('');\nreturn [{ json: { assunto, corpo_html: corpo } }];\n"
+      },
+      "id": "fd3915ec-5bba-5369-919a-2e4c736a0751",
+      "name": "Montar e-mail de resumo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        764
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — e-mail DESLIGADO (o produto manda só DOIS e-mails — licitação nova, pelo W01,\n-- e a extração pedida no botão do site, pelo W24; db/038-039). O fluxo segue igual; este nó não enfileira.\nSELECT NULL::bigint AS email_id",
+        "options": {}
+      },
+      "id": "837f1843-3795-5b24-a18e-f08355f529f6",
+      "name": "Enfileirar resumo",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        764
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const s = $('Resumo da rodada').first().json;\nreturn [{ json: { ok: s.status === 'ok', versao_regras: s.versao_regras, ...s.contadores, resultados: s.resultados,\n  execucao_workflow_id: $('Abrir execução W30').first().json.execucao_workflow_id,\n  email_id: $json.email_id } }];\n"
+      },
+      "id": "525fc857-240f-5f1f-9704-477f6a6e0218",
+      "name": "Retorno",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3456,
+        764
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Manual**\n\nGatilho manual: reverifica todo o acervo publicado.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "da6a9103-3f23-516e-ab96-0d66e1ec8c05",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Chamado por outro fluxo**\n\nEntrada para reverificar uma lista de licitações.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "926d0bb5-723e-5447-8e95-760287efe7dc",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        404
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · Parâmetros**\n\nLê a lista de licitações e confere cada número de controle. Sem lista explícita, não reverifica nada: nunca o acervo inteiro por omissão.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ea911bf1-2eca-5978-b0a0-cf54c1383a03",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Abrir execução W30**\n\nAbre a linha da rodada em execucoes_workflow, com custo zero.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "16c4d760-2174-5cb5-8e0d-888a9d14d675",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · GET /versao**\n\nLê no worker a versão atual das regras: um hash do código que decide os vereditos, que muda sozinho quando o código muda.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7cd77526-f8a0-5331-9abd-44205c146417",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Panorama**\n\nConta as verificações vigentes: quantas estão em versão antiga (a reverificar), quantas já estão em dia e quantas não têm leitura.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "329d75a9-298d-51a8-9577-d6d32eb011b6",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · Há o que reverificar?**\n\nSe há o que reverificar, lista; senão, vai ao resumo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "55261621-f65c-5989-8212-3454cb71735f",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Vigentes a reverificar**\n\nLista as verificações vigentes feitas com regras antigas e com texto já lido.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4267903b-7b52-548a-b134-93f58bfed1c6",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        30
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Loop vigentes**\n\nLaço que reverifica uma licitação por vez, em série, para não disputar o worker.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "d8308acb-e40e-5a9e-afdc-337ce21a051d",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        30
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Alvo**\n\nPrepara a licitação da volta.",
+        "height": 90,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ba2be344-e963-55f9-a698-d1472cbeeaba",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        302
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · POST /reverificar**\n\nO worker passa as respostas gravadas pelo verificador atual, sobre o texto já lido: sem modelo de IA e sem OCR, custo zero.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "153aacfb-ded5-59c9-8d07-baeb3516492d",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        302
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Reverificou?**\n\nTrês caminhos: verificação nova, já verificada nesta versão ou falha.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5a5b9665-802c-5458-b7c1-fc395f50eb62",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        302
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Republicar (W24)**\n\nChama o W24 para republicar com a verificação nova, sem e-mail.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "2bb9ccae-a2e1-5942-9b1e-7c7f171fc382",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        166
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 15 · Verificação já gravada**\n\nProcura uma verificação desta versão que ainda não virou vigente, para retomar.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f7ffcc1a-3e89-58b7-b62e-fd736b2aa89e",
+      "name": "Nota — passo 15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        574
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 16 · Achou a verificação?**\n\nSe achou, republica essa; se não, a licitação é pulada.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "eda9497f-ec95-5940-aa38-49f86f294aa4",
+      "name": "Nota — passo 16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        574
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 17 · Registrar resultado**\n\nRegistra o resultado da licitação (republicada, pulada ou falha) e volta ao laço.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "25f9f1af-1602-5ca2-a40a-89df1ed53bde",
+      "name": "Nota — passo 17",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        302
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 18 · Resumo da rodada**\n\nSoma os contadores: reverificadas, republicadas, vereditos mudados, puladas e falhas.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9510a28a-0190-5442-8b77-73660a5ed815",
+      "name": "Nota — passo 18",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        914
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 19 · Fechar execução W30**\n\nFecha a linha da rodada com os contadores e o resultado de cada licitação.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6640d710-505a-51d5-b9f7-4262de033881",
+      "name": "Nota — passo 19",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        914
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 20 · Montar e-mail de resumo**\n\nMonta o texto do resumo, que fica registrado na execução.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "fd10d71f-7852-54ad-a8d3-291852b8330f",
+      "name": "Nota — passo 20",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        914
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 21 · Enfileirar resumo**\n\nDesligado: o produto envia só dois e-mails. O resumo fica na página Execuções.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7cd31379-97e1-5933-a940-5c5f6fdcc5b5",
+      "name": "Nota — passo 21",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        914
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 22 · Retorno**\n\nDevolve os contadores e os resultados.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "55a3990c-383d-5ac1-b5ab-9f2377ed6741",
+      "name": "Nota — passo 22",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        914
+      ]
+    }
+  ],
+  "connections": {
+    "Manual": {
+      "main": [
+        [
+          {
+            "node": "Parâmetros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chamado por outro fluxo": {
+      "main": [
+        [
+          {
+            "node": "Parâmetros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parâmetros": {
+      "main": [
+        [
+          {
+            "node": "Abrir execução W30",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir execução W30": {
+      "main": [
+        [
+          {
+            "node": "GET /versao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /versao": {
+      "main": [
+        [
+          {
+            "node": "Panorama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Panorama": {
+      "main": [
+        [
+          {
+            "node": "Há o que reverificar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Há o que reverificar?": {
+      "main": [
+        [
+          {
+            "node": "Vigentes a reverificar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo da rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vigentes a reverificar": {
+      "main": [
+        [
+          {
+            "node": "Loop vigentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop vigentes": {
+      "main": [
+        [
+          {
+            "node": "Resumo da rodada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alvo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alvo": {
+      "main": [
+        [
+          {
+            "node": "POST /reverificar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /reverificar": {
+      "main": [
+        [
+          {
+            "node": "Reverificou?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reverificou?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reverificou?": {
+      "main": [
+        [
+          {
+            "node": "Republicar (W24)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verificação já gravada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificação já gravada": {
+      "main": [
+        [
+          {
+            "node": "Achou a verificação?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Achou a verificação?": {
+      "main": [
+        [
+          {
+            "node": "Republicar (W24)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Republicar (W24)": {
+      "main": [
+        [
+          {
+            "node": "Registrar resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar resultado": {
+      "main": [
+        [
+          {
+            "node": "Loop vigentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumo da rodada": {
+      "main": [
+        [
+          {
+            "node": "Fechar execução W30",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fechar execução W30": {
+      "main": [
+        [
+          {
+            "node": "Montar e-mail de resumo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar e-mail de resumo": {
+      "main": [
+        [
+          {
+            "node": "Enfileirar resumo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enfileirar resumo": {
+      "main": [
+        [
+          {
+            "node": "Retorno",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "saveManualExecutions": true,
+    "errorWorkflow": "{{WF:W90}}"
+  }
+}

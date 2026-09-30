@@ -1,0 +1,2109 @@
+{
+  "name": "W24 Verificar e publicar",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W24 Verificar e publicar (e republicar)\nSub-fluxo do W20 (publicar) e, com `modo: 'republicar'`, do W30 (em lote) e do W11 (\"Reverificar\" do site). Sem Error Workflow: a falha sobe para quem chamou.\n\n- **Nada publicado sem {arquivo, página, trecho} verificado; verificador sem LLM** (ADR-004) — worker /verificar: api/rotas_extracao.py:84-170, scripts/fopa/verificador.py:755-812\n- **Guarda numérica com os itens da API** (preço × fatura): `itens_api`, buscado uma vez no PNCP — scripts/fopa/pncp.py:322-324\n- **Uma vigente por controle; simulado/gravado só vira vigente em licitação de ENSAIO** (T15) — db/005_verificacoes.sql:33-60\n- **Republicar** = a verificação que o /reverificar gravou (mesmas respostas, regras novas; ADR-011/014) vira a vigente: publicada → verificada → publicada, e-mail 'republicada' com o diff de vereditos (o mesmo do /reverificar, api/worker.py:125-175)\n- **Jev \"sustenta?\" só como sinal** (T25), só depois de um /verificar novo e NUNCA em execução simulado/gravado — api/rotas_jev.py:63-119\n- **Render falho não desfaz a verificação**: fica `verificada` e a próxima rodada republica — plano §5 W24 passo 9\n- **Revisão humana** (publica com selo): injeção, REPROVADO, REVISAR em crítica — mas não para simulado/gravado (resposta de regex não é resposta de modelo)\n- **E-mail entra na fila ANTES de publicar**; custo `null` é \"n/d\", nunca R$ 0,00 (ADR-012, scripts/fopa/saida.py:169-173)",
+        "height": 644,
+        "width": 1032
+      },
+      "id": "b312a3d3-5812-5e85-94a4-594a8ccc3da0",
+      "name": "Sobre o W24",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -720
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "controle",
+              "type": "string"
+            },
+            {
+              "name": "execucao_id",
+              "type": "number"
+            },
+            {
+              "name": "verificacao_id",
+              "type": "number"
+            },
+            {
+              "name": "modo",
+              "type": "string"
+            },
+            {
+              "name": "notificar",
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "id": "6d53d09c-53be-5cff-87b2-b5bd07ef4b37",
+      "name": "Chamado pelo W20/W30",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Estado, itens da API já gravados?, a execução a verificar (a pedida, ou a última em curso/ok), a vigente de agora\n-- e, no modo republicar, se a verificação pedida é mesmo desta licitação.\nSELECT l.controle, l.estado::text AS estado, l.slug, l.modalidade, l.ensaio, $4::text AS modo,\n       substr(l.controle, 1, 14) AS cnpj,\n       split_part(l.controle, '/', 2)::int AS ano,\n       split_part(split_part(l.controle, '/', 1), '-', 3)::int AS seq,\n       EXISTS (SELECT 1 FROM itens_api i WHERE i.controle = l.controle) AS tem_itens,\n       COALESCE($2::bigint,\n                (SELECT e.id FROM execucoes_modelo e\n                  WHERE e.controle = l.controle AND e.status IN ('em_curso', 'ok')\n                  ORDER BY e.id DESC LIMIT 1)) AS execucao_id,\n       (SELECT v.id FROM verificacoes v WHERE v.controle = l.controle AND v.vigente) AS vigente_id,\n       $3::bigint AS pedida_id,\n       COALESCE((SELECT v.controle = l.controle FROM verificacoes v WHERE v.id = $3::bigint), false) AS pedida_e_desta\n  FROM licitacoes l\n WHERE l.controle = $1",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, ((v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v))) ? null : Number(v))($json.execucao_id), ((v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v))) ? null : Number(v))($json.verificacao_id), $json.modo === 'republicar' ? 'republicar' : 'publicar' ] }}"
+        }
+      },
+      "id": "308341d6-df20-542e-9ac0-55658cf0d34e",
+      "name": "Contexto da licitação",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        288,
+        176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6dceeb34-2db5-56a8-8ba6-bbd7a1602265",
+                    "leftValue": "={{ $json.modo === 'republicar' }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "republicar"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "publicar"
+        }
+      },
+      "id": "eab9561d-2add-5ebf-8cbf-13f24d34e66d",
+      "name": "Modo?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        576,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d3ab05ec-20bd-59f1-8c82-f65fd78ccb95",
+              "leftValue": "={{ ['publicada', 'verificada'].includes($json.estado) && $json.pedida_e_desta === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "e40d9ca3-fc10-53b2-8616-8043fcddcfea",
+      "name": "Pode republicar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        -272
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o diff de uma reverificação é o do /reverificar (api/worker.py:160-175): por pergunta, veredito antes → depois\n-- (só quando havia vigente), e os alertas globais que entraram e saíram. Calculado AQUI, antes de trocar a vigente,\n-- para o W24 republicar sozinho (W30, W11) sem depender de quem o chamou.\nWITH a AS (SELECT pergunta_id, veredito FROM verificacao_respostas WHERE verificacao_id = $1::bigint),\n     d AS (SELECT pergunta_id, veredito FROM verificacao_respostas WHERE verificacao_id = $2::bigint),\n     va AS (SELECT * FROM verificacoes WHERE id = $1::bigint),\n     vd AS (SELECT * FROM verificacoes WHERE id = $2::bigint)\nSELECT $1::bigint AS antes_id, $2::bigint AS depois_id,\n       (SELECT versao_regras FROM vd) AS versao_regras, (SELECT versao_regras FROM va) AS versao_regras_antes,\n       COALESCE((SELECT jsonb_object_agg(d.pergunta_id, jsonb_build_array(a.veredito, d.veredito))\n                   FROM d LEFT JOIN a USING (pergunta_id)\n                  WHERE EXISTS (SELECT 1 FROM a) AND a.veredito IS DISTINCT FROM d.veredito), '{}'::jsonb) AS vereditos,\n       ARRAY(SELECT unnest(vd.alertas_globais) FROM vd EXCEPT SELECT unnest(va.alertas_globais) FROM va) AS alertas_entraram,\n       ARRAY(SELECT unnest(va.alertas_globais) FROM va EXCEPT SELECT unnest(vd.alertas_globais) FROM vd) AS alertas_sairam,\n       (SELECT json_build_object('aprovadas', aprovadas, 'revisar', revisar, 'reprovadas', reprovadas,\n                                 'ancoradas', ancoradas, 'respondidas', respondidas) FROM va) AS resumo_antes,\n       (SELECT json_build_object('aprovadas', aprovadas, 'revisar', revisar, 'reprovadas', reprovadas,\n                                 'ancoradas', ancoradas, 'respondidas', respondidas) FROM vd) AS resumo_depois",
+        "options": {
+          "queryReplacement": "={{ [ $json.vigente_id, $json.pedida_id ] }}"
+        }
+      },
+      "id": "f08fcc30-d8fa-5997-a8cc-4e12ad47ebbf",
+      "name": "Diff contra a vigente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1152,
+        -440
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — publicada → verificada (db/002: 'W24 modo republicar / W30'), com o evento; já verificada = no-op (db/013).\n-- Se o render cair daqui em diante a licitação fica `verificada` com a vigente antiga, e a rodada seguinte republica.\nSELECT fn_transicao($1, 'verificada', 'W24 republicar: verificação ' || $2 || ' (regras ' || left($3, 12) || ')',\n                    jsonb_build_object('n8n_execution_id', $4::text, 'verificacao_id', $2::bigint,\n                                       'antes', $5::bigint, 'vereditos_mudaram', $6::jsonb)) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Contexto da licitação').first().json.controle, $json.depois_id, $json.versao_regras ?? '', $execution.id, $json.antes_id, JSON.stringify($json.vereditos || {}) ] }}"
+        }
+      },
+      "id": "8e6a0aaa-9a7f-56cc-ba06-0ed3679b09ee",
+      "name": "Transição → verificada (republicar)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        -440
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1f074458-2f74-549b-b118-1da914315ceb",
+              "leftValue": "={{ ['respondida', 'verificada'].includes($json.estado) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "4ed24c65-a527-5d91-a0a3-7e201ece378d",
+      "name": "Estado permite publicar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const c = $('Contexto da licitação').first().json;\nconst pedido = $('Chamado pelo W20/W30').first().json;\nlet motivo;\nif (!c.controle) motivo = 'W24: licitação não existe';\nelse if (c.modo === 'republicar' && !c.pedida_e_desta) motivo = `W24 republicar: a verificação ${pedido.verificacao_id} não é desta licitação`;\nelse if (c.modo === 'republicar') motivo = `W24 republicar: estado ${c.estado} não é publicada nem verificada`;\nelse motivo = `W24: estado ${c.estado} não tem o que verificar nem publicar`;\nreturn [{ json: { ok: false, continuar: false, modo: c.modo || 'publicar', estado: c.estado ?? null,\n  controle: pedido.controle, motivo } }];\n"
+      },
+      "id": "8cbff947-09fa-5f9f-91dc-f78970a6feb0",
+      "name": "Retorno: nada a fazer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ae80f7d5-9bf3-5666-9a28-8e8c0edb1f8d",
+              "leftValue": "={{ $json.tem_itens === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "83cdc24c-d49c-5c54-9738-0de946f9a745",
+      "name": "Itens da API já gravados?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://pncp.gov.br/api/pncp/v1/orgaos/{{ $('Contexto da licitação').first().json.cnpj }}/compras/{{ $('Contexto da licitação').first().json.ano }}/{{ $('Contexto da licitação').first().json.seq }}/itens",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "FOPA/3 (monitoramento de licitacoes de folha; estudo de viabilidade; contato: contato@exemplo.com)"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "dba90c76-5d5c-565b-9ae1-03437d4be07c",
+      "name": "GET /itens (PNCP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        400
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "07a17c16-2878-5f6e-b18f-6357dd38c2e5",
+              "leftValue": "={{ $json.statusCode === 200 && $json.body != null && typeof $json.body === 'object' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "d5d19a5a-06ac-5c7c-be10-3f2d13017781",
+      "name": "Itens obtidos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1728,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — /itens do PNCP guardado inteiro (a API já provou cair): a guarda numérica do verificador (preço × fatura)\n-- lê daqui (db/006:52-57; scripts/fopa/pncp.py:322-324 normaliza objeto → lista)\nINSERT INTO itens_api (controle, payload) VALUES ($1, $2::jsonb)\nON CONFLICT (controle) DO NOTHING\nRETURNING controle",
+        "options": {
+          "queryReplacement": "={{ [ $('Contexto da licitação').first().json.controle, JSON.stringify(Array.isArray($json.body) ? $json.body : [$json.body]) ] }}"
+        }
+      },
+      "id": "33b97265-6a4f-5259-b9e0-642d77b024b6",
+      "name": "Gravar itens_api",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2016,
+        400
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "981011b6-ea55-54ad-952f-322eae6efbab",
+              "leftValue": "={{ $('Contexto da licitação').first().json.estado === 'respondida' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "1b7432f0-0b26-5bda-bf9d-c854dd6d6f99",
+      "name": "Verificar agora?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2304,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/verificar",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execucao_id: $('Contexto da licitação').first().json.execucao_id, modalidade: $('Contexto da licitação').first().json.modalidade, usar_itens_api: true }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "6c1986d2-7fb1-5e66-98bc-f761b8c6fb84",
+      "name": "POST /verificar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2592,
+        8
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "25e65ea3-220f-52e7-ad75-07289a63a570",
+              "leftValue": "={{ $json.statusCode === 200 || $json.statusCode === 409 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "fd7ac472-e366-51cf-9453-52311a204349",
+      "name": "Verificado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2880,
+        8
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — respondida → verificada (db/002:37): o worker fundiu os lotes, fechou a execução (tokens, usd/brl) e gravou\n-- verificacoes + verificacao_respostas (api/rotas_extracao.py:84-170). A vigência é decisão deste fluxo.\nSELECT fn_transicao($1, 'verificada', 'W24: verificação ' || COALESCE($2::text, 'já existente nesta versão das regras'),\n                    jsonb_build_object('n8n_execution_id', $3::text, 'verificacao_id', $2::bigint,\n                                       'resumo', $4::jsonb)) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Contexto da licitação').first().json.controle, $json.statusCode === 200 ? $json.body.verificacao_id : null, $execution.id, JSON.stringify($json.statusCode === 200 ? $json.body.resumo : { http: 409 }) ] }}"
+        }
+      },
+      "id": "2dd9170b-3a9d-5762-ab71-1aac8d226056",
+      "name": "Transição → verificada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        8
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- A verificação que acabou de nascer; no modo republicar, a pedida; vindo de `verificada`, a mais recente do controle.\nSELECT v.id AS verificacao_id, v.execucao_id, e.origem, e.provedor, v.vigente, v.versao_regras\n  FROM verificacoes v JOIN execucoes_modelo e ON e.id = v.execucao_id\n WHERE v.controle = $1 AND ($2::bigint IS NULL OR v.id = $2::bigint)\n ORDER BY v.id DESC LIMIT 1",
+        "options": {
+          "queryReplacement": "={{ [ $('Contexto da licitação').first().json.controle, $('Contexto da licitação').first().json.modo === 'republicar' ? $('Contexto da licitação').first().json.pedida_id : (($('POST /verificar').isExecuted && $('POST /verificar').first().json.statusCode === 200) ? $('POST /verificar').first().json.body.verificacao_id : null) ] }}"
+        }
+      },
+      "id": "610786d4-d476-5569-9423-8fd3d3e182d9",
+      "name": "Verificação a publicar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3456,
+        176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "418dd9ea-c34f-5cd5-824f-5e499c7916d7",
+              "leftValue": "={{ $('POST /verificar').isExecuted && $('POST /verificar').first().json.statusCode === 200 && !['simulado', 'gravado'].includes($json.origem) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "ecfc701b-6d89-5fb8-9431-eea50ca52e96",
+      "name": "Pedir sinal ao Jev?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3744,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/jev/sustenta/corpos",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ verificacao_id: $('Verificação a publicar').first().json.verificacao_id }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "05d37fa4-2620-5b9e-9d30-fc9f11b200bf",
+      "name": "Jev: montar corpos (worker)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4032,
+        -160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "314c96ae-b11b-5974-ac2a-01cb25c60e3d",
+              "leftValue": "={{ $json.statusCode === 200 && Array.isArray($json.body && $json.body.requisicoes) && $json.body.requisicoes.length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "903e0221-cd28-514f-8b97-36a17a287cb3",
+      "name": "Há aprovada para o Jev?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4320,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — só as APROVADAS com trecho vão ao Jev: é nelas que mora o ponto cego da ancoragem (api/rotas_jev.py:63-95)\nconst b = $input.first().json.body;\nreturn b.requisicoes.map((r) => ({ json: { url: b.url, body: r.body, pergunta_id: r.pergunta_id,\n  contexto_enviado: r.contexto_enviado, criterio_versao: b.criterio_versao } }));\n"
+      },
+      "id": "dad20a64-6bc9-5144-8208-ced6c39b7b11",
+      "name": "Uma requisição por resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4608,
+        -328
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "timeout": 30000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 1000
+            }
+          }
+        }
+      },
+      "id": "eb8a12dd-2783-5550-b8bb-c67bcad792e9",
+      "name": "Jev (TypeSafe)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4896,
+        -328
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:jev}}",
+          "name": "jev"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/jev/sustenta/interpretar",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ verificacao_id: $('Verificação a publicar').first().json.verificacao_id, pergunta_id: $('Uma requisição por resposta').item.json.pergunta_id, contexto_enviado: $('Uma requisição por resposta').item.json.contexto_enviado, resposta: $json.error ? { erro: String($json.error.message || $json.error.code || 'falhou') } : $json }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "4801bbb9-f487-554e-beab-9ad64a05f37a",
+      "name": "Jev: interpretar (worker)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5184,
+        -328
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// O Jev é segundo sinal, nunca decisão (T25): o veredito não muda; convicção contrária vira candidata na fila humana\n// (quem grava é o worker, api/rotas_jev.py:98-119). Aqui só se conta o que aconteceu.\nconst itens = $input.all().map((i) => (i.json && i.json.body) || {});\nreturn [{ json: { jev: {\n  perguntas: itens.length,\n  sinais: itens.filter((s) => s.sinal_id).length,\n  candidatas: itens.filter((s) => s.candidata === true).length,\n  usd: itens.reduce((t, s) => t + (Number(s.usd) || 0), 0),\n} } }];\n"
+      },
+      "id": "f20c3cc1-fcb6-5a65-bdef-b087a58d4ca3",
+      "name": "Resumo do Jev",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5472,
+        -328
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/render",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ verificacao_id: $('Verificação a publicar').first().json.verificacao_id ?? null }) }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "f5cce44c-7cc1-57d1-8b90-cd071fd59a79",
+      "name": "POST /render",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5760,
+        176
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "66b0c583-3a5f-5f7d-8487-e42f6416aec0",
+              "leftValue": "={{ $json.statusCode === 200 && !!($json.body && $json.body.html_uri) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "5667cd24-3fbf-5e49-8478-176330f36497",
+      "name": "Renderizado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6048,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — uma verificação vigente por controle (índice verif_vigente, db/005). A antiga perde a vigência ANTES\n-- (o CTE roda inteiro quando o UPDATE principal o consulta), e tudo cai junto se o trigger T15 recusar:\n-- execução simulado/gravado só vira vigente em licitação de ensaio (db/005_verificacoes.sql:33-60).\nWITH antes AS (\n    UPDATE verificacoes SET vigente = false\n     WHERE controle = $1 AND vigente AND id <> $2::bigint\n    RETURNING id\n)\nUPDATE verificacoes SET vigente = true\n WHERE id = $2::bigint AND controle = $1 AND (SELECT count(*) FROM antes) >= 0\nRETURNING id AS verificacao_id, vigente, (SELECT array_agg(a.id) FROM antes a) AS anteriores",
+        "options": {
+          "queryReplacement": "={{ [ $('Contexto da licitação').first().json.controle, $('Verificação a publicar').first().json.verificacao_id ] }}"
+        }
+      },
+      "id": "5dcadfa0-7ac3-5b06-b5e3-0da423788ccb",
+      "name": "Tornar vigente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6336,
+        176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — publicacoes guarda o html_uri do RELATORIO no storage (html/{slug}/{verificacao_id}.html; api/render.py:22-35)\nINSERT INTO publicacoes (controle, verificacao_id, html_uri) VALUES ($1, $2::bigint, $3)\nON CONFLICT (controle, verificacao_id) DO UPDATE SET html_uri = EXCLUDED.html_uri, publicado_em = now()\nRETURNING id AS publicacao_id, html_uri",
+        "options": {
+          "queryReplacement": "={{ [ $('Contexto da licitação').first().json.controle, $('Verificação a publicar').first().json.verificacao_id, $('POST /render').first().json.body.html_uri ] }}"
+        }
+      },
+      "id": "47d930fe-8ca7-5d97-8584-c89b77cca2ae",
+      "name": "Registrar publicação",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6624,
+        176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — revisão humana: tag de injeção, REPROVADO, ou REVISAR em pergunta crítica (perguntas.critico: Q1, Q5, Q9,\n-- Q12, Q13, Q14, Q17) — plano §5 W24 passo 6. Publica COM selo; a revisão é camada própria (T25). Idempotente.\n-- NÃO para execução simulado/gravado: resposta de regex ou replay não é resposta de modelo a revisar (só ruído na fila).\nWITH alvo AS (\n    SELECT vr.pergunta_id,\n           CASE WHEN vr.veredito = 'REPROVADO' THEN 'REPROVADO pelo verificador'\n                ELSE 'REVISAR em pergunta crítica' END AS motivo\n      FROM verificacao_respostas vr JOIN perguntas p ON p.id = vr.pergunta_id\n     WHERE vr.verificacao_id = $2::bigint\n       AND (vr.veredito = 'REPROVADO' OR (vr.veredito = 'REVISAR' AND p.critico))\n    UNION ALL\n    SELECT NULL, 'tag: Prompt Injection - Conteúdo Suspeito'\n      FROM verificacoes v\n     WHERE v.id = $2::bigint AND 'Prompt Injection - Conteúdo Suspeito' = ANY (v.tags)\n), origem AS (\n    SELECT e.origem FROM verificacoes v JOIN execucoes_modelo e ON e.id = v.execucao_id WHERE v.id = $2::bigint\n)\nINSERT INTO revisoes_humanas (controle, verificacao_id, pergunta_id, motivo)\nSELECT $1, $2::bigint, a.pergunta_id, a.motivo FROM alvo a\n WHERE (SELECT origem FROM origem) NOT IN ('simulado', 'gravado')\n   AND NOT EXISTS (SELECT 1 FROM revisoes_humanas r\n                    WHERE r.verificacao_id = $2::bigint\n                      AND r.pergunta_id IS NOT DISTINCT FROM a.pergunta_id AND r.motivo = a.motivo)\nRETURNING id, pergunta_id, motivo",
+        "options": {
+          "queryReplacement": "={{ [ $('Contexto da licitação').first().json.controle, $('Verificação a publicar').first().json.verificacao_id ] }}"
+        }
+      },
+      "id": "b3360f9e-7bc8-59dd-a65e-9327ddf5387c",
+      "name": "Abrir revisões",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6912,
+        176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- O que o e-mail mostra: tiles da verificação, custo da execução e as 17 com o link da página.\nSELECT l.controle, l.slug, l.orgao, l.uf, l.municipio, l.modalidade, left(l.objeto, 300) AS objeto,\n       l.fim_prazo, l.fim_prazo_tem_hora, l.link, l.ensaio,\n       v.id AS verificacao_id, v.aprovadas, v.revisar, v.reprovadas, v.nao_localizado, v.ancoradas, v.respondidas,\n       v.taxa_ancorada, v.alertas_globais, v.tags, v.degradada, v.verificado_em, v.versao_regras,\n       e.id AS execucao_id, e.origem, e.provedor, e.modelo, e.brl, e.preco_conhecido,\n       (SELECT count(*) FROM revisoes_humanas rh WHERE rh.verificacao_id = v.id AND rh.status = 'aberta') AS revisoes_abertas,\n       (SELECT json_agg(json_build_object('id', vr.pergunta_id, 'texto', p.texto, 'critico', p.critico,\n                                          'veredito', vr.veredito, 'pagina', vr.pagina_final,\n                                          'arquivo', vr.arquivo_canonico, 'arquivo_id', vr.arquivo_id,\n                                          'resposta', left(r.resposta, 240), 'alertas', vr.alertas)\n                        ORDER BY substr(vr.pergunta_id, 2)::int)\n          FROM verificacao_respostas vr\n          JOIN perguntas p ON p.id = vr.pergunta_id\n          LEFT JOIN respostas r ON r.execucao_id = v.execucao_id AND r.pergunta_id = vr.pergunta_id\n         WHERE vr.verificacao_id = v.id) AS respostas\n  FROM verificacoes v\n  JOIN licitacoes l ON l.controle = v.controle\n  JOIN execucoes_modelo e ON e.id = v.execucao_id\n WHERE v.id = $1::bigint",
+        "options": {
+          "queryReplacement": "={{ [ $('Verificação a publicar').first().json.verificacao_id ] }}"
+        }
+      },
+      "id": "765466e6-da2a-5657-8174-7c89a204e8a0",
+      "name": "Resumo da verificação",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        7200,
+        176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\nconst quando = (iso, temHora) => {\n  if (!iso) return 'sem data';\n  const d = new Date(iso);\n  const tz = 'America/Sao_Paulo';\n  return temHora === false\n    ? d.toLocaleDateString('pt-BR', { timeZone: tz })\n    : d.toLocaleString('pt-BR', { timeZone: tz, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });\n};\nconst site = String($env.FOPA_SITE_PUBLIC_URL || '').replace(/\\/+$/, '');\nconst n8nBase = String($env.WEBHOOK_URL || '').replace(/\\/+$/, '');\nconst linkExecucao = `${n8nBase}/workflow/${$workflow.id}/executions/${$execution.id}`;\n// regra — e-mail \"processada\" (plano §2 Alertas; §5 W24 passo 7) ou \"republicada\" (W30: só as regras mudaram, com o\n// diff de vereditos): custo null → \"n/d\", nunca R$ 0,00 (ADR-012, scripts/fopa/saida.py:169-173); tabela das 17 com\n// \"arquivo p. N\" linkando /api/pdf/{slug}/{arquivo_id}#page=N (ADR-005: página física).\nconst v = $input.first().json;\nconst republicar = $('Contexto da licitação').first().json.modo === 'republicar';\nconst d = republicar ? $('Diff contra a vigente').first().json : null;\nconst onde = `${v.municipio || v.orgao || v.controle}/${v.uf || '—'}`;\nconst brl = (v.preco_conhecido === false || v.brl == null) ? 'n/d'\n  : Number(v.brl).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst simulado = ['simulado', 'gravado'].includes(v.origem);\nconst ensaio = simulado ? ` · ENSAIO (${v.origem}, sem modelo pago)` : '';\nconst mudaram = d ? Object.keys(d.vereditos || {}) : [];\nconst assunto = republicar\n  ? `[FOPA] Republicada: ${onde} · ${mudaram.length} veredito(s) mudaram · regras ${String(v.versao_regras || '').slice(0, 12)}${ensaio}`\n  : `[FOPA] Processada: ${onde} · ${v.ancoradas}/${v.respondidas} ancoradas · R$ ${brl}${ensaio}`;\nconst cor = { APROVADO: '#0a7d5a', REVISAR: '#b26b00', REPROVADO: '#b3261e' };\nconst vd = (x) => x ? `<span style=\"color:${cor[x] || '#333'}\"><b>${esc(x)}</b></span>` : '—';\nconst linhas = (v.respostas || []).map((r) => {\n  const pdf = (r.arquivo_id && r.pagina)\n    ? `<a href=\"${esc(site)}/api/pdf/${esc(v.slug)}/${r.arquivo_id}#page=${r.pagina}\">${esc(r.arquivo || 'arquivo')} p. ${r.pagina}</a>`\n    : (r.pagina ? `${esc(r.arquivo || '')} p. ${r.pagina}` : '—');\n  return `<tr><td>${esc(r.id)}${r.critico ? ' *' : ''}</td><td>${esc(r.texto)}</td><td>${vd(r.veredito)}</td>`\n    + `<td>${esc(r.resposta || '')}</td><td>${pdf}</td></tr>`;\n}).join('');\nconst lista = (xs) => xs.map((a) => `<li>${esc(a)}</li>`).join('');\nconst tags = (v.tags || []).map((t) => `<code>${esc(t)}</code>`).join(' ');\nconst blocoDiff = !d ? '' : [\n  `<p>Reverificação sem modelo e sem OCR novo (ADR-011): as mesmas respostas, regras ${esc(String(d.versao_regras_antes || '—').slice(0, 20))}`\n    + ` → ${esc(String(d.versao_regras || '').slice(0, 20))}. Vigente antes: ${esc(d.antes_id ?? '—')}; agora: ${esc(d.depois_id)}.</p>`,\n  mudaram.length\n    ? `<table border=\"1\" cellpadding=\"4\" cellspacing=\"0\"><tr><th>#</th><th>Antes</th><th>Depois</th></tr>`\n      + mudaram.map((q) => `<tr><td>${esc(q)}</td><td>${vd(d.vereditos[q][0])}</td><td>${vd(d.vereditos[q][1])}</td></tr>`).join('')\n      + `</table>`\n    : '<p>Nenhum veredito mudou.</p>',\n  (d.alertas_entraram || []).length ? `<p>Alertas que entraram:</p><ul>${lista(d.alertas_entraram)}</ul>` : '',\n  (d.alertas_sairam || []).length ? `<p>Alertas que saíram:</p><ul>${lista(d.alertas_sairam)}</ul>` : '',\n].join('');\nconst corpo = [\n  `<p><b>${esc(v.orgao || '')}</b> — ${esc(onde)} · ${esc(v.modalidade || '')} · controle ${esc(v.controle)}`\n    + ` · sessão ${esc(quando(v.fim_prazo, v.fim_prazo_tem_hora))}</p>`,\n  `<p>${esc(v.objeto || '')}</p>`,\n  simulado ? `<p><b>Ensaio:</b> respostas do provedor ${esc(v.origem)} (sem modelo pago); vale para ver o fluxo, não o edital.</p>` : '',\n  blocoDiff,\n  `<p>${v.aprovadas} aprovada(s), ${v.revisar} para revisar, ${v.reprovadas} reprovada(s), ${v.nao_localizado} não localizada(s)`\n    + ` · ${v.ancoradas}/${v.respondidas} ancoradas · custo R$ ${brl} (${esc(v.provedor || '')} ${esc(v.modelo || '')})`\n    + (v.revisoes_abertas > 0 ? ` · <b>${v.revisoes_abertas} revisão(ões) humana(s) aberta(s)</b>` : '') + '</p>',\n  (v.alertas_globais || []).length ? `<p>Alertas globais:</p><ul>${lista(v.alertas_globais)}</ul>` : '',\n  tags ? `<p>Tags: ${tags}</p>` : '',\n  `<table border=\"1\" cellpadding=\"4\" cellspacing=\"0\"><tr><th>#</th><th>Pergunta</th><th>Veredito</th><th>Resposta</th><th>Evidência</th></tr>${linhas}</table>`,\n  `<p>* pergunta crítica</p>`,\n  `<p><a href=\"${esc(site)}/licitacao/${esc(v.slug)}\">Abrir no site</a> · `\n    + `<a href=\"${esc(site)}/licitacao/${esc(v.slug)}/relatorio\">RELATORIO</a> · `\n    + `<a href=\"${esc(linkExecucao)}\">execução ${esc($execution.id)} no n8n</a></p>`,\n].join('');\nreturn [{ json: { tipo: republicar ? 'republicada' : 'processada', controle: v.controle,\n  verificacao_id: v.verificacao_id, assunto, corpo_html: corpo,\n  brl: brl === 'n/d' ? null : Number(v.brl), revisoes_abertas: Number(v.revisoes_abertas),\n  resumo: { aprovadas: v.aprovadas, revisar: v.revisar, reprovadas: v.reprovadas, ancoradas: v.ancoradas,\n            respondidas: v.respondidas, tags: v.tags || [] } } }];\n"
+      },
+      "id": "bc14f037-ef44-5159-ab81-67243e59fbad",
+      "name": "Montar e-mail",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7488,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o 2º dos DOIS e-mails do produto: só a execução\n-- que nasceu de um pedido do botão (pedidos_extracao.execucao_id, db/033) gera e-mail, do tipo 'extracao', para\n-- QUEM clicou (para = pedido_por, db/038). A fila automática, a extração do agente e a republicação do W30 não\n-- mandam nada. O fluxo só enfileira (o W50 envia); um por verificação.\nINSERT INTO emails (tipo, controle, assunto, corpo_html, para)\nSELECT 'extracao', $1, $2, $3, p.pedido_por\n  FROM verificacoes v\n  JOIN pedidos_extracao p ON p.execucao_id = v.execucao_id\n WHERE v.id = $4::bigint\n   AND $5 = 'processada'   -- 'republicada' = só as regras mudaram (W30): não é extração nova\n   AND $6::boolean          -- o W30 em lote manda notificar=false\n   AND NOT EXISTS (SELECT 1 FROM emails e\n                    WHERE e.tipo = 'extracao' AND e.controle = $1 AND e.em >= v.verificado_em)\n ORDER BY p.pedido_em DESC, p.id DESC\n LIMIT 1\nRETURNING id AS email_id",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, $json.assunto, $json.corpo_html, $json.verificacao_id, $json.tipo, $('Chamado pelo W20/W30').first().json.notificar !== false ] }}"
+        }
+      },
+      "id": "8acf39d5-9ae5-5f09-a273-4dc68b4deb4e",
+      "name": "Enfileirar e-mail",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        7776,
+        176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — verificada → publicada DEPOIS do e-mail na fila e sem depender do envio (plano §5 W24 passo 8);\n-- fn_transicao recusa publicar sem verificação vigente (ADR-004, db/013:44-49)\nSELECT fn_transicao($1, 'publicada', $5 || ' a verificação ' || $2,\n                    jsonb_build_object('n8n_execution_id', $3::text, 'verificacao_id', $2::bigint,\n                                       'html_uri', $4::text)) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Contexto da licitação').first().json.controle, $('Verificação a publicar').first().json.verificacao_id, $execution.id, $('POST /render').first().json.body.html_uri, $('Contexto da licitação').first().json.modo === 'republicar' ? 'W24: republicada' : 'W24: publicada' ] }}"
+        }
+      },
+      "id": "d1c300b7-0a90-559b-b0fa-d15f3dfa60c5",
+      "name": "Transição → publicada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        8064,
+        176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_SITE_URL }}/api/interno/invalidar",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ controle: $('Contexto da licitação').first().json.controle }) }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "ad4224de-6f38-5594-b21c-67f1ca9fc90c",
+      "name": "Avisar o site",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        8352,
+        176
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:site}}",
+          "name": "site"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const m = $('Montar e-mail').first().json;\nconst c = $('Contexto da licitação').first().json;\nconst d = c.modo === 'republicar' ? $('Diff contra a vigente').first().json : null;\nconst jev = $('Resumo do Jev').isExecuted ? $('Resumo do Jev').first().json.jev : null;\nreturn [{ json: { ok: true, continuar: false, modo: c.modo, estado: 'publicada', controle: c.controle,\n  verificacao_id: m.verificacao_id, html_uri: $('POST /render').first().json.body.html_uri,\n  brl: m.brl, revisoes_abertas: m.revisoes_abertas, resumo: m.resumo,\n  email_id: $('Enfileirar e-mail').first().json.email_id ?? null, email_tipo: m.tipo,\n  antes_verificacao_id: d ? d.antes_id : null,\n  diff: d ? { vereditos: d.vereditos || {}, alertas_entraram: d.alertas_entraram || [], alertas_sairam: d.alertas_sairam || [] } : null,\n  jev,\n  motivo: `W24: ${d ? 'republicada' : 'publicada'} a verificação ${m.verificacao_id}`\n    + (d ? ` (${Object.keys(d.vereditos || {}).length} veredito(s) mudaram)` : ` (${m.resumo.ancoradas}/${m.resumo.respondidas} ancoradas)`) } }];\n"
+      },
+      "id": "54c18049-88a5-584a-ad35-70b9b3133b1f",
+      "name": "Retorno: publicada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8640,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Falha vira MOTIVO escrito, nunca silêncio. O estado NÃO recua: se /verificar falhou fica `respondida`;\n// se o render ou a vigência falharam fica `verificada` e a próxima rodada do W20 republica (plano §5 W24 passo 9).\nconst j = $input.first().json || {};\nlet etapa = 'verificar';\nif ($('Tornar vigente').isExecuted) etapa = 'tornar vigente';\nelse if ($('POST /render').isExecuted) etapa = 'render';\nlet motivo;\nif (j.error) motivo = String(j.error.message || j.error.description || JSON.stringify(j.error)).slice(0, 300);\nelse if (j.statusCode) motivo = `HTTP ${j.statusCode}: ` + (typeof j.body === 'string' ? j.body : JSON.stringify(j.body ?? '')).slice(0, 300);\nelse motivo = JSON.stringify(j).slice(0, 300);\nreturn [{ json: { motivo: `W24 (${etapa}): ${motivo}` } }];\n"
+      },
+      "id": "4f90a247-30ec-5be1-9914-dc360a509d39",
+      "name": "Motivo da falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6048,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const c = $('Contexto da licitação').first().json;\nconst fica = ($('POST /render').isExecuted || c.modo === 'republicar') ? 'verificada' : c.estado;\nreturn [{ json: { ok: false, continuar: false, modo: c.modo, estado: fica, controle: c.controle,\n  motivo: $('Motivo da falha').first().json.motivo } }];\n"
+      },
+      "id": "75131221-ffde-5fdc-8aec-cb3806c2cec1",
+      "name": "Retorno: falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6336,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Chamado pelo W20/W30**\n\nEntrada do fluxo: recebe a licitação, a extração ou verificação e o modo (publicar ou republicar). Quem chama é o W20, o W11 ou o W30.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ee86fa21-8717-541f-91bf-d4cb6037dc8d",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Contexto da licitação**\n\nLê a licitação, a extração a verificar, a verificação vigente e se os itens do PNCP já estão gravados.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4d4796c2-7158-5478-a86f-7978a71779e0",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · Modo?**\n\nDois caminhos: republicar (regras novas sobre o mesmo texto) ou publicar (extração nova).",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9872b189-c4ee-55a7-b0c3-48d4a78fc002",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Pode republicar?**\n\nSó republica licitação já publicada ou verificada, e com a verificação desta mesma licitação.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3fea608d-1a24-51b7-9bd2-a3f49c4c9231",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -122
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Estado permite publicar?**\n\nSó publica licitação recém-extraída ou verificada cuja publicação não terminou.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5d1544fc-4183-5480-8e1c-4f0b6d7541f3",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Retorno: nada a fazer**\n\nDevolve o motivo exato de não haver o que fazer.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "de007326-9c1b-5e46-9cd0-6618360baeaa",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · Diff contra a vigente**\n\nCompara com a verificação vigente: quais vereditos mudaram, os alertas que entraram e saíram e os totais antes e depois.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "d5728bc0-8032-5fbd-9a74-4eb30e91d03a",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -290
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Transição → verificada (republicar)**\n\nMarca a licitação como verificada, registrando a mudança. Se algo falhar daqui em diante, a próxima rodada republica.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9f396814-3761-588f-9c84-377864f0fc43",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -290
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Itens da API já gravados?**\n\nSe os itens da licitação no PNCP já estão gravados, não os busca de novo.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "02cc3f2f-3652-5444-91a1-990b2fe02dcd",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · GET /itens (PNCP)**\n\nBusca no PNCP os itens declarados (quantidade e valor), usados na conferência numérica das respostas.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ad7e7db4-ec35-5738-afc7-a5be1ec5f025",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · Itens obtidos?**\n\nCom os itens, grava; sem eles, segue: a verificação não depende deles para acontecer.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "017d79f0-55ab-54a0-82ec-3c47653fc9cd",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Gravar itens_api**\n\nGuarda os itens do PNCP, uma vez por licitação.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "29c371be-9a80-5dcb-8d42-989826179d98",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Verificar agora?**\n\nLicitação recém-extraída vai à verificação; já verificada vai direto à publicação.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c5586bc0-6aa8-5afd-b52e-ccaedbec722f",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 15 · POST /verificar**\n\nO verificador confere cada resposta, sem IA: o trecho citado existe na página, os números batem e as respostas são coerentes entre si. No Best-of-N, fica a resposta que a evidência sustenta.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "1c1e01bc-6ab3-5886-8047-a752167bce9f",
+      "name": "Nota — passo 15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        158
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 16 · Verificado?**\n\nVerificação feita (ou já feita nesta versão) segue; falha vai para o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "269cba61-f730-516e-b76f-39d22c5f5b59",
+      "name": "Nota — passo 16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        158
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 17 · Transição → verificada**\n\nMarca a licitação como verificada, com o resumo no evento.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "2d8278a1-0bd8-51d4-b549-d31e0476dd4d",
+      "name": "Nota — passo 17",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        158
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 18 · Verificação a publicar**\n\nEncontra a verificação certa a publicar e a origem da extração.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9846d2a3-8bef-5328-9883-8f363f8ae8a3",
+      "name": "Nota — passo 18",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 19 · Pedir sinal ao Jev?**\n\nSó pede o sinal do Jev após uma verificação nova e nunca para extração de teste.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "01159b43-87af-5142-b34d-d668f7e2b108",
+      "name": "Nota — passo 19",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 20 · Jev: montar corpos (worker)**\n\nPara cada resposta com trecho, o worker pergunta ao Jev se o trecho sustenta a resposta. A ancoragem prova que o trecho existe; o Jev avalia se ele responde.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "218b242e-61b1-542c-a880-fccd4730ec46",
+      "name": "Nota — passo 20",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        -10
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 21 · Há aprovada para o Jev?**\n\nSe o worker montou alguma pergunta, consulta o Jev; senão, segue para o relatório.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "0028a0df-6778-5abe-9f18-50943e9574d9",
+      "name": "Nota — passo 21",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4240,
+        -10
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 22 · Uma requisição por resposta**\n\nSepara um pedido ao Jev por resposta.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "308c1da3-7740-58f4-94f4-0435dfb0d54f",
+      "name": "Nota — passo 22",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4528,
+        -178
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 23 · Jev (TypeSafe)**\n\nConsulta o Jev, um pedido por segundo. Em caso de erro, segue.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4a4161e5-3b55-572e-9c23-c81a0439a530",
+      "name": "Nota — passo 23",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4816,
+        -178
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 24 · Jev: interpretar (worker)**\n\nGrava o sinal do Jev. Se ele contradiz uma resposta aprovada com convicção, abre revisão humana. O veredito não muda.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "026fd36d-e71f-51b5-b39f-79bdcbbdca3b",
+      "name": "Nota — passo 24",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5104,
+        -178
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 25 · Resumo do Jev**\n\nConta as perguntas enviadas, os sinais gravados, as revisões abertas e o custo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "96892879-322f-5cd6-b053-27b5824d07a4",
+      "name": "Nota — passo 25",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5392,
+        -178
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 26 · POST /render**\n\nO worker gera o relatório HTML da verificação, com as 17 respostas, os vereditos e o link para a página do PDF.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6d2f85bd-3363-5f65-ac87-91d75bada37c",
+      "name": "Nota — passo 26",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5680,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 27 · Renderizado?**\n\nRelatório pronto segue para a vigência; falha deixa a licitação verificada, e a próxima rodada republica.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "16350668-1659-5a71-bafc-116b0782e3d0",
+      "name": "Nota — passo 27",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5968,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 28 · Tornar vigente**\n\nTorna esta verificação a vigente, numa única operação. O banco garante uma vigente por licitação e recusa resultado de teste em licitação real.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "bc68f3e8-c062-5ca7-8afa-6de19cd7c989",
+      "name": "Nota — passo 28",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6256,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 29 · Registrar publicação**\n\nGrava a publicação com o endereço do relatório.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "74b345b0-c370-5df2-b303-1a88835364fc",
+      "name": "Nota — passo 29",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6544,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 30 · Abrir revisões**\n\nAbre revisão humana para toda resposta reprovada, toda “revisar” em pergunta crítica e a licitação inteira se houver suspeita de injeção.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ca60a5e9-2807-56c4-9e22-c2576e1edd0e",
+      "name": "Nota — passo 30",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6832,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 31 · Resumo da verificação**\n\nReúne o que o e-mail mostra: contagens, alertas, a extração, o custo e as 17 respostas.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "1308c947-938b-5b9d-ad7c-68343331c58b",
+      "name": "Nota — passo 31",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7120,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 32 · Montar e-mail**\n\nMonta o e-mail com as contagens, o custo (n/d quando o preço não é conhecido, nunca R$ 0,00) e a tabela das 17 respostas com o link para a página.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "cdecc83b-dbbc-5806-b65b-733923a4bd2f",
+      "name": "Nota — passo 32",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7408,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 33 · Enfileirar e-mail**\n\nSegundo e-mail do produto: só vai a quem clicou em “Extrair com IA”, uma vez por verificação. A fila automática e as reverificações não enviam e-mail.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "bdb0c361-ef35-583b-8f0e-80ecdfd7373f",
+      "name": "Nota — passo 33",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7696,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 34 · Transição → publicada**\n\nMarca a licitação como publicada. O banco recusa publicar sem verificação vigente.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ff4dfa61-5398-5f7b-8ca8-2cbbda2d741d",
+      "name": "Nota — passo 34",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7984,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 35 · Avisar o site**\n\nAvisa o site de que há publicação nova, para ele atualizar. Falha aqui é ignorada.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c932b676-efb3-57da-abac-cb6503e13f56",
+      "name": "Nota — passo 35",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        8272,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 36 · Retorno: publicada**\n\nDevolve o resultado: verificação, relatório, custo, revisões abertas e o resumo do Jev.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c2d73fd0-d28f-5801-b2d3-8ed7962ca654",
+      "name": "Nota — passo 36",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        8560,
+        326
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 37 · Motivo da falha**\n\nDiz em que etapa falhou (verificar, relatório ou vigência) e por quê. O estado não recua.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c3cc094d-99c8-5ca7-a763-adbf05858af8",
+      "name": "Nota — passo 37",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5968,
+        886
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 38 · Retorno: falha**\n\nDevolve a falha, com o estado em que a licitação ficou.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "0818859d-d383-5ea8-8886-b048d6f08f1f",
+      "name": "Nota — passo 38",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6256,
+        886
+      ]
+    }
+  ],
+  "connections": {
+    "Chamado pelo W20/W30": {
+      "main": [
+        [
+          {
+            "node": "Contexto da licitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contexto da licitação": {
+      "main": [
+        [
+          {
+            "node": "Modo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modo?": {
+      "main": [
+        [
+          {
+            "node": "Pode republicar?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Estado permite publicar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pode republicar?": {
+      "main": [
+        [
+          {
+            "node": "Diff contra a vigente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retorno: nada a fazer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Diff contra a vigente": {
+      "main": [
+        [
+          {
+            "node": "Transição → verificada (republicar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transição → verificada (republicar)": {
+      "main": [
+        [
+          {
+            "node": "Verificação a publicar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado permite publicar?": {
+      "main": [
+        [
+          {
+            "node": "Itens da API já gravados?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retorno: nada a fazer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Itens da API já gravados?": {
+      "main": [
+        [
+          {
+            "node": "Verificar agora?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET /itens (PNCP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /itens (PNCP)": {
+      "main": [
+        [
+          {
+            "node": "Itens obtidos?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Itens obtidos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Itens obtidos?": {
+      "main": [
+        [
+          {
+            "node": "Gravar itens_api",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verificar agora?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar itens_api": {
+      "main": [
+        [
+          {
+            "node": "Verificar agora?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar agora?": {
+      "main": [
+        [
+          {
+            "node": "POST /verificar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verificação a publicar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /verificar": {
+      "main": [
+        [
+          {
+            "node": "Verificado?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verificado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificado?": {
+      "main": [
+        [
+          {
+            "node": "Transição → verificada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transição → verificada": {
+      "main": [
+        [
+          {
+            "node": "Verificação a publicar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificação a publicar": {
+      "main": [
+        [
+          {
+            "node": "Pedir sinal ao Jev?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedir sinal ao Jev?": {
+      "main": [
+        [
+          {
+            "node": "Jev: montar corpos (worker)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "POST /render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jev: montar corpos (worker)": {
+      "main": [
+        [
+          {
+            "node": "Há aprovada para o Jev?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Há aprovada para o Jev?": {
+      "main": [
+        [
+          {
+            "node": "Uma requisição por resposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "POST /render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uma requisição por resposta": {
+      "main": [
+        [
+          {
+            "node": "Jev (TypeSafe)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jev (TypeSafe)": {
+      "main": [
+        [
+          {
+            "node": "Jev: interpretar (worker)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jev: interpretar (worker)": {
+      "main": [
+        [
+          {
+            "node": "Resumo do Jev",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumo do Jev": {
+      "main": [
+        [
+          {
+            "node": "POST /render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /render": {
+      "main": [
+        [
+          {
+            "node": "Renderizado?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Renderizado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Renderizado?": {
+      "main": [
+        [
+          {
+            "node": "Tornar vigente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tornar vigente": {
+      "main": [
+        [
+          {
+            "node": "Registrar publicação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar publicação": {
+      "main": [
+        [
+          {
+            "node": "Abrir revisões",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir revisões": {
+      "main": [
+        [
+          {
+            "node": "Resumo da verificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumo da verificação": {
+      "main": [
+        [
+          {
+            "node": "Montar e-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar e-mail": {
+      "main": [
+        [
+          {
+            "node": "Enfileirar e-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enfileirar e-mail": {
+      "main": [
+        [
+          {
+            "node": "Transição → publicada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transição → publicada": {
+      "main": [
+        [
+          {
+            "node": "Avisar o site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar o site": {
+      "main": [
+        [
+          {
+            "node": "Retorno: publicada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Motivo da falha": {
+      "main": [
+        [
+          {
+            "node": "Retorno: falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "saveManualExecutions": true
+  }
+}

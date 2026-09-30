@@ -1,0 +1,413 @@
+{
+  "name": "W00 Saúde",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W00 Saúde — de hora em hora\nConfere o contrato do worker e grava uma linha em `saude`. Fora do contrato → e-mail de erro na fila (W50 envia).\n\n- **Tesseract exatamente 5.4.0 com `por`** — api/worker.py:39-50 e scripts/fopa/ocr.py:88-104 (ADR-008: OCR comparável às medições)\n- **tessdata por sha256, não por nome** — api/worker.py:53-68 (o arquivo não está no git)\n- **worker nunca tem ANTHROPIC_API_KEY** — api/worker.py:96-97\n- **Timeout explícito 15000 + On Error → continue** — plano §5: DNS/recusa de conexão também viram linha, não exceção muda\n- **Link da execução sem supor a barra** no fim de N8N_EDITOR_BASE_URL/WEBHOOK_URL (fica também em `saude.detalhes.link_execucao`)\n- **Escolha, não limite:** `NODES_EXCLUDE` tira executeCommand e localFileTrigger — nada aqui roda comando nem lê disco do host (docker/compose.yml, fopa-n8n)\n- Disponível no MCP da instância (Settings → Available in MCP).",
+        "height": 330,
+        "width": 640
+      },
+      "id": "52748627-6ff4-5658-9791-0b0a5d796f3c",
+      "name": "Sobre o W00",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -72,
+        -630
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "f0a8da48-2816-56c4-89be-46c4d4307fe2",
+      "name": "De hora em hora",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "51732911-a7e5-5afe-bee1-72a2c1a61ebc",
+      "name": "Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.FOPA_WORKER_URL }}/health",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "c6785707-cbcf-5e39-8403-7824f3f96c28",
+      "name": "GET /health do worker",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        150
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — contrato do /health: api/worker.py:84-103; versão por componentes: api/worker.py:39-50\n// Normaliza as duas saídas do HTTP (sucesso e erro de rede) num item só, para\n// que \"worker inalcançável\" vire linha em `saude` e e-mail — nunca silêncio.\nconst esperadoTess = String($env.FOPA_TESSERACT_ESPERADO || '5.4.0');\nconst esperadoSha = String($env.FOPA_TESSDATA_SHA256 || '');\nconst r = $input.first().json || {};\nconst corpo = (r.body && typeof r.body === 'object') ? r.body : {};\nconst status = r.statusCode ?? null;\nlet falhaRede = null;\nif (r.error) falhaRede = String(r.error.message || r.error.description || JSON.stringify(r.error));\n\n// '5.4.0' casa com '5.4.0.20240606' e NÃO com '5.4.1' nem '5.4.01' (ADR-008).\nconst versaoBate = (obtida, esperada) => {\n  const o = String(obtida || '').split('.');\n  const e = esperada.split('.');\n  return e.every((p, i) => o[i] === p);\n};\n\nconst motivos = [];\nif (falhaRede) {\n  motivos.push('worker inalcançável: ' + falhaRede);\n} else {\n  if (status !== 200) motivos.push(`/health respondeu HTTP ${status}` + (corpo.erro ? ` (${corpo.erro})` : ''));\n  if (!versaoBate(corpo.tesseract, esperadoTess)) motivos.push(`tesseract ${corpo.tesseract} ≠ ${esperadoTess}`);\n  if (esperadoSha && corpo.tessdata_sha256 !== esperadoSha) motivos.push('tessdata_sha256 difere do pinado no build');\n  if (corpo.anthropic_key_presente === true) motivos.push('worker recebeu ANTHROPIC_API_KEY (só o n8n pode ter)');\n}\n\n// regra — link da execução robusto: a base (N8N_EDITOR_BASE_URL, senão WEBHOOK_URL) pode vir com ou sem\n// barra no fim; sem base nenhuma, o e-mail diz o id sem link (antes: $env.WEBHOOK_URL + 'workflow/...'\n// supunha a barra e gerava 'http://hostworkflow/...' quando ela faltava).\nconst baseN8n = String($env.N8N_EDITOR_BASE_URL || $env.WEBHOOK_URL || '').trim().replace(/\\/+$/, '');\nconst linkExecucao = baseN8n ? `${baseN8n}/workflow/${$workflow.id}/executions/${$execution.id}` : '';\nconst esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\nconst execucao = linkExecucao\n  ? `<a href=\"${esc(linkExecucao)}\">${esc($execution.id)}</a>` : esc($execution.id);\nconst corpoEmail = '<p>O W00 encontrou o worker fora do contrato do /health.</p><ul>'\n  + motivos.map((m) => '<li>' + esc(m) + '</li>').join('') + '</ul><p>Execução ' + execucao + '</p>';\n\nreturn [{ json: {\n  worker_ok: !falhaRede && status === 200 && corpo.ok === true,\n  tesseract: corpo.tesseract ?? null,\n  tesseract_ok: versaoBate(corpo.tesseract, esperadoTess),\n  tessdata_sha256: corpo.tessdata_sha256 ?? null,\n  git_sha: corpo.git_sha ?? null,\n  motivos,\n  link_execucao: linkExecucao,\n  corpo_email: corpoEmail,\n  detalhes: { http_status: status, corpo, motivos, n8n_execution_id: String($execution.id),\n              link_execucao: linkExecucao,\n              esperado: { tesseract: esperadoTess, tessdata_sha256: esperadoSha } },\n} }];\n"
+      },
+      "id": "2dbecb66-ee9e-599c-ac2d-5797fdcb8e1b",
+      "name": "Avaliar contrato",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o que o W00 mede de hora em hora: db/008_emails_usuarios_sessoes_jobs_saude.sql:57-69\n-- email_ok sai da própria fila: falhou na última hora ou pendente parado há 10 min = canal com problema.\nINSERT INTO saude (worker_ok, tesseract, tessdata_sha256, git_sha, email_ok, n8n_ok, postgres_ok, detalhes)\nVALUES ($1, $2, $3, $4,\n        NOT EXISTS (SELECT 1 FROM emails WHERE status = 'falhou' AND em > now() - interval '1 hour')\n        AND NOT EXISTS (SELECT 1 FROM emails WHERE status = 'pendente' AND em < now() - interval '10 minutes'),\n        true, true, $5::jsonb)\nRETURNING id, worker_ok, tesseract, tessdata_sha256, git_sha, email_ok",
+        "options": {
+          "queryReplacement": "={{ [ $json.worker_ok, $json.tesseract, $json.tessdata_sha256, $json.git_sha, JSON.stringify($json.detalhes) ] }}"
+        }
+      },
+      "id": "135624be-47fe-5490-bae1-2d07b38ede8b",
+      "name": "INSERT saude",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        888,
+        150
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8f647073-1b11-5191-8e29-45d0bfe5f84f",
+              "leftValue": "={{ $json.worker_ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "b331492b-1b30-5b68-938a-8ef2922705ec",
+              "leftValue": "={{ $('Avaliar contrato').item.json.tesseract_ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "1d4bdbc4-68ff-500b-b581-a18fb0595fd5",
+              "leftValue": "={{ $json.tessdata_sha256 ?? '' }}",
+              "rightValue": "={{ $env.FOPA_TESSDATA_SHA256 }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "e3f2c481-3a09-5019-9de9-79b41a7f9acf",
+      "name": "Contrato ok?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1176,
+        150
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "01a7efdb-0b38-59d0-812f-d5bc8d0223c6",
+      "name": "Saudável",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1464,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — e-mail DESLIGADO (o produto manda só DOIS e-mails — licitação nova, pelo W01,\n-- e a extração pedida no botão do site, pelo W24; db/038-039). O fluxo segue igual; este nó não enfileira.\nSELECT NULL::bigint AS id",
+        "options": {}
+      },
+      "id": "594305ca-c69c-593a-ac4b-50900c9d0ee4",
+      "name": "Enfileirar e-mail de erro",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1464,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · De hora em hora**\n\nGatilho agendado: dispara a conferência no minuto zero de cada hora.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "27533cd6-fa25-50a6-9eaa-30f6b4342422",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Manual**\n\nGatilho manual, para rodar a conferência na hora, pelo editor.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "606fc2f8-6326-5e68-a225-9385be3afc3a",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · GET /health do worker**\n\nPergunta ao worker se está no ar e dentro do contrato: versão do OCR, idioma, hash do arquivo de treino e ausência da chave de IA. Espera até 15 s; erro de rede também segue adiante.",
+        "height": 222,
+        "width": 260,
+        "color": 4
+      },
+      "id": "68523ff7-b16f-5eeb-b1b4-19f67690eaaf",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Avaliar contrato**\n\nJunta a resposta (ou o erro de rede) e lista os motivos de quebra de contrato: worker fora do ar, OCR em outra versão, arquivo de treino diferente ou chave de IA presente.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "87cc6081-d8cb-5b86-9655-7e81b67100a7",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · INSERT saude**\n\nGrava uma linha na tabela saude com o resultado e a situação da fila de e-mails. É o histórico que a página Saúde do site mostra.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "db22b043-c6a2-5023-aeaa-15d09b78d60e",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        808,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Contrato ok?**\n\nDecide o caminho: saudável se o worker respondeu, o OCR está na versão certa e o arquivo de treino confere.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c767e794-3a8b-5ecb-8dc6-efbb684deefe",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1096,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · Saudável**\n\nFim do caminho sem problemas: nada mais a fazer.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "2f1521b4-b7d5-540c-8afa-c8a86a2fa511",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1384,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Enfileirar e-mail de erro**\n\nDesligado: o produto envia só dois e-mails. A quebra de contrato continua visível na linha gravada em saude e na página Saúde.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c17160c6-2a4d-5a28-902f-98153126e94c",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1384,
+        450
+      ]
+    }
+  ],
+  "connections": {
+    "De hora em hora": {
+      "main": [
+        [
+          {
+            "node": "GET /health do worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual": {
+      "main": [
+        [
+          {
+            "node": "GET /health do worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /health do worker": {
+      "main": [
+        [
+          {
+            "node": "Avaliar contrato",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avaliar contrato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avaliar contrato": {
+      "main": [
+        [
+          {
+            "node": "INSERT saude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT saude": {
+      "main": [
+        [
+          {
+            "node": "Contrato ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contrato ok?": {
+      "main": [
+        [
+          {
+            "node": "Saudável",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enfileirar e-mail de erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "errorWorkflow": "{{WF:W90}}",
+    "saveManualExecutions": true,
+    "availableInMCP": true
+  }
+}

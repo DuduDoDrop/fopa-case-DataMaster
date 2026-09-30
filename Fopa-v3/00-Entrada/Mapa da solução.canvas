@@ -1,0 +1,811 @@
+{
+	"nodes": [
+		{
+			"id": "g-base",
+			"type": "group",
+			"label": "O que sustenta tudo",
+			"x": -40,
+			"y": 1400,
+			"width": 2300,
+			"height": 380,
+			"color": "3"
+		},
+		{
+			"id": "g-op",
+			"type": "group",
+			"label": "Mercado e operação",
+			"x": -40,
+			"y": 960,
+			"width": 2300,
+			"height": 380,
+			"color": "4"
+		},
+		{
+			"id": "g-tec",
+			"type": "group",
+			"label": "A técnica de cada passo",
+			"x": -40,
+			"y": 240,
+			"width": 3060,
+			"height": 660,
+			"color": "6"
+		},
+		{
+			"id": "g-fluxo",
+			"type": "group",
+			"label": "O caminho de uma licitação",
+			"x": -40,
+			"y": -60,
+			"width": 3440,
+			"height": 210,
+			"color": "4"
+		},
+		{
+			"id": "g-sol",
+			"type": "group",
+			"label": "A solução",
+			"x": 1560,
+			"y": -520,
+			"width": 1910,
+			"height": 210,
+			"color": "2"
+		},
+		{
+			"id": "g-neg",
+			"type": "group",
+			"label": "O negócio",
+			"x": -40,
+			"y": -520,
+			"width": 1530,
+			"height": 210,
+			"color": "1"
+		},
+		{
+			"id": "prob",
+			"type": "file",
+			"file": "01-Negocio/Problema de negócio.md",
+			"x": 0,
+			"y": -460,
+			"width": 320,
+			"height": 110,
+			"color": "1"
+		},
+		{
+			"id": "prop",
+			"type": "file",
+			"file": "01-Negocio/Proposta de valor.md",
+			"x": 380,
+			"y": -460,
+			"width": 320,
+			"height": 110,
+			"color": "1"
+		},
+		{
+			"id": "ganho",
+			"type": "file",
+			"file": "01-Negocio/Ganho para o negócio.md",
+			"x": 760,
+			"y": -460,
+			"width": 320,
+			"height": 110,
+			"color": "1"
+		},
+		{
+			"id": "quest",
+			"type": "file",
+			"file": "07-IA/Questionário — as 17 perguntas.md",
+			"x": 1140,
+			"y": -460,
+			"width": 320,
+			"height": 110,
+			"color": "1"
+		},
+		{
+			"id": "visao",
+			"type": "file",
+			"file": "02-Solucao/Visão geral da solução.md",
+			"x": 1600,
+			"y": -460,
+			"width": 320,
+			"height": 110,
+			"color": "2"
+		},
+		{
+			"id": "arq",
+			"type": "file",
+			"file": "02-Solucao/Arquitetura.md",
+			"x": 1980,
+			"y": -460,
+			"width": 320,
+			"height": 110,
+			"color": "2"
+		},
+		{
+			"id": "stack",
+			"type": "file",
+			"file": "02-Solucao/Stack e justificativa tecnológica.md",
+			"x": 2360,
+			"y": -460,
+			"width": 320,
+			"height": 110,
+			"color": "2"
+		},
+		{
+			"id": "ciclo",
+			"type": "file",
+			"file": "02-Solucao/Ciclo de vida de uma licitação.md",
+			"x": 2740,
+			"y": -460,
+			"width": 320,
+			"height": 110,
+			"color": "2"
+		},
+		{
+			"id": "req",
+			"type": "file",
+			"file": "00-Entrada/Requisitos do case — onde cada um está atendido.md",
+			"x": 3120,
+			"y": -460,
+			"width": 320,
+			"height": 110,
+			"color": "2"
+		},
+		{
+			"id": "w01",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W01 Descoberta.md",
+			"x": 0,
+			"y": 0,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w10",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W10 Fila.md",
+			"x": 380,
+			"y": 0,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w20",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W20 Processar uma licitação.md",
+			"x": 760,
+			"y": 0,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w21",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W21 Baixar.md",
+			"x": 1140,
+			"y": 0,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w22",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W22 Ler.md",
+			"x": 1520,
+			"y": 0,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w23",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W23 Extrair.md",
+			"x": 1900,
+			"y": 0,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w24",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W24 Verificar e publicar.md",
+			"x": 2280,
+			"y": 0,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "det",
+			"type": "file",
+			"file": "05-Site/Página Detalhe da licitação.md",
+			"x": 2660,
+			"y": 0,
+			"width": 320,
+			"height": 110,
+			"color": "5"
+		},
+		{
+			"id": "rev",
+			"type": "file",
+			"file": "05-Site/Página Revisão.md",
+			"x": 3040,
+			"y": 0,
+			"width": 320,
+			"height": 110,
+			"color": "5"
+		},
+		{
+			"id": "regras",
+			"type": "file",
+			"file": "07-IA/Regras antes de IA.md",
+			"x": 0,
+			"y": 300,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "jev",
+			"type": "file",
+			"file": "07-IA/Jev — score de escopo e sustentação.md",
+			"x": 0,
+			"y": 450,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "fn",
+			"type": "file",
+			"file": "06-Dados/Funções e views do banco.md",
+			"x": 380,
+			"y": 300,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "conv",
+			"type": "file",
+			"file": "04-Worker-e-API/Conversão de formatos.md",
+			"x": 1140,
+			"y": 300,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "ocr",
+			"type": "file",
+			"file": "04-Worker-e-API/OCR.md",
+			"x": 1520,
+			"y": 300,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "modelos",
+			"type": "file",
+			"file": "07-IA/Modelos e provedores.md",
+			"x": 1900,
+			"y": 300,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "rag",
+			"type": "file",
+			"file": "07-IA/RAG com BM25.md",
+			"x": 1900,
+			"y": 450,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "cache",
+			"type": "file",
+			"file": "07-IA/Cache de prompt e ordem do prompt.md",
+			"x": 1900,
+			"y": 600,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "bon",
+			"type": "file",
+			"file": "07-IA/Best-of-N.md",
+			"x": 1900,
+			"y": 750,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "verif",
+			"type": "file",
+			"file": "07-IA/Verificador determinístico.md",
+			"x": 2280,
+			"y": 300,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "emails",
+			"type": "file",
+			"file": "10-Infra/E-mails do produto.md",
+			"x": 2280,
+			"y": 450,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "rel",
+			"type": "file",
+			"file": "05-Site/Página Relatório.md",
+			"x": 2660,
+			"y": 300,
+			"width": 320,
+			"height": 110,
+			"color": "5"
+		},
+		{
+			"id": "custo",
+			"type": "file",
+			"file": "07-IA/Custo por edital.md",
+			"x": 2660,
+			"y": 450,
+			"width": 320,
+			"height": 110,
+			"color": "6"
+		},
+		{
+			"id": "w41",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W41 Histórico do PNCP.md",
+			"x": 0,
+			"y": 1020,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "anm",
+			"type": "file",
+			"file": "05-Site/Página Analytics de Mercado.md",
+			"x": 380,
+			"y": 1020,
+			"width": 320,
+			"height": 110,
+			"color": "5"
+		},
+		{
+			"id": "anh",
+			"type": "file",
+			"file": "05-Site/Página Analytics Histórico FOPA.md",
+			"x": 760,
+			"y": 1020,
+			"width": 320,
+			"height": 110,
+			"color": "5"
+		},
+		{
+			"id": "hor",
+			"type": "file",
+			"file": "03-Fluxos-n8n/Horários e agendamentos.md",
+			"x": 1140,
+			"y": 1020,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w00",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W00 Saúde.md",
+			"x": 1520,
+			"y": 1020,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w40",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W40 Alerta diário.md",
+			"x": 1900,
+			"y": 1020,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w50",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W50 Envio de e-mails.md",
+			"x": 0,
+			"y": 1170,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w70",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W70 Retificações.md",
+			"x": 380,
+			"y": 1170,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w11",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W11 Ações do site.md",
+			"x": 760,
+			"y": 1170,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w30",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W30 Reverificar em lote.md",
+			"x": 1140,
+			"y": 1170,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "w90",
+			"type": "file",
+			"file": "03-Fluxos-n8n/W90 Erro.md",
+			"x": 1520,
+			"y": 1170,
+			"width": 320,
+			"height": 110,
+			"color": "4"
+		},
+		{
+			"id": "moc-ia",
+			"type": "file",
+			"file": "07-IA/MOC IA.md",
+			"x": 0,
+			"y": 1460,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "moc-dados",
+			"type": "file",
+			"file": "06-Dados/MOC Dados.md",
+			"x": 380,
+			"y": 1460,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "moc-infra",
+			"type": "file",
+			"file": "10-Infra/MOC Infra.md",
+			"x": 760,
+			"y": 1460,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "moc-seg",
+			"type": "file",
+			"file": "11-Seguranca-e-Etica/MOC Segurança e Ética.md",
+			"x": 1140,
+			"y": 1460,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "moc-aval",
+			"type": "file",
+			"file": "08-Avaliacao/MOC Avaliação.md",
+			"x": 1520,
+			"y": 1460,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "moc-dec",
+			"type": "file",
+			"file": "09-Decisoes/MOC Decisões.md",
+			"x": 1900,
+			"y": 1460,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "moc-legal",
+			"type": "file",
+			"file": "12-Legal/MOC Legal.md",
+			"x": 0,
+			"y": 1610,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "escala",
+			"type": "file",
+			"file": "13-Escalabilidade/Escalabilidade.md",
+			"x": 380,
+			"y": 1610,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "moc-rep",
+			"type": "file",
+			"file": "14-Reproducao/MOC Reprodução.md",
+			"x": 760,
+			"y": 1610,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "moc-evo",
+			"type": "file",
+			"file": "15-Evolucao/MOC Evolução.md",
+			"x": 1140,
+			"y": 1610,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "moc-site",
+			"type": "file",
+			"file": "05-Site/MOC Site.md",
+			"x": 1520,
+			"y": 1610,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		},
+		{
+			"id": "moc-worker",
+			"type": "file",
+			"file": "04-Worker-e-API/MOC Worker e API.md",
+			"x": 1900,
+			"y": 1610,
+			"width": 320,
+			"height": 110,
+			"color": "3"
+		}
+	],
+	"edges": [
+		{
+			"id": "e-w01-w10",
+			"fromNode": "w01",
+			"fromSide": "right",
+			"toNode": "w10",
+			"toSide": "left",
+			"toEnd": "arrow",
+			"label": "novas de folha"
+		},
+		{
+			"id": "e-w10-w20",
+			"fromNode": "w10",
+			"fromSide": "right",
+			"toNode": "w20",
+			"toSide": "left",
+			"toEnd": "arrow",
+			"label": "uma por vez, com lease"
+		},
+		{
+			"id": "e-w20-w21",
+			"fromNode": "w20",
+			"fromSide": "right",
+			"toNode": "w21",
+			"toSide": "left",
+			"toEnd": "arrow",
+			"label": "o que falta"
+		},
+		{
+			"id": "e-w21-w22",
+			"fromNode": "w21",
+			"fromSide": "right",
+			"toNode": "w22",
+			"toSide": "left",
+			"toEnd": "arrow",
+			"label": "PDFs"
+		},
+		{
+			"id": "e-w22-w23",
+			"fromNode": "w22",
+			"fromSide": "right",
+			"toNode": "w23",
+			"toSide": "left",
+			"toEnd": "arrow",
+			"label": "texto congelado"
+		},
+		{
+			"id": "e-w23-w24",
+			"fromNode": "w23",
+			"fromSide": "right",
+			"toNode": "w24",
+			"toSide": "left",
+			"toEnd": "arrow",
+			"label": "17 respostas"
+		},
+		{
+			"id": "e-w24-det",
+			"fromNode": "w24",
+			"fromSide": "right",
+			"toNode": "det",
+			"toSide": "left",
+			"toEnd": "arrow",
+			"label": "publicada"
+		},
+		{
+			"id": "e-w24-rev",
+			"fromNode": "w24",
+			"fromSide": "bottom",
+			"toNode": "rev",
+			"toSide": "bottom",
+			"toEnd": "arrow",
+			"label": "para revisão"
+		},
+		{
+			"id": "e-prob-w01",
+			"fromNode": "prob",
+			"fromSide": "bottom",
+			"toNode": "w01",
+			"toSide": "top",
+			"toEnd": "arrow",
+			"label": "a dor"
+		},
+		{
+			"id": "e-w01-regras",
+			"fromNode": "w01",
+			"fromSide": "bottom",
+			"toNode": "regras",
+			"toSide": "top",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-w10-fn",
+			"fromNode": "w10",
+			"fromSide": "bottom",
+			"toNode": "fn",
+			"toSide": "top",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-w21-conv",
+			"fromNode": "w21",
+			"fromSide": "bottom",
+			"toNode": "conv",
+			"toSide": "top",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-w22-ocr",
+			"fromNode": "w22",
+			"fromSide": "bottom",
+			"toNode": "ocr",
+			"toSide": "top",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-w23-modelos",
+			"fromNode": "w23",
+			"fromSide": "bottom",
+			"toNode": "modelos",
+			"toSide": "top",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-w24-verif",
+			"fromNode": "w24",
+			"fromSide": "bottom",
+			"toNode": "verif",
+			"toSide": "top",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-det-rel",
+			"fromNode": "det",
+			"fromSide": "bottom",
+			"toNode": "rel",
+			"toSide": "top",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-regras-jev",
+			"fromNode": "regras",
+			"fromSide": "bottom",
+			"toNode": "jev",
+			"toSide": "top",
+			"toEnd": "arrow",
+			"label": "segundo sinal"
+		},
+		{
+			"id": "e-modelos-rag",
+			"fromNode": "modelos",
+			"fromSide": "bottom",
+			"toNode": "rag",
+			"toSide": "top",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-rag-cache",
+			"fromNode": "rag",
+			"fromSide": "bottom",
+			"toNode": "cache",
+			"toSide": "top",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-cache-bon",
+			"fromNode": "cache",
+			"fromSide": "bottom",
+			"toNode": "bon",
+			"toSide": "top",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-verif-emails",
+			"fromNode": "verif",
+			"fromSide": "bottom",
+			"toNode": "emails",
+			"toSide": "top",
+			"toEnd": "arrow",
+			"label": "extração pronta"
+		},
+		{
+			"id": "e-w41-anm",
+			"fromNode": "w41",
+			"fromSide": "right",
+			"toNode": "anm",
+			"toSide": "left",
+			"toEnd": "arrow",
+			"label": "compras e contratos"
+		},
+		{
+			"id": "e-anm-anh",
+			"fromNode": "anm",
+			"fromSide": "right",
+			"toNode": "anh",
+			"toSide": "left",
+			"toEnd": "arrow"
+		},
+		{
+			"id": "e-emails-w50",
+			"fromNode": "emails",
+			"fromSide": "bottom",
+			"toNode": "w50",
+			"toSide": "top",
+			"toEnd": "arrow",
+			"label": "fila"
+		}
+	]
+}

@@ -1,0 +1,11 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/fila-revisao/licitacoes",
+ "status": 200,
+ "corpo": {
+  "total_revisoes": 1,
+  "total_licitacoes": 1,
+  "encontradas": 1,
+  "itens": []
+ }
+}

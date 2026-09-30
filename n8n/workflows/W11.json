@@ -1,0 +1,2850 @@
+{
+  "name": "W11 Ações do site",
+  "nodes": [
+    {
+      "parameters": {
+        "width": 620,
+        "height": 300,
+        "content": "## W11 · Ações do site (portão grátis × pago)\nregra — scripts/35_servidor.py:148-171 (o portão do site v2), agora no n8n com X-FOPA-Token (credencial `site`).\nQuatro webhooks, **resposta imediata** (o site nunca espera a fila; o Cloudflare corta em 100 s).\n- `fopa/verificar` → abre a execução do W01 e responde `202 {execucao_id}`; o site acompanha por `/api/execucoes/{id}`.\n- `fopa/processar` → cada controle passa por `fn_pedir_processamento` (db/022: escopo, recorte de 2026, terminal só com forcar, com evento) → `202 {aceitos, recusados}` → W10 sem esperar. Reservada da demo + forcar → W20 direto.\n- `fopa/reverificar` → `/reverificar` no worker (regras atuais sobre o texto congelado, custo 0) → **W24 modo republicar** (a nova vira a vigente; e-mail 'republicada' com o diff). 409 'já verificada' = retomada, como o W30. Uma linha em execucoes_workflow com o resultado (regra — api/worker.py:147-191; ADR-011/014).\n- `fopa/importar-respostas` → as 17 respostas do agente (ADR-014, custo zero) pelo worker `/importar-respostas` → `202 {execucao_id, modo}` → preparada → extraindo → respondida → **W24 publicar** (numa publicada: o worker verifica e o **W24 republica**). 409/422 com o motivo, sem nada mudado; uma linha em execucoes_workflow.\nA compra desconhecida é buscada na API de consulta do PNCP e registrada pela `fn_registrar_vista` antes do pedido."
+      },
+      "id": "5f687b59-4f4e-522d-be16-1439c672d11a",
+      "name": "Sobre o W11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        -1050
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fopa/verificar",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "bd62ea68-bc2a-5c2b-b17b-080d4421177f",
+      "name": "POST fopa/verificar",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:site}}",
+          "name": "site"
+        }
+      },
+      "webhookId": "5c63aa16-22ce-5136-a7ce-fe4592048d10"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — plano §5 W11: o site acompanha a coleta por esta linha (GET /api/execucoes/{id})\nINSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status, argumentos)\nVALUES ('W01', NULL, 'site', 'em_curso', jsonb_build_object('seco', true, 'solicitado_por', $1::text))\nRETURNING id",
+        "options": {
+          "queryReplacement": "={{ [ $json.body.solicitado_por || 'site' ] }}"
+        }
+      },
+      "id": "750deb4e-1713-5f46-b503-fbc870080a2d",
+      "name": "Abrir execução do W01",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        288,
+        0
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { execucao_id: Number($json.id) } }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "392029fb-65a4-5421-92e0-26a46d670d6f",
+      "name": "Responder 202 (verificar)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        576,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W01}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "seco": true,
+            "execucao_id": "={{ Number($('Abrir execução do W01').first().json.id) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "seco",
+              "displayName": "seco",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean"
+            },
+            {
+              "id": "execucao_id",
+              "displayName": "execucao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "180052be-1f43-5b33-a87e-dd56f1c9f3fe",
+      "name": "W01 seco (sem esperar)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fopa/processar",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "19a31917-ced9-5d94-a985-9ecf415b13d9",
+      "name": "POST fopa/processar",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        900
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:site}}",
+          "name": "site"
+        }
+      },
+      "webhookId": "9a330343-d102-52de-bb12-5b3c0d59c4ed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — plano §5 W11: controle no formato do PNCP, de 1 a 20 por pedido (o site já limita; aqui é a 2ª cerca)\nconst b = $input.first().json.body || {};\nconst re = /^\\d{14}-\\d+-\\d+\\/\\d{4}$/;\nconst lista = Array.isArray(b.controles) ? [...new Set(b.controles.map(String))] : [];\nconst ruins = lista.filter(c => !re.test(c));\nif (!lista.length || lista.length > 20 || ruins.length) {\n  return [{ json: { valido: false, detail: !lista.length ? 'informe de 1 a 20 controles'\n    : lista.length > 20 ? 'no máximo 20 controles por pedido' : 'controle fora do formato do PNCP: ' + ruins.join(', ') } }];\n}\nreturn lista.map(c => ({ json: { valido: true, controle: c, forcar: b.forcar === true,\n  solicitado_por: String(b.solicitado_por || 'site') } }));"
+      },
+      "id": "84d0c540-39fb-5d40-8e9a-01d4d5feacf6",
+      "name": "Validar pedido",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2841e2fe-f867-50ad-bc19-3fea86491f8f",
+              "leftValue": "={{ $json.valido }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "91d556a8-e189-50f9-bd92-5ba5ea410ae5",
+      "name": "Pedido válido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { detail: $json.detail } }}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "id": "5a40e9b6-ef1e-57dc-ad3e-40e29e42e557",
+      "name": "Responder 422",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        864,
+        1300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://pncp.gov.br/api/consulta/v1/orgaos/' + $json.controle.slice(0, 14) + '/compras/' + $json.controle.split('/')[1] + '/' + String(Number($json.controle.split('/')[0].split('-')[2])) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "FOPA/3 (monitoramento de licitacoes de folha; estudo de viabilidade; contato: contato@exemplo.com)"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 300
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "5984e168-2123-5ccf-a107-521a65dde856",
+      "name": "Buscar a compra no PNCP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        864,
+        750
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — o payload da fn_registrar_vista (db/020), com os nomes da API de consulta do PNCP.\n// atualizado_pncp vai VAZIO de propósito: o W01 compara o carimbo da BUSCA (data_atualizacao_pncp),\n// que não é o mesmo campo desta API; gravar este daria 'retificada' falsa na próxima rodada.\n// regra — 429/5xx/rede NÃO é 'não achada' (scripts/fopa/pncp.py:62-101): o 429 do PNCP vem em HTML e pede\n// 30 s, mais do que o site espera (15 s); a compra fica recusada com 'PNCP indisponível, tente de novo'.\nconst pedidos = $('Validar pedido').all().map(i => i.json);\nreturn $input.all().map((it, i) => {\n  const p = pedidos[i];\n  const r = it.json || {};\n  const d = (r.statusCode === 200 && r.body && typeof r.body === 'object') ? r.body : null;\n  const pncp_falha = r.error ? 'sem resposta (' + String(r.error.message || r.error.code || 'rede').slice(0, 80) + ')'\n    : (r.statusCode === 429 || r.statusCode >= 500 || r.statusCode == null) ? 'HTTP ' + r.statusCode : '';\n  const [cnpjSeqAno, ano] = p.controle.split('/');\n  const seq = Number(cnpjSeqAno.split('-')[2]);\n  const payload = d ? {\n    ano: Number(ano), seq, orgao: (d.orgaoEntidade || {}).razaoSocial || null,\n    uf: (d.unidadeOrgao || {}).ufSigla || null, municipio: (d.unidadeOrgao || {}).municipioNome || null,\n    modalidade: d.modalidadeNome || null, objeto: String(d.objetoCompra || '').slice(0, 1200),\n    situacao: d.situacaoCompraNome || null, publicado_em: d.dataPublicacaoPncp || null,\n    fim_prazo: d.dataEncerramentoProposta || null,\n    link: 'https://pncp.gov.br/app/editais/' + p.controle.slice(0, 14) + '/' + ano + '/' + seq } : null;\n  return { json: { ...p, achou: !!d, http: r.statusCode ?? null, pncp_falha, payload,\n                   objeto: payload ? payload.objeto : '' } };\n});"
+      },
+      "id": "0dae4c96-3020-5b9b-85c1-0895c06ead92",
+      "name": "Normalizar a compra",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        750
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/escopo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ objetos: [ $json.objeto ] }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "d9225ce4-eca6-5312-bf10-788172f97723",
+      "name": "Escopo (worker)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        750
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — db/020 fn_registrar_vista: a desconhecida entra (nova, fora_escopo ou fora_janela; fora do\n-- recorte, ignorada). Compra não achada no PNCP: seco = true, nada é escrito.\nSELECT vista, acao FROM fn_registrar_vista($1, $2::jsonb, (now() AT TIME ZONE 'America/Sao_Paulo')::date,\n                                           $3::bool, 'W11')",
+        "options": {
+          "queryReplacement": "={{ [ $('Normalizar a compra').item.json.controle, JSON.stringify(Object.assign({}, $('Normalizar a compra').item.json.payload || {}, { escopo_dentro: $json.resultados[0].dentro, escopo_motivo: $json.resultados[0].motivo, escopo_versao: $json.escopo_versao })), !$('Normalizar a compra').item.json.achou ] }}",
+          "queryBatching": "independently"
+        }
+      },
+      "id": "78c556cf-593b-5320-b5c4-1e6fd9abd346",
+      "name": "Registrar a compra (db/020)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1728,
+        750
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — db/022 fn_pedir_processamento: escopo, recorte de 2026, terminal só com forcar, com evento\nSELECT $1::text AS controle, p.aceito, p.estado, p.motivo,\n       COALESCE((SELECT reserva_demo FROM licitacoes WHERE controle = $1), false) AS reservada,\n       $2::bool AS forcar, $4::bool AS achou_no_pncp, $5::text AS pncp_falha\n  FROM fn_pedir_processamento($1, $2::bool, $3) p",
+        "options": {
+          "queryReplacement": "={{ [ $('Normalizar a compra').item.json.controle, $('Normalizar a compra').item.json.forcar, $('Normalizar a compra').item.json.solicitado_por, $('Normalizar a compra').item.json.achou, $('Normalizar a compra').item.json.pncp_falha ] }}",
+          "queryBatching": "independently"
+        }
+      },
+      "id": "34f5ef6a-d4ff-5d0a-bbea-86e69b998da7",
+      "name": "Pedir processamento (db/022)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2016,
+        750
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Um item com o resumo (para a resposta e para o W10) e a lista das reservadas com forcar (para o W20 direto).\nconst itens = $input.all().map(i => i.json);\nconst aceitos = itens.filter(i => i.aceito).map(i => i.controle);\nconst desconhecida = (i) => i.achou_no_pncp ? 'fora do recorte de 2026 (ADR-015)'\n  : i.pncp_falha ? 'PNCP indisponível agora (' + i.pncp_falha + '): tente de novo em instantes'\n  : 'não achada no PNCP';\nconst recusados = itens.filter(i => !i.aceito).map(i => i.controle + ': ' + (i.motivo === 'desconhecida'\n  ? desconhecida(i) : i.motivo));\nconst reservadas = itens.filter(i => i.aceito && i.reservada && i.forcar).map(i => i.controle);\nconst paraFila = aceitos.filter(c => !reservadas.includes(c));\nreturn [{ json: { aceitos, recusados, reservadas, para_fila: paraFila.length } }];"
+      },
+      "id": "d6caa061-2921-5f50-a172-815145ac91db",
+      "name": "Separar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        750
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { aceitos: $json.aceitos, recusados: $json.recusados } }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "6bdfa11a-2375-5854-8f3a-829d1ba6a29d",
+      "name": "Responder 202 (processar)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2592,
+        750
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8f5038dd-ee05-5e79-a530-b16246f414d9",
+              "leftValue": "={{ $json.para_fila }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "3b1a4c37-a651-5f0e-aed6-0f14037df4bb",
+      "name": "Algo para a fila?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2880,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W10}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "42d8b367-fb3a-5fbe-93a7-015da1d0d71b",
+      "name": "W10 (sem esperar)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3168,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return ($input.first().json.reservadas || []).map(c => ({ json: { controle: c } }));"
+      },
+      "id": "2020c289-5f25-5b63-8ec1-5b09e761bbce",
+      "name": "Uma por reservada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        1050
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W20}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "controle": "={{ $json.controle }}",
+            "forcar": true
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "controle",
+              "displayName": "controle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "forcar",
+              "displayName": "forcar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "90eff645-925e-5842-8491-f5a134fe4efc",
+      "name": "W20 direto, forcar (sem esperar)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3168,
+        1050
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fopa/reverificar",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e33b343b-9d06-50e3-a20b-6f84ef8cae58",
+      "name": "POST fopa/reverificar",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        1900
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:site}}",
+          "name": "site"
+        }
+      },
+      "webhookId": "d855a15f-264e-51df-b0c2-60684bc54cbe"
+    },
+    {
+      "parameters": {
+        "jsCode": "// O pedido e a hora em que chegou: a linha única do fim (execucoes_workflow) leva a duração.\nconst b = $input.first().json.body || {};\nreturn [{ json: { controle: String(b.controle ?? '').trim(), solicitado_por: String(b.solicitado_por || 'site'),\n  inicio: $now.toUTC().toISO() } }];"
+      },
+      "id": "da823093-82c5-5712-8a9c-f32706a05cf0",
+      "name": "Pedido (reverificar)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        1900
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { aceito: true, controle: $json.controle } }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "b3bb0278-5830-5139-ae5f-3f5ee516f0df",
+      "name": "Responder 202 (reverificar)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        576,
+        1900
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/reverificar",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ controle: $('Pedido (reverificar)').first().json.controle }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "e416e973-4a92-569c-ae12-1f13a7064df8",
+      "name": "POST /reverificar no worker",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        864,
+        1900
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b7cbc629-5384-572d-90f2-74c296d3829c",
+                    "leftValue": "={{ $json.statusCode === 200 && !!($json.body && $json.body.verificacao_id) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "verificação nova"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "23206221-4120-5fd9-9fba-ac0e4fa80f25",
+                    "leftValue": "={{ $json.statusCode === 409 && String(($json.body && $json.body.detail) || '').includes('já foi verificada') }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "já verificada nesta versão"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "falhou"
+        }
+      },
+      "id": "e996fd8c-438e-52e7-b953-7e3cc36cd295",
+      "name": "Reverificou?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1152,
+        1900
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.FOPA_WORKER_URL }}/versao",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "fa2cdd78-5ef6-50c0-a2d7-dea4da2be56f",
+      "name": "GET /versao (retomada)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        2300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Retomada (a mesma do W30): um /reverificar anterior gravou a verificação desta versão das regras e o W24 não\n-- chegou a republicar; é ela que se republica (UNIQUE execucao_id + versao_regras, db/005) — nada se reverifica\n-- duas vezes. A execução é a da vigente: é por ela que o /reverificar respondeu 409 (api/worker.py:158-160).\nSELECT v.id AS verificacao_id\n  FROM verificacoes v\n  JOIN verificacoes vig ON vig.controle = v.controle AND vig.vigente AND vig.execucao_id = v.execucao_id\n WHERE v.controle = $1 AND v.versao_regras = $2 AND NOT v.vigente\n ORDER BY v.id DESC LIMIT 1",
+        "options": {
+          "queryReplacement": "={{ [ $('Pedido (reverificar)').first().json.controle, $json.versao_regras || '' ] }}"
+        }
+      },
+      "id": "24c11940-3af7-5b59-aa77-463e4d744753",
+      "name": "Verificação já gravada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1728,
+        2300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5f823f77-d8eb-5fe0-b5fb-419206991e8b",
+              "leftValue": "={{ !!$json.verificacao_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "b72c7a2b-68e3-5433-9c7a-441226dea882",
+      "name": "Achou a verificação?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        2300
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W24}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "controle": "={{ $('Pedido (reverificar)').first().json.controle }}",
+            "verificacao_id": "={{ Number($json.verificacao_id ?? ($json.body && $json.body.verificacao_id)) }}",
+            "modo": "republicar"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "controle",
+              "displayName": "controle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "verificacao_id",
+              "displayName": "verificacao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "modo",
+              "displayName": "modo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "69e3b57e-f7df-5aae-bb6b-6ba6c29bb44c",
+      "name": "Republicar (W24)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2304,
+        1900
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — o W30 \"Registrar resultado\" para UMA licitação: voltou do W24 (republicada ou recusada), 409 sem nada\n// a republicar (pulada: já está nas regras atuais), /reverificar falhou (404 sem vigente, 409 sem leitura, worker\n// fora), ou o W24 caiu. Vira UMA linha em execucoes_workflow; custo R$ 0 (sem modelo, sem OCR: ADR-011).\nconst p = $('Pedido (reverificar)').first().json;\nconst rv = $('POST /reverificar no worker').first().json || {};\nconst j = $input.first().json || {};\nconst rodou = (n) => { try { return $(n).isExecuted; } catch (e) { return false; } };\nconst retomada = rodou('Verificação já gravada');\nconst texto = (b) => (b && typeof b === 'object') ? String(b.detail ?? JSON.stringify(b)) : String(b ?? '');\n// bigint chega como TEXTO do nó Postgres do W24: id vira número (o site e os outros fluxos gravam número)\nconst num = (v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v))) ? null : Number(v);\nlet r;\nif (rodou('Republicar (W24)') && j.modo !== undefined && j.ok !== undefined) {         // voltou do W24\n  const mudaram = Object.keys((j.diff && j.diff.vereditos) || {});\n  r = { ok: j.ok === true, republicada: j.ok === true, retomada, estado: j.estado ?? null, mudaram,\n        antes_verificacao_id: num(j.antes_verificacao_id), verificacao_id: num(j.verificacao_id),\n        email_id: num(j.email_id), motivo: j.motivo ?? null };\n} else if (rodou('Republicar (W24)')) {                                              // o W24 caiu\n  r = { ok: false, retomada, motivo: 'W24 republicar falhou: '\n        + String((j.error && (j.error.message || j.error.description)) || JSON.stringify(j)).slice(0, 300) };\n} else if (retomada && !($('GET /versao (retomada)').first().json || {}).versao_regras) {  // sem a versão, sem retomada\n  const g = $('GET /versao (retomada)').first().json || {};\n  r = { ok: false, retomada, motivo: 'worker /versao sem resposta: '\n        + String((g.error && (g.error.message || g.error.code)) || JSON.stringify(g)).slice(0, 240) };\n} else if (retomada) {                                                               // 409 e nada pendente\n  r = { ok: true, pulada: true, retomada, motivo: 'já verificada nesta versão das regras e sem verificação '\n        + 'pendente de republicar' };\n} else {                                                                             // /reverificar falhou\n  r = { ok: false, retomada, motivo: rv.error\n        ? 'worker sem resposta: ' + String(rv.error.message || rv.error.code || JSON.stringify(rv.error)).slice(0, 240)\n        : `/reverificar HTTP ${rv.statusCode}: ` + texto(rv.body).slice(0, 400) };\n}\nconst nova = (rv.statusCode === 200 && rv.body) ? rv.body : null;\nreturn [{ json: {\n  status: r.ok ? 'ok' : 'erro', erro: r.ok ? null : r.motivo, inicio: p.inicio, controle: p.controle,\n  argumentos: { acao: 'reverificar', controle: p.controle, solicitado_por: p.solicitado_por },\n  // números que o site mostra em /execucoes (ids ficam de fora pela terminação _id)\n  contadores: { republicadas: r.republicada ? 1 : 0, vereditos_mudados: (r.mudaram || []).length,\n    puladas: r.pulada ? 1 : 0, falhas: r.ok ? 0 : 1, retomada: r.retomada === true,\n    reverificacao_http: rv.statusCode ?? null, versao_regras: nova ? nova.versao_regras : null,\n    base_verificacao_id: nova ? num(nova.base_verificacao_id) : null,\n    antes_verificacao_id: r.antes_verificacao_id ?? null, verificacao_id: r.verificacao_id ?? null,\n    email_id: r.email_id ?? null, estado: r.estado ?? null, mudaram: r.mudaram || [], motivo: r.motivo ?? null },\n} }];"
+      },
+      "id": "eb7f5767-1b55-574e-b092-8755759cf01d",
+      "name": "Resultado da reverificação",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        1900
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — toda ação deixa rastro: UMA linha por pedido, com o que o /reverificar e o W24 fizeram (o site já\n-- recebeu o 202). `controle` só se a licitação existir (FK): o pedido de um controle desconhecido também fica.\nINSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status, argumentos, contadores, erro,\n                                custo_brl, duracao_s, controle)\nVALUES ('W11', $1, 'site', $2, $3::jsonb, $4::jsonb, $5, 0,\n        round(extract(epoch FROM clock_timestamp() - $6::timestamptz)::numeric, 3),\n        (SELECT l.controle FROM licitacoes l WHERE l.controle = $7))\nRETURNING id",
+        "options": {
+          "queryReplacement": "={{ [ $execution.id, $json.status, JSON.stringify($json.argumentos), JSON.stringify($json.contadores), $json.erro, $json.inicio, $json.controle ] }}"
+        }
+      },
+      "id": "d7798945-ebae-5ba9-bb75-e39962088bb7",
+      "name": "Registrar a reverificação",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2880,
+        1900
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fopa/importar-respostas",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4dab82aa-02bc-5197-9181-9b43e016373e",
+      "name": "POST fopa/importar-respostas",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        3000
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:site}}",
+          "name": "site"
+        }
+      },
+      "webhookId": "51ce0247-5b2f-5976-b1d7-0417dbf49775"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — o site já conferiu controle e 17 respostas (api/site.py ImportarRespostasIn); aqui é a 2ª cerca.\n// A validação de CADA resposta (ids Q1-Q17, página inteira, confiança) é do worker: api/extracao.py validar_respostas.\nconst b = $input.first().json.body || {};\nconst controle = String(b.controle ?? '').trim();\nconst respostas = Array.isArray(b.respostas) ? b.respostas : null;\nconst pr = (b.procedencia && typeof b.procedencia === 'object') ? b.procedencia : {};\nconst detail = !/^[0-9]{14}-[0-9]+-[0-9]+[/][0-9]{4}$/.test(controle) ? 'controle fora do formato do PNCP: ' + controle\n  : (!respostas || respostas.length !== 17) ? 'informe as 17 respostas (vieram ' + (respostas ? respostas.length : 0) + ')'\n  : null;\nreturn [{ json: { valido: !detail, detail, controle, respostas: respostas || [],\n  procedencia: { provedor: String(pr.provedor || 'claude-code'), modelo: pr.modelo ? String(pr.modelo) : null,\n                 sessao: pr.sessao ? String(pr.sessao) : null },\n  solicitado_por: String(b.solicitado_por || 'site'), inicio: $now.toUTC().toISO() } }];"
+      },
+      "id": "188a1819-112f-5064-808f-f695a576b1d9",
+      "name": "Pedido (importar)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        3000
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "58771069-05d3-5ff6-a3f7-4bf69adf2f28",
+              "leftValue": "={{ $json.valido }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "2eb96036-7f56-53ce-b7c3-6c6714edf338",
+      "name": "Importação válida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        3000
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { detail: $json.detail } }}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "id": "c8e3c974-1458-52b0-b65a-0d8bba517df3",
+      "name": "Responder 422 (importar)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        864,
+        3400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — só LÊ: nada muda antes de o worker aceitar as respostas. Primeira extração = os estados em que o W23\n-- entraria (preparada, erro_extracao, aguardando_orcamento) → W24 publicar; publicada/verificada = extração nova\n-- sobre a mesma leitura → W24 republicar. O resto é recusado com o motivo (o site mostra o 409 como veio).\nSELECT l.controle, l.estado::text AS estado, l.leitura_vigente_id,\n       CASE WHEN l.estado::text IN ('publicada', 'verificada') THEN 'republicar' ELSE 'publicar' END AS modo,\n       CASE WHEN l.leitura_vigente_id IS NULL\n                 THEN 'sem leitura congelada: a licitação precisa ser baixada e lida antes (W21/W22)'\n            WHEN l.lease_por IS NOT NULL AND l.lease_ate > now()\n                 THEN 'em processamento agora (' || l.lease_por || '): tente de novo quando terminar'\n            WHEN l.estado::text IN ('preparada', 'erro_extracao', 'aguardando_orcamento', 'publicada', 'verificada')\n                 THEN NULL\n            ELSE 'estado ' || l.estado::text || ': importar vale para preparada (primeira extração) '\n                 || 'ou publicada (extração nova)'\n       END AS recusa\n  FROM licitacoes l\n WHERE l.controle = $1",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle ] }}"
+        }
+      },
+      "id": "5d265a41-c51a-5b0e-bfb7-beee975e777a",
+      "name": "Estado para importar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        3000
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6f240dbc-8789-5359-b094-b1d960867bb5",
+                    "leftValue": "={{ !!$json.controle && !$json.recusa }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "aceita"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "82e0900a-6faa-5804-9523-a20bd0ff129e",
+                    "leftValue": "={{ !!$json.controle && !!$json.recusa }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "recusada"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "desconhecida"
+        }
+      },
+      "id": "3b8e17bd-95dc-54c1-8c7a-2115b389a1d1",
+      "name": "Pode importar?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1152,
+        3000
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { detail: $json.recusa, estado: $json.estado } }}",
+        "options": {
+          "responseCode": 409
+        }
+      },
+      "id": "5c1c0275-a8c1-5e9f-824c-02e954402288",
+      "name": "Responder 409 (importar)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        3400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { detail: 'licitação desconhecida na v3: ' + $('Pedido (importar)').first().json.controle } }}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "id": "0b7224be-6692-52f3-a7b6-74a1ccd584b5",
+      "name": "Responder 422 (desconhecida)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        3800
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/importar-respostas",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ controle: $json.controle, leitura_id: Number($json.leitura_vigente_id), respostas: $('Pedido (importar)').first().json.respostas, procedencia: $('Pedido (importar)').first().json.procedencia, verificar: $json.modo === 'republicar' }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "1f9c6dca-e161-5598-a831-599ebaf348df",
+      "name": "POST /importar-respostas no worker",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        3000
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b9cd66a3-4daa-5d11-851a-2dee58a9f4ba",
+                    "leftValue": "={{ $json.statusCode === 200 && !!($json.body && $json.body.execucao_id) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "aceitas"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c2a7f1e6-6f6b-5d37-aadd-d3066d4b4298",
+                    "leftValue": "={{ $json.statusCode === 422 }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "inválidas"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "falhou"
+        }
+      },
+      "id": "77aae2a7-5265-599a-83d9-a31891fa097e",
+      "name": "Importou?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1728,
+        3000
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { aceito: true, controle: $('Estado para importar').first().json.controle, modo: $('Estado para importar').first().json.modo, execucao_id: Number($json.body.execucao_id), verificacao_id: $json.body.verificacao_id ? Number($json.body.verificacao_id) : null } }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "09c64a6a-99c7-5dfc-a829-665429695a09",
+      "name": "Responder 202 (importar)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2016,
+        3000
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { detail: String(($json.body && $json.body.detail) || 'respostas inválidas') } }}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "id": "127e5206-f7b9-5aab-a055-0c8c7a3450b3",
+      "name": "Responder 422 (respostas)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2016,
+        3400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { detail: 'o worker não aceitou a importação: ' + ($json.error ? String($json.error.message || $json.error.code) : 'HTTP ' + $json.statusCode + ' ' + JSON.stringify($json.body ?? '').slice(0, 300)) } }}",
+        "options": {
+          "responseCode": 502
+        }
+      },
+      "id": "eb987b83-e72f-5236-82c7-24216c05f8ee",
+      "name": "Responder 502 (worker)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2016,
+        3800
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e3ea47ec-0bff-54df-b1eb-ab84e6b8cae5",
+              "leftValue": "={{ $('Estado para importar').first().json.modo === 'publicar' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "1283b309-76d3-5375-a51a-bcfbf99ff461",
+      "name": "Primeira extração?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2304,
+        3000
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o fim do W23 sem o modelo (ADR-014): preparada → extraindo → respondida pela fn_transicao (db/002),\n-- com o lease do W11 enquanto o W24 trabalha (o fn_reivindicar pula lease vivo: nenhum W20 pega no meio).\n-- Lease de outro fluxo entre a leitura do estado e agora = nenhuma linha (a linha do W11 diz por quê).\nWITH l AS (\n    UPDATE licitacoes SET lease_por = 'W11:' || $2, lease_ate = now() + interval '2 hours'\n     WHERE controle = $1 AND (lease_por IS NULL OR lease_ate < now())\n    RETURNING controle)\nSELECT fn_transicao(l.controle, 'extraindo', 'W11: respostas do agente importadas (execução ' || $3 || ')',\n                    jsonb_build_object('n8n_execution_id', $2::text, 'execucao_id', $3::bigint)) AS evento_id\n  FROM l",
+        "options": {
+          "queryReplacement": "={{ [ $('Estado para importar').first().json.controle, $execution.id, Number($('POST /importar-respostas no worker').first().json.body.execucao_id) ] }}"
+        }
+      },
+      "id": "70d83ef2-de5f-5b30-b4ce-967e771151b8",
+      "name": "Lease e → extraindo",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2592,
+        2750
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e78882da-bfc3-5714-b23c-0ed2ac5190e8",
+              "leftValue": "={{ !!$json.evento_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "766fc73c-aa67-583e-9a0e-3cde0a234b40",
+      "name": "Tomou o lease?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2880,
+        2750
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — extraindo → respondida (db/002:34), como o W23 \"Transição → respondida\": a fusão, o custo e o\n-- veredito são do W24 (/verificar).\nSELECT fn_transicao($1, 'respondida', 'W11: as 17 respostas do agente (execução ' || $3 || ')',\n                    jsonb_build_object('n8n_execution_id', $2::text, 'execucao_id', $3::bigint)) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Estado para importar').first().json.controle, $execution.id, Number($('POST /importar-respostas no worker').first().json.body.execucao_id) ] }}"
+        }
+      },
+      "id": "c3d5ba01-aece-5131-9571-2cb69c57c2f3",
+      "name": "→ respondida",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        2550
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W24}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "controle": "={{ $('Estado para importar').first().json.controle }}",
+            "execucao_id": "={{ Number($('POST /importar-respostas no worker').first().json.body.execucao_id) }}",
+            "modo": "publicar"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "controle",
+              "displayName": "controle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "execucao_id",
+              "displayName": "execucao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "modo",
+              "displayName": "modo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "5382c6fe-c254-54f8-8c62-f278fcf375c9",
+      "name": "Publicar a importada (W24)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3456,
+        2550
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W24}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "controle": "={{ $('Estado para importar').first().json.controle }}",
+            "verificacao_id": "={{ Number($('POST /importar-respostas no worker').first().json.body.verificacao_id) }}",
+            "modo": "republicar"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "controle",
+              "displayName": "controle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "verificacao_id",
+              "displayName": "verificacao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "modo",
+              "displayName": "modo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "86b88299-6cf9-57fd-bede-39f54e850cae",
+      "name": "Republicar a importada (W24)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2592,
+        3300
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — toda importação aceita vira UMA linha em execucoes_workflow (o site já recebeu o 202): publicada ou\n// republicada pelo W24, ou por que não (lease de outro fluxo, W24 recusou ou caiu). Custo de API R$ 0: o agente\n// não passa pelo modelo pago (ADR-014); o que ele custou fora daqui não é medido (ADR-012: não é 'grátis').\nconst p = $('Pedido (importar)').first().json;\nconst e = $('Estado para importar').first().json;\nconst w = ($('POST /importar-respostas no worker').first().json || {}).body || {};\nconst j = $input.first().json || {};\nconst rodou = (n) => { try { return $(n).isExecuted; } catch (x) { return false; } };\n// bigint chega como TEXTO dos nós Postgres: id vira número (o site e os outros fluxos gravam número)\nconst num = (v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v))) ? null : Number(v);\nconst pelo24 = rodou('Publicar a importada (W24)') || rodou('Republicar a importada (W24)');\nlet r;\nif (pelo24 && j.ok !== undefined) {                                   // voltou do W24\n  r = { ok: j.ok === true, estado: j.estado ?? null, verificacao_id: num(j.verificacao_id),\n        email_id: num(j.email_id), mudaram: Object.keys((j.diff && j.diff.vereditos) || {}), motivo: j.motivo ?? null,\n        ancoradas: j.resumo ? num(j.resumo.ancoradas) : null, respondidas: j.resumo ? num(j.resumo.respondidas) : null };\n} else if (pelo24) {                                                  // o W24 caiu\n  r = { ok: false, motivo: 'W24 ' + e.modo + ' falhou: '\n        + String((j.error && (j.error.message || j.error.description)) || JSON.stringify(j)).slice(0, 300) };\n} else {                                                              // o lease não veio\n  r = { ok: false, motivo: 'a licitação foi pega por outro fluxo entre a leitura do estado e a importação; '\n        + 'a execução ' + w.execucao_id + ' ficou em curso, sem verificação' };\n}\nreturn [{ json: {\n  status: r.ok ? 'ok' : 'erro', erro: r.ok ? null : r.motivo, inicio: p.inicio, controle: p.controle,\n  argumentos: { acao: 'importar-respostas', controle: p.controle, solicitado_por: p.solicitado_por,\n                procedencia: p.procedencia, modo: e.modo },\n  // números que o site mostra em /execucoes (ids ficam de fora pela terminação _id)\n  contadores: { importadas: 1, publicadas: (r.ok && e.modo === 'publicar') ? 1 : 0,\n    republicadas: (r.ok && e.modo === 'republicar') ? 1 : 0, falhas: r.ok ? 0 : 1,\n    vereditos_mudados: (r.mudaram || []).length, mudaram: r.mudaram || [],\n    ancoradas: r.ancoradas ?? null, respondidas: r.respondidas ?? null, estado_antes: e.estado,\n    estado: r.estado ?? null, execucao_id: num(w.execucao_id), verificacao_id: r.verificacao_id ?? num(w.verificacao_id),\n    email_id: r.email_id ?? null, motivo: r.motivo ?? null },\n} }];"
+      },
+      "id": "cfb36381-48ad-592f-9308-4ccf96f04e03",
+      "name": "Resultado da importação",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        3000
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — toda ação deixa rastro: UMA linha por importação aceita, e o lease do W11 (só o dele) sai aqui.\nWITH solta AS (\n    UPDATE licitacoes SET lease_por = NULL, lease_ate = NULL\n     WHERE controle = $7 AND lease_por = 'W11:' || $1\n    RETURNING 1)\nINSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status, argumentos, contadores, erro,\n                                custo_brl, duracao_s, controle)\nVALUES ('W11', $1, 'site', $2, $3::jsonb, $4::jsonb, $5, 0,\n        round(extract(epoch FROM clock_timestamp() - $6::timestamptz)::numeric, 3),\n        (SELECT l.controle FROM licitacoes l WHERE l.controle = $7))\nRETURNING id, (SELECT count(*) FROM solta) AS lease_solto",
+        "options": {
+          "queryReplacement": "={{ [ $execution.id, $json.status, JSON.stringify($json.argumentos), JSON.stringify($json.contadores), $json.erro, $json.inicio, $json.controle ] }}"
+        }
+      },
+      "id": "21cdfe08-90cc-522e-8dea-0e0d2ddbc537",
+      "name": "Soltar o lease e registrar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4032,
+        3000
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · POST fopa/verificar**\n\nEndereço chamado pelo botão “Verificar agora” do site. Só aceita chamada com o token do site.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "aef226b4-5e9a-599a-a0b6-563bc119fc4a",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · POST fopa/processar**\n\nEndereço chamado pelo botão “Processar” do site, com as licitações pedidas. Só aceita chamada com o token do site.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "470acb7e-15bf-59e8-a72f-56b1a74270ff",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        1050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · POST fopa/reverificar**\n\nEndereço chamado pelo botão “Reverificar” do site, para uma licitação. Só aceita chamada com o token do site.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f89c6bb0-086b-51a9-a400-8bec1b560bb2",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        2050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · POST fopa/importar-respostas**\n\nEndereço que recebe as 17 respostas produzidas fora da API paga, com a procedência. Só aceita chamada com o token do site.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "56512d42-03d1-55e6-b456-473e69a95848",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        3150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Abrir execução do W01**\n\nAbre a linha da rodada de verificação e devolve o id, que o site usa para acompanhar o andamento.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "0b655f2b-44da-579b-9468-588702ff337d",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Responder 202 (verificar)**\n\nResponde ao site na hora, com o id da rodada: o site nunca espera o processamento.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "91add194-4afe-5252-b374-2de2eef24abe",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · W01 seco (sem esperar)**\n\nChama a descoberta (W01) em modo seco: lista as licitações novas sem gravar nada.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5813f22a-82c3-5240-b021-183823073543",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Validar pedido**\n\nTira duplicatas, confere o formato de cada número de controle e o tamanho do pedido (de 1 a 20 licitações).",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "954c0b00-6081-5d3b-b2b0-07b157d59a4e",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        1050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Pedido válido?**\n\nPedido válido segue; inválido recebe a resposta 422 com o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6883d8ad-5e96-5d11-85c1-a3a48d6ade88",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        1050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Responder 422**\n\nResponde ao site que o pedido é inválido, com o motivo.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "02a6433f-a8f2-5131-aed5-158795e72ddc",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        1450
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · Buscar a compra no PNCP**\n\nBusca a licitação no PNCP, porque o pedido pode trazer uma que o sistema ainda não conhece.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e3de8d8f-967e-5292-b47d-9f6fd92e8102",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Normalizar a compra**\n\nConverte a resposta do PNCP no formato do registro e distingue “não encontrada” de “PNCP indisponível”.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "d53ecc4d-be21-5ca7-a83c-7ae248afd0b9",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Escopo (worker)**\n\nAplica a mesma regra de escopo da descoberta ao objeto desta licitação.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "02b01074-a95b-5cd7-80db-19063d85dd1b",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 15 · Registrar a compra (db/020)**\n\nRegistra a licitação desconhecida como nova, fora do escopo ou fora da janela. Se não foi encontrada no PNCP, nada é gravado.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6c4442a4-5a92-5fba-8064-bec162340156",
+      "name": "Nota — passo 15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 16 · Pedir processamento (db/022)**\n\nO banco decide cada pedido: aceita com prioridade, recusa com o motivo (fora do escopo, prazo encerrado, já publicada) ou recomeça, se o pedido veio forçado.",
+        "height": 222,
+        "width": 260,
+        "color": 4
+      },
+      "id": "dbd28f70-5c47-50a1-96a6-7d980b00063a",
+      "name": "Nota — passo 16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 17 · Separar**\n\nSepara os aceitos, os recusados (com o motivo) e as licitações de demonstração, que vão direto ao processamento.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "83b60ca9-8c1a-5ca4-96d3-74bc8543b08d",
+      "name": "Nota — passo 17",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 18 · Responder 202 (processar)**\n\nResponde ao site com os aceitos e os recusados.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f0b165bc-dc9c-5e60-adab-501c102ea7ea",
+      "name": "Nota — passo 18",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 19 · Algo para a fila?**\n\nSegue se ao menos uma licitação foi aceita para a fila.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e45ea52d-3b60-5edb-9da9-dccefb8ea0ab",
+      "name": "Nota — passo 19",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 20 · W10 (sem esperar)**\n\nAciona a fila uma vez, sem esperar. As licitações aceitas já têm prioridade.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e96b4e67-5c6b-5892-8ff1-dd2f4ef9dda9",
+      "name": "Nota — passo 20",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 21 · Uma por reservada**\n\nSepara as licitações reservadas para demonstração, uma por item.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ad8b8992-4302-5480-9b84-64c898af320d",
+      "name": "Nota — passo 21",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 22 · W20 direto, forcar (sem esperar)**\n\nProcessa cada licitação de demonstração direto no W20, sem passar pela fila.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "536a9374-60e1-5ed8-9ad1-34a1c1a12fef",
+      "name": "Nota — passo 22",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 23 · Pedido (reverificar)**\n\nGuarda a licitação, quem pediu e a hora do pedido.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c7820f1f-3743-5523-a20d-b541949c1c9f",
+      "name": "Nota — passo 23",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        2050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 24 · Responder 202 (reverificar)**\n\nResponde ao site na hora que o pedido foi aceito.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4b40b98a-be73-5dff-9f66-06aa5f58dbd0",
+      "name": "Nota — passo 24",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        2050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 25 · POST /reverificar no worker**\n\nO worker aplica as regras atuais do verificador às respostas vigentes, sobre o texto já lido: sem OCR novo e sem modelo de IA, custo zero.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ce2c1d31-8dd5-5cd2-b031-9263bfb48725",
+      "name": "Nota — passo 25",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        2050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 26 · Reverificou?**\n\nTrês caminhos: verificação nova (republicar), já verificada nesta versão (procurar retomada) ou falha (registrar).",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "a95afd56-d61b-5914-afd1-902b8f9065ff",
+      "name": "Nota — passo 26",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        2050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 27 · Republicar (W24)**\n\nChama o W24 para publicar a verificação nova, que passa a ser a vigente.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "76dbc17a-adaf-51c7-b709-34c0f3bd3e6c",
+      "name": "Nota — passo 27",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        2050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 28 · GET /versao (retomada)**\n\nLê no worker a versão atual das regras do verificador.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "2ad13e36-529d-555e-a744-586879dcdfaa",
+      "name": "Nota — passo 28",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        2450
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 29 · Verificação já gravada**\n\nProcura uma verificação desta versão que ainda não virou vigente, para retomar sem verificar duas vezes.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3d2c2e71-ddab-579f-89ac-4523409338af",
+      "name": "Nota — passo 29",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        2450
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 30 · Achou a verificação?**\n\nSe achou, republica essa; se não, está tudo em dia.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9d64d17e-9a2b-5b51-9ed7-d542761b6894",
+      "name": "Nota — passo 30",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        2450
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 31 · Resultado da reverificação**\n\nResume o que aconteceu: republicada (com os vereditos que mudaram), já em dia ou falha. Custo sempre zero.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "de5069f7-0ad4-52d1-b79b-e9eec95d509a",
+      "name": "Nota — passo 31",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        2050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 32 · Registrar a reverificação**\n\nGrava a ação em execucoes_workflow, visível na página Execuções.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "bc074a8b-c9ff-5372-8667-d836cae6db78",
+      "name": "Nota — passo 32",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        2050
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 33 · Pedido (importar)**\n\nConfere o número de controle e se vieram exatamente 17 respostas, e monta a procedência (provedor, modelo, rodada).",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "81f8f0a7-4166-551e-ac5c-44e1f8b8697c",
+      "name": "Nota — passo 33",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        3150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 34 · Importação válida?**\n\nPedido válido segue; inválido recebe a resposta 422.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "98c80301-2399-5a8d-bdc4-3eaf626ea8b2",
+      "name": "Nota — passo 34",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        3150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 35 · Responder 422 (importar)**\n\nResponde ao site que a importação é inválida, com o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "90b5bbe5-a70d-577a-8e4c-47bef0668569",
+      "name": "Nota — passo 35",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        3550
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 36 · Estado para importar**\n\nConsulta o banco, sem alterar nada: primeira extração, extração nova sobre a mesma leitura ou recusa (sem leitura, em processamento, estado que não admite).",
+        "height": 222,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f9069f53-cf9b-53f3-b197-844199f9f744",
+      "name": "Nota — passo 36",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        3150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 37 · Pode importar?**\n\nTrês caminhos: aceita, recusada ou licitação desconhecida.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "2c52a9fe-ca22-5aeb-bb28-30d2fb1db33f",
+      "name": "Nota — passo 37",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        3150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 38 · Responder 409 (importar)**\n\nResponde ao site que a importação foi recusada, com o motivo e o estado.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "87f1f4e0-fd1d-5215-b39f-3e9210931e23",
+      "name": "Nota — passo 38",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        3550
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 39 · Responder 422 (desconhecida)**\n\nResponde ao site que a licitação é desconhecida.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ccef76d8-51da-5114-9107-088991c6e58b",
+      "name": "Nota — passo 39",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        3950
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 40 · POST /importar-respostas no worker**\n\nEnvia as respostas ao worker, que valida cada uma e grava a extração, sem custo de API.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9e2483ba-fa85-5c6f-add9-b9631fb30b1e",
+      "name": "Nota — passo 40",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        3150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 41 · Importou?**\n\nTrês caminhos: respostas aceitas, respostas inválidas ou falha do worker.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3d869a74-c079-5da7-977c-17948c8990ed",
+      "name": "Nota — passo 41",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        3150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 42 · Responder 422 (respostas)**\n\nResponde ao site que as respostas são inválidas, com o motivo do worker.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "98054c64-a012-53ce-9433-4b44337955ee",
+      "name": "Nota — passo 42",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        3550
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 43 · Responder 502 (worker)**\n\nResponde ao site que o worker não aceitou a importação.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "55680ba6-2f51-5500-8331-e84416e50129",
+      "name": "Nota — passo 43",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        3950
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 44 · Responder 202 (importar)**\n\nResponde ao site que a importação foi aceita, com os identificadores.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "afbc9290-692e-597e-8621-8031233e50e2",
+      "name": "Nota — passo 44",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        3150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 45 · Primeira extração?**\n\nPrimeira extração segue para a reserva da licitação; extração nova vai direto à republicação.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "539a25a4-518e-5020-a4e6-40319f123da0",
+      "name": "Nota — passo 45",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        3150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 46 · Lease e → extraindo**\n\nReserva a licitação para este fluxo por até 2 horas e a coloca em extração, para que a fila não a pegue no meio.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "be47d9a4-cba8-5f72-b19e-3c5f7c885d7e",
+      "name": "Nota — passo 46",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        2900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 47 · Tomou o lease?**\n\nSe a reserva deu certo, segue; se outro fluxo pegou a licitação antes, registra o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e60b13de-4a66-5e77-8913-9a898e5f3ec5",
+      "name": "Nota — passo 47",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        2900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 48 · → respondida**\n\nMarca a licitação como respondida, como a extração normal faria.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9932d125-9037-5580-b923-363ab16e2eb9",
+      "name": "Nota — passo 48",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        2700
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 49 · Publicar a importada (W24)**\n\nChama o W24 para verificar e publicar a extração importada.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "67b0ab28-8292-5c7e-9585-42598d704119",
+      "name": "Nota — passo 49",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        2700
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 50 · Republicar a importada (W24)**\n\nChama o W24 para republicar com a verificação que o worker já gravou.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "764f07e6-3c2d-54fb-b9b6-4e80aa76b392",
+      "name": "Nota — passo 50",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        3450
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 51 · Resultado da importação**\n\nResume o resultado: publicada ou republicada, com os números da verificação, ou a falha. Custo de API zero.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "265a4d16-d223-56da-854e-044e18d37b01",
+      "name": "Nota — passo 51",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        3150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 52 · Soltar o lease e registrar**\n\nLibera a reserva deste fluxo e grava a ação em execucoes_workflow.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "319f87dd-bb48-5e6e-94a4-a4120480ef5f",
+      "name": "Nota — passo 52",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        3150
+      ]
+    }
+  ],
+  "connections": {
+    "POST fopa/verificar": {
+      "main": [
+        [
+          {
+            "node": "Abrir execução do W01",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir execução do W01": {
+      "main": [
+        [
+          {
+            "node": "Responder 202 (verificar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder 202 (verificar)": {
+      "main": [
+        [
+          {
+            "node": "W01 seco (sem esperar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST fopa/processar": {
+      "main": [
+        [
+          {
+            "node": "Validar pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar pedido": {
+      "main": [
+        [
+          {
+            "node": "Pedido válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedido válido?": {
+      "main": [
+        [
+          {
+            "node": "Buscar a compra no PNCP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 422",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar a compra no PNCP": {
+      "main": [
+        [
+          {
+            "node": "Normalizar a compra",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar a compra": {
+      "main": [
+        [
+          {
+            "node": "Escopo (worker)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escopo (worker)": {
+      "main": [
+        [
+          {
+            "node": "Registrar a compra (db/020)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar a compra (db/020)": {
+      "main": [
+        [
+          {
+            "node": "Pedir processamento (db/022)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedir processamento (db/022)": {
+      "main": [
+        [
+          {
+            "node": "Separar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separar": {
+      "main": [
+        [
+          {
+            "node": "Responder 202 (processar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder 202 (processar)": {
+      "main": [
+        [
+          {
+            "node": "Algo para a fila?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Uma por reservada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Algo para a fila?": {
+      "main": [
+        [
+          {
+            "node": "W10 (sem esperar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uma por reservada": {
+      "main": [
+        [
+          {
+            "node": "W20 direto, forcar (sem esperar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST fopa/reverificar": {
+      "main": [
+        [
+          {
+            "node": "Pedido (reverificar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedido (reverificar)": {
+      "main": [
+        [
+          {
+            "node": "Responder 202 (reverificar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder 202 (reverificar)": {
+      "main": [
+        [
+          {
+            "node": "POST /reverificar no worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /reverificar no worker": {
+      "main": [
+        [
+          {
+            "node": "Reverificou?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reverificou?": {
+      "main": [
+        [
+          {
+            "node": "Republicar (W24)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET /versao (retomada)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resultado da reverificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /versao (retomada)": {
+      "main": [
+        [
+          {
+            "node": "Verificação já gravada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificação já gravada": {
+      "main": [
+        [
+          {
+            "node": "Achou a verificação?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Achou a verificação?": {
+      "main": [
+        [
+          {
+            "node": "Republicar (W24)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resultado da reverificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Republicar (W24)": {
+      "main": [
+        [
+          {
+            "node": "Resultado da reverificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resultado da reverificação": {
+      "main": [
+        [
+          {
+            "node": "Registrar a reverificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST fopa/importar-respostas": {
+      "main": [
+        [
+          {
+            "node": "Pedido (importar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedido (importar)": {
+      "main": [
+        [
+          {
+            "node": "Importação válida?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Importação válida?": {
+      "main": [
+        [
+          {
+            "node": "Estado para importar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 422 (importar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado para importar": {
+      "main": [
+        [
+          {
+            "node": "Pode importar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pode importar?": {
+      "main": [
+        [
+          {
+            "node": "POST /importar-respostas no worker",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 409 (importar)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 422 (desconhecida)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /importar-respostas no worker": {
+      "main": [
+        [
+          {
+            "node": "Importou?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Importou?": {
+      "main": [
+        [
+          {
+            "node": "Responder 202 (importar)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 422 (respostas)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 502 (worker)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder 202 (importar)": {
+      "main": [
+        [
+          {
+            "node": "Primeira extração?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Primeira extração?": {
+      "main": [
+        [
+          {
+            "node": "Lease e → extraindo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Republicar a importada (W24)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lease e → extraindo": {
+      "main": [
+        [
+          {
+            "node": "Tomou o lease?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tomou o lease?": {
+      "main": [
+        [
+          {
+            "node": "→ respondida",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resultado da importação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "→ respondida": {
+      "main": [
+        [
+          {
+            "node": "Publicar a importada (W24)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publicar a importada (W24)": {
+      "main": [
+        [
+          {
+            "node": "Resultado da importação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Republicar a importada (W24)": {
+      "main": [
+        [
+          {
+            "node": "Resultado da importação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resultado da importação": {
+      "main": [
+        [
+          {
+            "node": "Soltar o lease e registrar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "errorWorkflow": "{{WF:W90}}",
+    "saveManualExecutions": true,
+    "availableInMCP": false
+  }
+}

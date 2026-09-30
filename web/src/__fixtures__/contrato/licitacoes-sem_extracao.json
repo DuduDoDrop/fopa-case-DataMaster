@@ -1,0 +1,16 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/licitacoes?filtro=sem_extracao",
+ "status": 200,
+ "corpo": {
+  "total": 0,
+  "page": 1,
+  "por_pagina": 50,
+  "paginas": 0,
+  "recorte": "ano_minimo",
+  "situacao": "todas",
+  "de": null,
+  "ate": null,
+  "itens": []
+ }
+}

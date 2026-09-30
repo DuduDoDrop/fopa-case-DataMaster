@@ -1,0 +1,45 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/resumo?recorte=todos",
+ "status": 200,
+ "corpo": {
+  "licitacoes": 5,
+  "abertas": 2,
+  "urgentes": 1,
+  "aviso": 1,
+  "extraidas": 3,
+  "ancoradas": 44,
+  "respondidas": 44,
+  "respostas_revisar": 5,
+  "custo_conhecido_brl": 4.83,
+  "custo_sem_preco": 0,
+  "extraidas_local": 2,
+  "com_vencedor": 0,
+  "desfeitas": 0,
+  "antes_do_recorte": 2,
+  "para_revisar": 1,
+  "ultima_coleta": {
+   "id": 4,
+   "workflow": "W01",
+   "script_legado": null,
+   "iniciado_em": "2026-09-26T08:40:42.310136+00:00",
+   "duracao_s": null,
+   "cego": true,
+   "status": "ok"
+  },
+  "teto_brl_dia": null,
+  "auto_processar": true,
+  "provedor": "simulado",
+  "recorte": "todos",
+  "ano_minimo": 2026,
+  "fora_recorte": 2,
+  "situacao": "todas",
+  "sem_documento_fonte": 0,
+  "historico": 3,
+  "jev": {
+   "escopo_avaliadas": 2,
+   "escopo_discordancias": 1,
+   "p_filtro_ok_medio": 0.565
+  }
+ }
+}

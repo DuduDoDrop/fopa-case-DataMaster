@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FOPA — licitações de folha</title>
+    <!-- O tema (claro ou escuro) antes da primeira pintura, para a página não piscar branca; a mesma regra de
+         src/lib/tema.ts: a escolha guardada, senão a do sistema. -->
+    <script>
+      try {
+        var t = localStorage.getItem('fopa-tema');
+        if (t !== 'claro' && t !== 'escuro') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+        document.documentElement.dataset.tema = t;
+      } catch (e) {}
+    </script>
+    <!-- IBM Plex, a mesma tipografia do RELATORIO.html: site e relatório têm
+         de parecer um sistema só. Sem rede, os tokens caem no system-ui. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap"
+    />
+  </head>
+  <body>
+    <div id="raiz"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

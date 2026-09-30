@@ -1,0 +1,150 @@
+/* CSS do RELATORIO.html por licitacao, extraido de scripts/fopa/pagina.py CSS.
+   O RELATORIO continua sendo gerado pelo pagina.py (worker /render); o site
+   reaproveita daqui os componentes da pagina de detalhe: pills de veredito (.v),
+   barra de status (tr.st-*), condicoes (.cond, .tagsusp), evidencia (blockquote
+   .naoaplica/.semev/.faltaev/.conf), distribuicao da Q13 (table.dist), legenda. */
+:root{color-scheme:light;--ink:#11243D;--ink2:#1B3454;--paper:#FFFFFF;--surf:#FFFFFF;--surf2:#F4F2EE;
+--line:#DCD7CC;--muted:#55606E;--red:#B23A32;--reds:#F6E4E2;--teal:#1D6F63;
+--teals:#DDEAE7;--amber:#8A6A18;--ambers:#F5EBD2;
+--sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+--mono:'IBM Plex Mono',ui-monospace,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+font-size:15px;line-height:1.55;padding-inline:16px}
+.wrap{max-width:1180px;margin-inline:auto;padding-block:32px 64px;
+display:flex;flex-direction:column;gap:22px}
+header h1{font-size:30px;font-weight:600;margin:0 0 6px;line-height:1.2}
+.sub{color:var(--muted);margin:0;font-size:14.5px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;
+text-transform:uppercase;color:var(--red);margin:0 0 8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile b{display:block;font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+.tile span{font-size:12.5px;color:var(--muted)}
+.tile.ok b{color:var(--teal)} .tile.al b{color:var(--red)}
+table{width:100%;border-collapse:collapse;background:var(--surf);
+border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th{background:var(--ink);color:var(--paper);text-align:left;font-size:12.5px;
+letter-spacing:.06em;text-transform:uppercase;padding:11px 14px;font-weight:600}
+td{padding:13px 14px;border-top:1px solid var(--line);vertical-align:top;
+font-size:14.5px;overflow-wrap:anywhere}
+tr:hover td{background:var(--surf2)}
+/* O nowrap existe para o CÓDIGO da pergunta ("Q13"), que não pode quebrar no
+   meio. Ele herdava para o texto da pergunta aninhado, que então não quebrava
+   linha nenhuma e transbordava por cima da coluna da resposta. */
+.qid{font-family:var(--mono);font-weight:600;white-space:nowrap;
+width:23ch;min-width:15ch}
+.perg{color:var(--muted);font-size:13px;display:block;margin-top:4px;
+white-space:normal;overflow-wrap:anywhere;font-family:var(--sans);
+font-weight:400;line-height:1.4}
+.info a{font-family:var(--mono);font-size:12.5px;color:var(--teal);
+text-decoration:none;border-bottom:1px dotted var(--teal);word-break:break-all}
+.info a:hover{background:var(--teals)}
+.nl{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.v{font-family:var(--mono);font-size:11.5px;padding:3px 8px;border-radius:999px;
+white-space:nowrap;border:1px solid transparent}
+.v.APROVADO{background:var(--teals);color:var(--teal);border-color:var(--teal)}
+.v.REVISAR{background:var(--ambers);color:var(--amber);border-color:var(--amber)}
+.v.REPROVADO{background:var(--reds);color:var(--red);border-color:var(--red)}
+/* A barra da pergunta crítica era VERMELHA, e vermelho no resto do relatório
+   significa defeito: trecho não conferido, soma que não bate, evidência
+   ausente. Uma linha perfeita, aprovada e ancorada, aparecia marcada como se
+   houvesse algo errado só por ser importante.
+   Importância e problema são eixos diferentes e agora têm cores diferentes: a
+   crítica ganha a cor da tinta e um rótulo que diz o que é. */
+/* A BARRA DA PRIMEIRA COLUNA CODIFICA O STATUS, e nada mais.
+   Antes ela marcava "pergunta crítica" — e importância não é status: uma
+   crítica perfeita aparecia marcada como se houvesse algo errado. A crítica
+   passou a ser um RÓTULO de texto (.marca), e a barra ficou livre para dizer
+   a única coisa que o leitor precisa ver de relance:
+       verde     conferido — o trecho existe na página citada
+       âmbar     precisa de olho humano — página corrigida, conflito, regra
+       vermelho  não localizado — a resposta não está nos documentos
+   Três cores, três significados, nenhum acúmulo. */
+tr.st-ok td:first-child{box-shadow:inset 3px 0 0 var(--teal)}
+tr.st-rev td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
+tr.st-nl td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+/* CONDICOES DE OPERACAO — o que o sistema sabe sobre a propria execucao.
+   Fica ACIMA do questionario de proposito: quem le as respostas precisa saber
+   antes, nao depois, se a leitura aconteceu com um documento faltando ou com
+   OCR num anexo digitalizado. */
+/* A TAG e deliberadamente mais forte que o resto do bloco de condicoes.
+   As outras condicoes dizem "leia com ressalva"; esta diz "alguem tentou
+   manipular este documento". Sao categorias diferentes de aviso. */
+.tagsusp{display:inline-block;background:var(--red);color:#fff;
+font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.04em;
+padding:4px 10px;border-radius:6px;margin:0 0 10px}
+.cond{margin:0 0 18px;padding:14px 16px;border-radius:10px;
+border:1px solid var(--line);background:var(--surf);font-size:13.5px;
+line-height:1.5}
+.cond.deg{border-left:4px solid var(--amber);background:var(--ambers)}
+.cond.ok{border-left:4px solid var(--teal)}
+.cond b{font-family:var(--sans);letter-spacing:.02em}
+.cond ul{margin:7px 0 0;padding-left:18px}
+.cond li{margin:3px 0;color:var(--ink)}
+.cond .meta{color:var(--muted);font-family:var(--mono);font-size:12px;
+margin-top:8px;display:block}
+.legenda{display:flex;align-items:center;gap:14px;margin:0 0 10px;
+flex-wrap:wrap}
+.lg{font-size:12px;font-family:var(--mono);color:var(--muted);
+padding-left:11px;position:relative}
+.lg::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
+width:3px;height:13px;border-radius:2px}
+.lg-ok::before{background:var(--teal)}
+.lg-rev::before{background:var(--amber)}
+.lg-nl::before{background:var(--red)}
+.lgnota{font-size:11.5px;color:var(--muted);font-style:italic}
+.marca{display:inline-block;font-family:var(--mono);font-size:10.5px;
+letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);
+border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-top:5px}
+details{margin-top:9px}
+summary{cursor:pointer;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+summary:hover{color:var(--ink)}
+blockquote{margin:9px 0 0;padding:10px 13px;background:var(--surf2);
+border-left:3px solid var(--line);font-size:13.5px;color:var(--ink);
+font-family:var(--mono);line-height:1.5;white-space:pre-wrap}
+.conf{border-left-color:var(--amber);background:var(--ambers)}
+.naoaplica{border-left-color:var(--teal);background:var(--teals);color:var(--teal);font-family:var(--sans)}
+.semev{border-left-color:var(--muted);background:var(--surf2);color:var(--muted);font-family:var(--sans);font-style:italic}
+.faltaev{border-left-color:var(--red);background:var(--reds);color:var(--red);font-family:var(--sans)}
+/* Distribuição estruturada da Q13 */
+.avisodist{margin:9px 0 0;padding:10px 13px;background:var(--ambers);
+color:var(--amber);border-left:3px solid var(--amber);font-size:13.5px;
+line-height:1.45;border-radius:0 6px 6px 0}
+table.dist{width:100%;margin:10px 0 0;border:1px solid var(--line);
+border-radius:8px;font-size:13px;background:var(--surf)}
+table.dist caption{caption-side:top;text-align:left;font-family:var(--mono);
+font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+color:var(--muted);padding:8px 12px 5px}
+table.dist td{padding:6px 12px;border-top:1px solid var(--line);font-size:13px;
+vertical-align:middle}
+table.dist tr:first-child td{border-top:none}
+.dl{color:var(--ink2);white-space:nowrap;padding-right:10px}
+.dq{font-family:var(--mono);text-align:right;width:11ch;min-width:9ch;
+white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
+.db{width:42%;padding-right:14px}
+.db span{display:block;height:9px;border-radius:3px;background:var(--teal);
+min-width:2px}
+.dv{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;
+white-space:nowrap}
+tr.dt td{border-top:2px solid var(--line);background:var(--surf2);
+font-weight:600}
+.dok{font-size:12px;color:var(--teal);font-family:var(--mono)}
+.dbad{font-size:12px;color:var(--red);font-family:var(--mono)}
+.dmut{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.somatot{margin:9px 0 0;font-size:13px;color:var(--muted);font-family:var(--mono)}
+h2{font-size:18px;margin:14px 0 0;font-weight:600}
+.nota{background:var(--surf);border:1px solid var(--line);border-left:4px solid var(--red);
+border-radius:8px;padding:14px 16px;font-size:14px}
+/* Voltar ao painel. Sem isto o único caminho de volta é o botão do navegador,
+   e quem abre o relatório por duplo clique no arquivo não tem histórico nenhum
+   para voltar. */
+.voltar{display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+font-size:13.5px;color:var(--ink2);background:var(--surf);padding:8px 14px;
+border:1px solid var(--line);border-radius:8px;align-self:flex-start}
+.voltar:hover{border-color:var(--ink2);background:var(--surf2)}
+.voltar b{font-family:var(--mono);color:var(--red)}
+.rodape-nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+footer{border-top:1px solid var(--line);padding-top:14px;font-size:12.5px;color:var(--muted)}
+@media(max-width:640px){.perg{max-width:none}td,th{padding:10px}}
+@media print{body{background:#fff}.tile,table{break-inside:avoid}}

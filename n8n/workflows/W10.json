@@ -1,0 +1,720 @@
+{
+  "name": "W10 Fila",
+  "nodes": [
+    {
+      "parameters": {
+        "width": 540,
+        "height": 300,
+        "content": "## W10 · Fila (nunca bloqueia)\nTodo dia às 6h (a cada 10 min até 7h50), pelo W01/W11 ou à mão. A regra mora no Postgres (db/021):\n1. devolve leases vencidos (worker morto no meio vira a falha do passo, backoff 15 min → 2 h → 12 h);\n2. disjuntor: ≥ 3 erros do W20 em 30 min sem sucesso → e-mail (um por meia hora) e nada de claim (regra — scripts/20_monitor.py:600-617);\n3. `fn_reivindicar`: até 4 − extraindo, sem pegar o que tem lease vivo, só escopo + recorte de 2026 (ADR-015);\n4. dispara o W20 por licitação **sem esperar** (o W10 não segura o n8n).\nCom `orcamento.auto_processar = false` a rodada agendada não reivindica nada; a do site (W11) e a manual, sim.\n**24/09/2026: a fila roda todo dia às 6h** — a cada 10 min das 6h às 7h50 (até ~48 por manhã, 4 por rodada). Sem provedor real ela só baixa e lê (db/032); o teto do dia (`orcamento`) manda no gasto."
+      },
+      "id": "538d2885-8c8d-5888-ad96-5671ac62d77a",
+      "name": "Sobre o W10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/10 6-7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "1e250ace-3638-5487-a388-51f3c05e0f87",
+      "name": "Todo dia às 6h (a cada 10 min até 7h50)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "40f05385-ae94-579d-98ce-eb0902316e5e",
+      "name": "Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        396
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "d824dffe-3999-5d55-bacb-9f0991de9189",
+      "name": "Chamado por outro fluxo",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        792
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — toda rodada deixa rastro (plano §5, W10 passo 6); gatilho = agenda | manual | subfluxo (W01/W11)\nINSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status)\nVALUES ('W10', $1, $2, 'em_curso') RETURNING id, gatilho",
+        "options": {
+          "queryReplacement": "={{ [ $execution.id, (() => { const rodou = (n) => { try { return $(n).isExecuted; } catch (e) { return false; } }; return rodou('Todo dia às 6h (a cada 10 min até 7h50)') ? 'agenda' : rodou('Chamado por outro fluxo') ? 'subfluxo' : 'manual'; })() ] }}"
+        }
+      },
+      "id": "0e6e7ea2-7bb3-5905-930d-41077ffe540a",
+      "name": "Abrir execução",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        288,
+        396
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — db/021 fn_liberar_leases_vencidos: baixando/lendo/extraindo com lease vencido viram a falha do passo\nSELECT count(*)::int AS liberados, COALESCE(json_agg(x), '[]'::json) AS detalhe\n  FROM fn_liberar_leases_vencidos() x",
+        "options": {}
+      },
+      "id": "6e62f727-1182-58b3-bdb2-9b2ad6cb3da1",
+      "name": "Liberar leases vencidos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        576,
+        396
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — db/021 fn_disjuntor_w20_aberto (20_monitor.py:600-617) + orçamento vigente\nSELECT fn_disjuntor_w20_aberto() AS aberto, o.max_por_execucao,\n       COALESCE(o.auto_processar, true) AS auto_processar\n  FROM (SELECT 1) u LEFT JOIN orcamento o ON o.vigente",
+        "options": {}
+      },
+      "id": "08f1b28d-37f5-52b2-a9b5-60ad484c5162",
+      "name": "Disjuntor e orçamento",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        396
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "621e6b1a-6400-5ba3-afdf-5530850542ea",
+              "leftValue": "={{ $json.aberto }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "8b0465d7-5910-5f5b-a249-87aba3ff80c0",
+      "name": "Disjuntor aberto?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        396
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — e-mail DESLIGADO (o produto manda só DOIS e-mails — licitação nova, pelo W01,\n-- e a extração pedida no botão do site, pelo W24; db/038-039). O fluxo segue igual; este nó não enfileira.\nSELECT NULL::bigint AS id",
+        "options": {}
+      },
+      "id": "fd1a7d2a-a1c6-55a8-bdf9-2113dbe5e4ae",
+      "name": "E-mail: fonte indisponível",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        132
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE execucoes_workflow\n   SET status = 'disjuntor', duracao_s = extract(epoch FROM now() - iniciado_em), contadores = $2::jsonb\n WHERE id = $1",
+        "options": {
+          "queryReplacement": "={{ [ $('Abrir execução').first().json.id, JSON.stringify({ liberados: $('Liberar leases vencidos').first().json.liberados, reivindicadas: 0, disjuntor: true, email_id: $('E-mail: fonte indisponível').first().json.id ?? null }) ] }}"
+        }
+      },
+      "id": "2c2a9019-96c5-51ab-847a-a2f4f9c3f037",
+      "name": "Fechar (disjuntor)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1728,
+        132
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — db/021 fn_reivindicar: até 4 - extraindo, sem lease vivo, escopo + recorte de 2026, na ordem da fila.\n-- Agendada com auto_processar = false: limite 0 (nada é reivindicado, nada é travado).\nSELECT controle, estado, ordem\n  FROM fn_reivindicar('W10:' || $1,\n       CASE WHEN $3::bool OR $4 <> 'agenda' THEN NULLIF(NULLIF($2::text, ''), 'null')::int ELSE 0 END)",
+        "options": {
+          "queryReplacement": "={{ [ $execution.id, $('Disjuntor e orçamento').first().json.max_por_execucao, $('Disjuntor e orçamento').first().json.auto_processar, $('Abrir execução').first().json.gatilho ] }}"
+        }
+      },
+      "id": "dea75024-2a87-533b-b696-3450eb0995e6",
+      "name": "Reivindicar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        660
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b3296625-fa23-594b-a86f-aa7ba21b8b22",
+              "leftValue": "={{ $json.controle }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "8376febc-3df0-5db2-a967-7d627433ba51",
+      "name": "Tem licitação?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1728,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W20}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "controle": "={{ $json.controle }}",
+            "forcar": false
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "controle",
+              "displayName": "controle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "forcar",
+              "displayName": "forcar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "03b40456-f689-5924-8748-ee20e143676f",
+      "name": "Disparar W20 (sem esperar)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2016,
+        528
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "9a9fce89-8888-5bbd-93a5-6bf9b7e45735",
+      "name": "Fila vazia",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE execucoes_workflow\n   SET status = 'ok', duracao_s = extract(epoch FROM now() - iniciado_em),\n       contadores = $2::jsonb, argumentos = $3::jsonb\n WHERE id = $1\nRETURNING id, contadores",
+        "options": {
+          "queryReplacement": "={{ [ $('Abrir execução').first().json.id, JSON.stringify({ liberados: $('Liberar leases vencidos').first().json.liberados, reivindicadas: $('Reivindicar').all().filter(i => i.json.controle).length, auto_processar: $('Disjuntor e orçamento').first().json.auto_processar }), JSON.stringify({ controles: $('Reivindicar').all().filter(i => i.json.controle).map(i => i.json.controle), gatilho: $('Abrir execução').first().json.gatilho }) ] }}"
+        }
+      },
+      "id": "625418ec-719e-52ec-869e-5fe82fdf4326",
+      "name": "Fechar execução",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1728,
+        1144
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Todo dia às 6h (a cada 10 min até 7h50)**\n\nGatilho agendado: roda a cada 10 minutos, das 6h às 7h50, junto com a descoberta e antes do alerta diário.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c46a8b23-2792-5d2e-a6d7-88c644289d39",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Manual**\n\nGatilho manual, para rodar a fila pelo editor.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "bcc32c59-1449-5f74-8f05-6dac92a58a40",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        546
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · Chamado por outro fluxo**\n\nEntrada usada pelo W11 quando o site pede o processamento de licitações.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "edaceeef-153a-5e07-9c42-6e38a98f56a1",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        942
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Abrir execução**\n\nAbre a linha da rodada em execucoes_workflow, com o gatilho que a disparou.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "19afecc7-bd57-51fa-b2ce-65486b43b586",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        546
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Liberar leases vencidos**\n\nLibera licitações presas por um processo que morreu no meio. O passo interrompido vira falha comum, com nova tentativa mais tarde.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "fde8de61-c026-55f4-9563-2fe0c07cfd37",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        546
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Disjuntor e orçamento**\n\nLê se o disjuntor está aberto (falhas em série) e, no orçamento, o limite por rodada e se o processamento automático está ligado.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "0a2f6d48-bc8b-5c5f-bcbc-56c26a6109c2",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        546
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · Disjuntor aberto?**\n\nCom o disjuntor aberto, a rodada não processa nada; senão, segue para a reserva.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "21f500dc-6da5-56d2-bd26-bdf582d37db2",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        546
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · E-mail: fonte indisponível**\n\nDesligado: o produto envia só dois e-mails. O disjuntor continua valendo e aparece nas páginas Execuções e Saúde.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f9240e05-7b8d-5bfc-83ab-981eba22ce54",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        282
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Reivindicar**\n\nO banco escolhe e reserva as próximas licitações: no máximo 4 extrações ao mesmo tempo, só dentro do escopo, com prazo aberto e nova tentativa liberada.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e8b3b4c8-116b-5949-bdd4-87ad1299df3d",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        810
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Fechar (disjuntor)**\n\nFecha a rodada com status “disjuntor” e os contadores.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c26c8ba1-f331-5bae-97ed-fb6c2b50da23",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        282
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · Tem licitação?**\n\nSe o banco reservou alguma licitação, despacha; senão, a fila está vazia.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "54551615-116c-5bfd-aeb7-f8de10eba408",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        810
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Fechar execução**\n\nFecha a rodada com duração, contadores e a lista das licitações reservadas.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4208d0f4-407c-561e-a37c-788b7e24fe86",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        1294
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Disparar W20 (sem esperar)**\n\nChama o W20 para cada licitação reservada, sem esperar: processar leva minutos, e a fila não pode ficar parada.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "658b21c2-b23d-5f94-9ee2-ba6377b56341",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        678
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 15 · Fila vazia**\n\nFim explícito quando não há nada a processar.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f106ca73-81e7-5fc3-802f-1c14e93457d5",
+      "name": "Nota — passo 15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        1030
+      ]
+    }
+  ],
+  "connections": {
+    "Manual": {
+      "main": [
+        [
+          {
+            "node": "Abrir execução",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chamado por outro fluxo": {
+      "main": [
+        [
+          {
+            "node": "Abrir execução",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir execução": {
+      "main": [
+        [
+          {
+            "node": "Liberar leases vencidos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Liberar leases vencidos": {
+      "main": [
+        [
+          {
+            "node": "Disjuntor e orçamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disjuntor e orçamento": {
+      "main": [
+        [
+          {
+            "node": "Disjuntor aberto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disjuntor aberto?": {
+      "main": [
+        [
+          {
+            "node": "E-mail: fonte indisponível",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reivindicar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "E-mail: fonte indisponível": {
+      "main": [
+        [
+          {
+            "node": "Fechar (disjuntor)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reivindicar": {
+      "main": [
+        [
+          {
+            "node": "Tem licitação?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fechar execução",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem licitação?": {
+      "main": [
+        [
+          {
+            "node": "Disparar W20 (sem esperar)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fila vazia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Todo dia às 6h (a cada 10 min até 7h50)": {
+      "main": [
+        [
+          {
+            "node": "Abrir execução",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "errorWorkflow": "{{WF:W90}}",
+    "saveManualExecutions": true,
+    "availableInMCP": false
+  }
+}

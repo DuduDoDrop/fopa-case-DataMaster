@@ -1,0 +1,110 @@
+# ---- segredos: nunca versionar
+.env
+.env.*
+# ...mas o .env.exemplo E versionado: ele documenta QUAIS variaveis existem
+# sem carregar nenhum valor. Sem esta negacao o `.env.*` acima o engole em
+# silencio, e o arquivo que ensina a configurar o projeto nunca chega a quem
+# clona. Foi o que aconteceu: so o `git status` vazio denunciou.
+!.env.exemplo
+*.key
+.fopa_key
+credentials.json
+.credentials.json
+
+# ---- ambiente
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---- amostras pesadas
+# Os PDFs baixados do PNCP somam ~78 MB e são REPRODUTÍVEIS:
+#   python scripts/01_coleta_editais_abertos.py
+# Só a evidência é versionada (metadados, inventários com SHA-256 e o
+# texto extraído), mais um conjunto-fixture para a demo rodar sem rede.
+amostras/**/*.pdf
+!amostras/_fixture/**/*.pdf
+amostras/_ocr_benchmark/*.txt
+
+# ---- saídas geradas
+# ---- saidas/ e tudo GERADO... com uma excecao que custou caro descobrir.
+# Auditorias, planilhas e HTML se refazem com `13_reverificar.py` a custo zero,
+# entao nao pertencem ao git. Mas `_catalogo_escopo.json` NAO e gerado: sao 23
+# casos de escopo julgados a mao, e e a unica fonte INDEPENDENTE que valida o
+# filtro - um filtro conferido por ele mesmo nao vale nada.
+#
+# A licao veio de um vizinho: `_corpus_escopo.json`, tambem ignorado, foi
+# apagado por uma reexecucao do coletor em 23/09, e 217 registros se perderam
+# sem ter de onde voltar. O catalogo e pior: o corpus se recoleta numa janela
+# nova, o julgamento humano nao se recoleta de jeito nenhum.
+#
+# E o padrao precisa ser `saidas/*`, nao `saidas/`: o git NAO re-inclui arquivo
+# dentro de diretorio excluido. Com `saidas/`, a negacao abaixo e ignorada em
+# silencio - o `git check-ignore` continuava dizendo "ignorado" enquanto o
+# commit dizia que estava versionado. Excluir o CONTEUDO deixa a negacao valer.
+saidas/*
+!saidas/_catalogo_escopo.json
+*.xlsx
+!docs/**/*.xlsx
+
+# ---- Obsidian: estado de janela, não configuração
+**/.obsidian/workspace.json
+**/.obsidian/workspace-mobile.json
+.trash/
+
+# ---- sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---- vault v1: APAGADO em 23/09/2026.
+# A regra fica porque a licao dela e mais util que o padrao: sem a barra
+# inicial o git casa em qualquer nivel, e no Windows ignora maiusculas —
+# 'FOPA/' excluia 'scripts/fopa/' e seis modulos ficaram fora do repositorio
+# sem nenhum aviso. Ancore sempre que o alvo for uma pasta especifica.
+# Ancorado na raiz DE PROPOSITO. Sem a barra inicial, o git casa o padrao em
+# qualquer nivel — e no Windows a comparacao ignora maiusculas, entao 'FOPA/'
+# tambem excluia 'scripts/fopa/'. Seis modulos do pacote ficaram fora do
+# repositorio sem nenhum aviso: distribuicao, escopo, metadados, pagina,
+# painel e sintetico. O Docker continuava funcionando porque le .dockerignore,
+# entao nada quebrava aqui — quebraria na maquina de quem clona o repositorio.
+/FOPA/
+
+# ~2 MB de binario baixavel. O setup.ps1 busca; versionar trocaria
+# uma divida de reprodutibilidade por um repo inchado.
+tessdata/
+
+# Logs de execucao em segundo plano. Entraram no repo em 23/09/2026 por um
+# `git add -A` no meio de um lote, e ai um deles ficou RASTREADO enquanto o
+# processo ainda escrevia nele -- `git stash` nao conseguiu mais mexer no
+# arquivo ("unable to unlink old 'recall2.log': Invalid argument") e o stash
+# ficou preso com trabalho dentro. Log de execucao e artefato, nao fonte.
+*.log
+*.err
+
+# workspace de execucao de planos (ledger, briefs)
+.superpowers/
+
+# ---- snapshots do acervo (migracao/congelar.py)
+# Copia congelada de saidas/ (~300 MB por passe) mais manifesto com sha256 dos
+# PDFs; e derivado do que ja esta ignorado acima e se refaz com um comando.
+/acervo/
+
+# Owner, chave da API pública, cookie e token MCP do fopa-n8n (n8n/bootstrap.py).
+# Gerados por máquina, irrecuperáveis pelo git e nunca versionados.
+/n8n/.segredos/
+
+# Rascunhos de fluxos em construcao (importados com n8n/importar.py --pasta); nunca versionados.
+/n8n/rascunho/
+
+# Backups operacionais (docker/backup.py): dumps dos bancos e export cifrado do n8n. Nunca versionar.
+/backups/
+# Pontos de restauração (docker/ponto.py): banco + imagens da produção. Nunca versionar.
+/pontos/
+
+# Produção (F8, docs/DEPLOY.md): certificado interno do worker (a CHAVE privada
+# mora aqui) e a cópia do Caddyfile.exemplo feitas na VPS. Nunca versionar.
+/docker/interno/
+/docker/Caddyfile

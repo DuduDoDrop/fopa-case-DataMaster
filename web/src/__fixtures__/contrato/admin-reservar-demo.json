@@ -1,0 +1,14 @@
+{
+ "metodo": "POST",
+ "caminho": "/api/admin/reservar-demo",
+ "status": 200,
+ "corpo": {
+  "reservadas": [
+   "12345678000109-1-000009/2026"
+  ],
+  "nao_encontradas": [
+   "99999999999999-1-000001/2026"
+  ],
+  "fim_prazo": "2026-10-03T08:40:44.752679+00:00"
+ }
+}

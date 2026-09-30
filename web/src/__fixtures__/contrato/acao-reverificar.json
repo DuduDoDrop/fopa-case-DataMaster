@@ -1,0 +1,8 @@
+{
+ "metodo": "POST",
+ "caminho": "/api/acoes/reverificar",
+ "status": 202,
+ "corpo": {
+  "aceito": "12345678000101-1-000001/2026"
+ }
+}

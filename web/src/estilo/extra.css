@@ -1,0 +1,484 @@
+/* Complementos do site que o HTML da v2 não tinha: menu, paginação,
+   formulários do admin, botão desabilitado. Só os tokens de web/design
+   (:root de painel.css/relatorio.css); o modo escuro (26/09, no fim deste
+   arquivo) é o mesmo jogo de tokens com outros valores.
+   Os dois CSS de referência entram com escopo (.pg-painel / .pg-relatorio,
+   ver vite.config.ts); aqui vai só o que falta neles. */
+
+/* ---- menu: mono, cor da tinta, para não competir com o conteúdo */
+nav.menu{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:center;
+max-width:1240px;margin:0 auto;padding:14px 0 0;font-family:var(--mono);
+font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav.menu a{color:var(--ink2);text-decoration:none;padding:4px 0;
+border-bottom:2px solid transparent}
+nav.menu a:hover{border-bottom-color:var(--line)}
+nav.menu a.active{color:var(--ink);border-bottom-color:var(--ink)}
+nav.menu .marcafopa{font-weight:600;color:var(--ink)}
+/* e-mail, tema e "Atualizar" andam juntos, à direita: quando o menu não cabe numa linha (o do admin, com a Governança
+   e um e-mail longo, pede 1.389 px de 1.240), o grupo desce inteiro, em vez de o tema e o "Atualizar" caírem soltos à
+   esquerda */
+nav.menu .conta{margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:4px 18px}
+nav.menu .quem{color:var(--muted);letter-spacing:.04em}
+/* o e-mail é a única coisa em minúsculas no cabeçalho; o papel ao lado segue as maiúsculas do menu */
+nav.menu .quem .email{text-transform:lowercase}
+
+/* ---- âmbar = precisa de olho humano (README §2); o tile só tinha ok/al */
+.pg-painel .tile.am b{color:var(--amber)}
+
+/* ---- rótulos do card: .marca e .tagsusp são do relatorio.css (mesmos
+   valores), usados no card para procedência e tags */
+.pg-painel .marca{display:inline-block;font-family:var(--mono);font-size:10.5px;
+letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);
+border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.pg-painel .tagsusp{display:inline-block;background:var(--red);color:#fff;
+font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.04em;
+padding:4px 10px;border-radius:6px}
+.pg-painel .rotulos{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:9px 0 0}
+.pg-painel .rotulos:empty{display:none}
+
+/* ---- botão que não pode agir: desabilitado, com o motivo no title */
+.pg-painel .acoes a[aria-disabled=true],
+.pg-relatorio a.voltar[aria-disabled=true]{opacity:.55;cursor:not-allowed}
+.pg-painel button:disabled,.pg-relatorio button:disabled{opacity:.55;cursor:not-allowed}
+.pg-relatorio button.voltar{font-family:var(--sans);cursor:pointer;white-space:nowrap}
+
+/* ---- confirmação: o aviso de custo é âmbar (olho humano), o erro é vermelho */
+.pg-painel .achados p.alerta{background:var(--ambers);border:0;border-radius:6px;padding:9px 12px}
+.pg-painel .erro,.pg-relatorio .erro{color:var(--red);font-weight:600;font-size:13px}
+.pg-painel .achados p{margin:6px 0}
+
+/* ---- painel.css define `.acoes` duas vezes (card e bloco "achados"); a
+   segunda regra vaza para o card e soma 14px de margem acima dos botões.
+   No card vale a primeira. */
+.pg-painel .card .acoes{margin-top:0;gap:8px}
+
+/* ---- a barrinha do card pelo prazo: painel.css pinta vermelho (até 7 dias) e âmbar (até 20); acima de 20, verde.
+   Só a barra: o número do prazo segue na cor da tinta. */
+.pg-painel .card.folga{border-left:4px solid var(--teal)}
+
+/* ---- paginação */
+.pg-painel .paginacao{display:flex;gap:14px;align-items:center;justify-content:center}
+/* O container da grade (a barra de páginas de cima e os itens): o alvo da rolagem ao passar de página. Herda o
+   espaçamento de onde está (22px no .wrap do painel, 10px na section do Analytics), e a grade fica como era. */
+.pg-painel .grade-lista{display:flex;flex-direction:column;gap:inherit}
+
+/* ---- detalhe */
+.pg-relatorio .cabecalho{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+.pg-relatorio .cabecalho .sub + .sub{margin-top:4px}
+.pg-relatorio .resposta{white-space:pre-wrap}
+.pg-relatorio .diffv{display:block;font-family:var(--mono);font-size:12.5px;color:var(--amber)}
+.pg-relatorio .procedencia .marca{margin-top:0}
+.pg-relatorio .rodape-nav + .pg-painel:empty{display:none}
+@media(max-width:620px){.pg-relatorio .cabecalho{grid-template-columns:1fr}}
+
+/* ---- páginas de operação (execuções, e-mails, saúde, admin) */
+.pg-painel h2{font-size:18px;margin:14px 0 0;font-weight:600}
+.pg-painel section{display:flex;flex-direction:column;gap:12px}
+.pg-painel td.falhou{color:var(--red);font-weight:600}
+.pg-painel .aviso-verificacao{margin:0;font-size:14px;font-weight:600;color:var(--teal)}
+.pg-painel .aviso-verificacao.rodando{color:var(--amber)}
+.pg-painel .acoes-usuario{display:flex;flex-wrap:wrap;gap:6px}
+.pg-painel .bloqueado{color:var(--red);font-size:12px;font-weight:600}
+.pg-painel iframe.corpo-email{width:100%;min-height:420px;border:1px solid var(--line);
+border-radius:8px;background:#fff;margin-top:8px}
+.pg-painel a.primario{text-decoration:none;display:inline-block}
+.pg-painel .formulario{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.pg-painel .formulario label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+/* checkbox e radio: a caixinha AO LADO do texto (o radio do rótulo de escopo
+   ficava com a bolinha em cima e o texto embaixo, e ganhava a borda de input) */
+.pg-painel .formulario label:has(input[type=checkbox]),
+.pg-painel .formulario label:has(input[type=radio]){flex-direction:row;align-items:center}
+.pg-painel input:not([type=checkbox]):not([type=radio]):not([type=search]),.pg-painel select,.pg-painel textarea{
+padding:7px 10px;border:1px solid var(--line);border-radius:7px;font-family:var(--sans);
+font-size:13.5px;color:var(--ink);background:var(--surf)}
+.pg-painel select:disabled,.pg-painel input:disabled,.pg-painel textarea:disabled{opacity:.6;cursor:not-allowed}
+
+/* ---- contador + recorte de 2026 (ADR-015): o checkbox fica na linha do
+   contador, discreto, porque não é filtro — é o universo da lista */
+.pg-painel .contador{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;max-width:none}
+.pg-painel .recorte{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;cursor:pointer}
+
+/* ---- sinal do Jev: SCORE em rótulo (.marca), nunca cor de status. Só a
+   discordância com convicção ganha o âmbar de "olho humano" (README §2) */
+.pg-painel a.marca{text-decoration:none}
+.pg-painel .marca.jev-atencao,.pg-relatorio .marca.jev-atencao{color:var(--amber);
+border-color:var(--amber);background:var(--ambers)}
+.pg-relatorio td .marca.jev{margin-left:6px}
+
+/* ---- revisão: o formulário da decisão dentro da tabela das 17 */
+.pg-relatorio td .pg-painel .formulario{gap:8px}
+.pg-relatorio td .pg-painel .formulario label{font-size:12px}
+
+/* ---- QA visual (Chrome 1440 e 390 px, 24/09/2026) ---------------------- */
+
+/* Tabela larga no celular rola dentro do próprio bloco (componentes/Rolagem):
+   em 390 px as colunas eram espremidas até o texto quebrar letra a letra, e
+   execuções, e-mails, saúde e admin estouravam a página para o lado. Acima
+   de 640 px nada muda. */
+.rolagem{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:640px){.rolagem>table{min-width:var(--min-tabela,640px)}}
+
+/* Data, duração e dinheiro numa célula não partem ao meio ("R$" numa linha,
+   "0,00" na outra; "1 min 21" e "s"). */
+.pg-painel td.nw{white-space:nowrap}
+/* Hash e JSON longos (worker /health): quebram em qualquer ponto em vez de
+   empurrar a tabela para fora da tela. */
+.pg-painel td.quebra{overflow-wrap:anywhere}
+/* Rótulo dentro de tabela é uma unidade: "FILTRO 8% · DISCORDA" e
+   "EXPERIMENTO" não quebram letra a letra numa coluna estreita. */
+.pg-painel td .marca,.pg-relatorio td .marca{white-space:nowrap}
+
+/* `.sha` e `.vazio` são do painel.css (escopo .pg-painel); as páginas no
+   molde do RELATORIO usam os mesmos componentes (documentos do edital,
+   carregando, "sem inventário") e ficavam sem estilo nenhum: o SHA-256 saía
+   em sans 14,5 px e o estado vazio, como texto corrido. Mesmos valores. */
+.pg-relatorio .sha{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.pg-relatorio .vazio{padding:28px;text-align:center;color:var(--muted)}
+
+/* Busca do painel: com os 12 filtros da v3 o campo encolhia a ~300 px e o
+   placeholder saía cortado ("…modalidade, c"). Base maior; os filtros que
+   não cabem descem para a linha de baixo, como já acontecia. */
+.pg-painel .barra input[type=search]{flex-basis:440px}
+
+/* Analytics — histórico de compra e venda: gráficos em SVG próprio,
+   na paleta do painel. */
+.pg-analytics h2{font-size:19px;margin:0 0 4px}
+.pg-analytics section{display:flex;flex-direction:column;gap:10px}
+.pg-analytics select{font:inherit;padding:2px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surf)}
+/* ---- o gráfico do analytics (GraficoLinhas, refeito em 25/09: interativo, eixo que não corta) */
+.grafico{margin:0;display:flex;flex-direction:column;gap:12px}
+.grafico .area-grafico{position:relative;background:linear-gradient(180deg,#FBFAF7 0%,var(--surf) 60%);
+  border:1px solid var(--line);border-radius:14px;padding:10px 6px 4px;box-shadow:0 1px 2px rgba(17,36,61,.05)}
+.grafico svg{width:100%;height:auto;display:block;overflow:visible;touch-action:pan-y;cursor:crosshair;outline:none}
+.grafico svg:focus-visible{outline:2px solid var(--teal);outline-offset:4px;border-radius:10px}
+.grafico .grade{stroke:var(--line);stroke-width:1;stroke-dasharray:2 5;opacity:.9}
+.grafico .base{stroke:var(--ink2);stroke-width:1;opacity:.28}
+.grafico .eixo{font-family:var(--mono);font-size:12px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.grafico .eixo.mes.atual{fill:var(--ink);font-weight:600}
+.grafico .eixo.mes.letra{font-size:11px}
+.grafico .eixo.ano{font-size:11px;font-weight:600;fill:var(--ink2)}
+.grafico .virada{stroke:var(--line);stroke-width:1}
+.grafico .linha.parcial{stroke-dasharray:4 4;animation:none;opacity:.85}
+.grafico .nota-parcial{margin:-4px 0 0;font-size:12.5px;color:var(--muted)}
+.grafico .linha{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round;
+  stroke-dasharray:1;stroke-dashoffset:0;animation:grafico-desenha 1s cubic-bezier(.3,.7,.2,1) both}
+.grafico .serie{transition:opacity .2s ease}
+.grafico .serie.apagada{opacity:.12}
+.grafico .area{animation:grafico-surge .3s ease-out both}
+.grafico .guia{stroke:var(--ink2);stroke-width:1;stroke-dasharray:3 3;opacity:.5}
+.grafico .foco circle{stroke:#fff;stroke-width:2.5;filter:drop-shadow(0 1px 2px rgba(17,36,61,.35))}
+.grafico .foco circle.apagada{opacity:.15}
+@keyframes grafico-desenha{from{stroke-dashoffset:1}}
+@keyframes grafico-surge{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){.grafico .linha,.grafico .area{animation:none}}
+.grafico .quadro-mes{position:absolute;top:12px;transform:translateX(16px);min-width:210px;max-width:min(330px,72%);
+  background:rgba(255,255,255,.97);backdrop-filter:blur(4px);border:1px solid var(--line);border-radius:12px;
+  padding:10px 12px;box-shadow:0 10px 30px rgba(17,36,61,.16);font-size:13px;pointer-events:none;z-index:2}
+.grafico .quadro-mes.esquerda{transform:translateX(calc(-100% - 16px))}
+.grafico .quadro-mes b{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-weight:600;
+  margin-bottom:8px;color:var(--ink)}
+.grafico .quadro-mes b small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--muted)}
+.grafico .quadro-mes ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.grafico .quadro-mes li{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:8px}
+.grafico .quadro-mes li i{width:10px;height:10px;border-radius:50%}
+.grafico .quadro-mes li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}
+.grafico .quadro-mes li.zero{opacity:.45}
+.grafico .quadro-mes em{font-style:normal;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+.grafico .quadro-mes .total{display:flex;justify-content:space-between;gap:12px;margin:8px 0 0;padding-top:7px;
+  border-top:1px solid var(--line);font-weight:600;color:var(--ink)}
+.grafico .legenda{display:flex;flex-wrap:wrap;gap:8px}
+.grafico .chip{display:inline-flex;align-items:center;gap:7px;max-width:100%;font:inherit;font-size:12.5px;padding:5px 11px;
+  border:1px solid var(--line);border-radius:999px;background:var(--surf);color:var(--ink2);cursor:pointer;
+  transition:border-color .15s,background .15s,opacity .15s,box-shadow .15s}
+.grafico .chip:hover{border-color:var(--ink2);box-shadow:0 1px 4px rgba(17,36,61,.1)}
+.grafico .chip:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.grafico .chip i{flex:none;width:10px;height:10px;border-radius:50%}
+.grafico .chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grafico .chip small{font-family:var(--mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.grafico .chip.desligada{opacity:.5;background:var(--surf2);text-decoration:line-through}
+.grafico .chip.desligada i{background:transparent !important;border:1.5px solid var(--muted)}
+.ranking .ponto{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.ranking .barra-celula{min-width:190px;white-space:nowrap}
+.ranking .barra{display:inline-block;height:10px;max-width:70%;margin-right:8px;vertical-align:middle;
+  background:var(--teals);border:1px solid var(--teal);border-radius:3px}
+.tentativas{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:13px}
+.tentativas .res-deserta .marca,.tentativas .res-fracassada .marca,.marca.alerta{color:var(--red);background:var(--reds);border-color:var(--red)}
+.tentativas .res-comprada .marca{color:var(--teal);background:var(--teals)}
+tr.sem-comprador td:first-child{border-left:3px solid var(--red)}
+
+/* ---- "ver mais" do texto escondido (db/028), logo abaixo do aviso de injeção */
+.furtivos{margin:6px 0 10px;font-size:13px}
+.furtivos summary{cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--ink2)}
+.furtivos.susp summary{color:var(--red);font-weight:600}
+.furtivos ol{max-height:26em;overflow:auto;margin:8px 0 0;padding-left:22px}
+.furtivos li{margin:0 0 10px}
+.furtivos li.susp .classe{color:var(--red);font-weight:600}
+.furtivos .onde{display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.furtivos .classe{display:block;font-size:12.5px;color:var(--ink2)}
+.furtivos blockquote{margin:4px 0 0;padding:6px 10px;border-left:3px solid var(--line);
+white-space:pre-wrap;overflow-wrap:anywhere;font-size:12.5px;color:var(--ink)}
+.furtivos li.susp blockquote{border-left-color:var(--red)}
+.furtivos .aviso{color:var(--amber);margin:6px 0}
+
+/* ---- Jev sem passagem para julgar: a marca existe, apagada */
+.marca.jev.nada{color:var(--muted);border-style:dashed}
+
+/* ---- filtro de datas pela publicação (histórico e analytics) */
+.filtro-datas{display:inline-flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted)}
+.filtro-datas input[type=date]{font:inherit;font-size:14px;padding:7px 10px;min-height:38px;border:1px solid var(--line);
+border-radius:8px;background:var(--paper);color:var(--ink)}
+
+/* ---- analytics: quem venceu e não é banco, num "ver mais" abaixo do ranking */
+.pg-analytics details.nao-bancos{margin:-8px 0 22px;font-size:13px;color:var(--ink2)}
+.pg-analytics details.nao-bancos summary{cursor:pointer;font-family:var(--mono);font-size:12px}
+.pg-analytics details.nao-bancos ul{margin:8px 0 0;padding-left:20px;columns:2;column-gap:28px}
+
+/* ---- analytics: "ver os outros N bancos" abaixo do ranking, no mesmo desenho dos atalhos de data */
+.pg-analytics section > .sub > .atalho{font-family:var(--mono);font-size:11.5px;padding:3px 10px;
+border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--ink2);cursor:pointer}
+
+/* ---- "atualizar" no canto superior direito (todas as páginas) */
+nav.menu .atualizar,nav.menu .tema{font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;
+padding:4px 10px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--ink);cursor:pointer}
+nav.menu .atualizar:hover,nav.menu .tema:hover{border-color:var(--ink)}
+nav.menu .tema-icone{font-family:system-ui,sans-serif;font-size:13px;margin-right:2px}
+
+/* ---- flag "sem PDF válido": o edital não está num formato que o sistema lê */
+.marca.sem-pdf{color:#fff;background:var(--amber, #b7791f);border-color:var(--amber, #b7791f)}
+.aviso-sem-pdf{margin:12px 0;padding:10px 14px;border-left:4px solid var(--amber, #b7791f);background:rgba(183,121,31,.08);
+font-size:13.5px}
+
+/* ---- a escolha do "Extrair com IA": provedor, modelo e esforço como numa IDE */
+.escolha-ia{display:grid;gap:10px;margin:8px 0 12px}
+.escolha-ia label{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+/* fundo sólido, como o das listas da barra: com transparente, no escuro a lista que abre (o Chrome a desenha fora da
+   página) ficava clara com o texto claro das opções */
+.escolha-ia select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);max-width:100%}
+.escolha-ia .esforco-fixo{font-size:13.5px;color:var(--ink2)}   /* ADR-020: o esforço é fixo; só se mostra */
+
+/* ---- revisão por licitação (25/09): o filtro traz as licitações; o clique abre os campos pendentes */
+.revisao-licitacoes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.revisao-licitacoes li{display:flex;justify-content:space-between;align-items:center;gap:8px 14px;flex-wrap:wrap;
+  padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surf);transition:border-color .15s}
+.revisao-licitacoes li:hover{border-color:var(--ink2)}
+.revisao-licitacoes a{display:flex;flex-direction:column;gap:2px;min-width:0;color:var(--ink);text-decoration:none}
+.revisao-licitacoes a b{font-weight:600}
+.revisao-licitacoes a:hover b{text-decoration:underline}
+.revisao-licitacoes .perg{display:block;font-size:12.5px;color:var(--muted)}
+/* O título "Respostas a revisar (N)" (quem não é admin) e o passo a passo antes da busca. O .pg-relatorio na frente
+ * vence o h2 do relatorio.css, que entra com escopo. */
+.revisao-guia{display:flex;flex-direction:column;gap:8px}
+.pg-relatorio .revisao-guia h2{margin:0}
+.revisao-passos{margin:0;padding-left:1.4em;display:grid;gap:4px;color:var(--muted);font-size:14.5px}
+.revisao-passos li::marker{font-family:var(--mono);font-weight:600;color:var(--red)}
+
+/* ---- Governança e compliance: blocos em duas colunas (uma no celular), o termo em inglês acima do
+   título em português; as normas e a responsabilidade compartilhada ocupam a largura toda */
+.governanca-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:860px){.governanca-grade{grid-template-columns:1fr}}
+.governanca-cartao{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:18px 20px;
+  display:flex;flex-direction:column;gap:10px;min-width:0}
+.governanca-cartao.largo{grid-column:1/-1}
+.governanca-termo{margin:0;font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.pg-relatorio .governanca-cartao h2{margin:0;font-size:18px}
+.governanca-cartao p{margin:0;font-size:14.5px}
+.governanca-cartao ul{margin:0;padding-left:1.1em;display:grid;gap:6px;font-size:14.5px}
+.governanca-cartao li::marker{color:var(--red)}
+.governanca-cartao a{color:var(--teal)}
+.pg-relatorio .governanca-cartao th,.pg-relatorio .governanca-cartao td{font-size:13.5px}
+.governanca-rodape{margin:0;font-size:12.5px;color:var(--muted)}
+
+/* As duas paginas do Analytics em abas grandes no topo; a atual
+   fica escura, como o filtro ligado do painel. O menu de cima tem so "Analytics": a troca e por aqui. */
+.abas{display:flex;flex-wrap:wrap;gap:10px}
+.abas a{padding:14px 26px;border:1px solid var(--line);border-radius:10px;background:var(--surf);color:var(--ink2);
+text-decoration:none;font-family:var(--mono);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+.abas a:hover{border-color:var(--ink);color:var(--ink)}
+.abas a.active{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:600}
+
+
+
+/* A opiniao da IA (Jev) sobre ser folha, em palavras (26/09): a cor acompanha a faixa; a candidata a revisao fica
+   sublinhada (e o selo vira link para a aba Escopo) */
+.pg-painel .marca.jev{text-transform:none;letter-spacing:.02em}   /* frase, nao rotulo: legivel em caixa normal */
+.pg-painel .sub.legenda-ia{max-width:none}   /* a legenda do selo numa linha so */
+.pg-painel .marca.jev.jev-sim{color:var(--teal);background:var(--teals);border-color:var(--teal)}
+.pg-painel .marca.jev.jev-provavel{color:var(--ink2)}
+.pg-painel .marca.jev.jev-duvida{color:var(--amber);background:var(--ambers);border-color:var(--amber)}
+.pg-painel .marca.jev.jev-nao{color:var(--red);background:var(--reds);border-color:var(--red)}
+.pg-painel .marca.jev.jev-atencao{text-decoration:underline;text-underline-offset:2px;font-weight:600}
+
+/* Lista com rotulo (componentes/Lista.tsx): a barra de filtros troca os botoes soltos por listas.
+   Mesma altura e borda da busca; o rotulo fica ao lado, em caixa normal. */
+.lista{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);white-space:nowrap}
+.lista select{font:inherit;font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);
+border-radius:8px;padding:8px 10px;min-height:38px;cursor:pointer;max-width:100%}
+.lista select:hover{border-color:var(--ink2)}
+.lista select:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+
+/* ---- "Mostrar" com vários itens: o botão tem a medida do select da .lista; as caixas abrem por cima da
+   grade. Dentro da barra do painel, o `.barra button` e o `.barra input` do painel.css (com o escopo .pg-painel) pesam
+   mais que estas regras — o botão ficaria com o fundo dos botões da barra e cada caixa com os 240 px da busca —, por
+   isso o segundo seletor de cada regra, com a barra. */
+.lista-multipla{position:relative}
+.lista-multipla>button,.pg-painel .barra .lista-multipla>button{font:inherit;font-size:14px;color:var(--ink);
+background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:38px;cursor:pointer;
+max-width:100%;text-align:left;line-height:20px}
+.lista-multipla>button:hover,.pg-painel .barra .lista-multipla>button:hover{border-color:var(--ink2)}
+.lista-multipla>button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.lista-multipla-opcoes{position:absolute;z-index:20;top:calc(100% + 4px);right:0;min-width:100%;margin:0;padding:8px 10px;
+border:1px solid var(--line);border-radius:8px;background:var(--paper);box-shadow:0 6px 18px rgb(0 0 0 / 18%);display:grid;
+gap:6px}
+.lista-multipla-opcoes label{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink);cursor:pointer}
+.lista-multipla-opcoes input,.pg-painel .barra .lista-multipla-opcoes input{flex:none;margin:0;padding:0;min-width:0}
+
+/* ---- o "Filtrar" da barra do painel: o botão principal, na altura das listas.
+   O .barra button do painel.css (com escopo) venceria o .primario e o deixaria com o fundo dos outros botões da barra. */
+.pg-painel .barra button.primario{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:600;min-height:38px}
+:root[data-tema=escuro] .pg-painel .barra button.primario{color:var(--paper)}
+.pg-analytics section>.barra{margin:0 0 12px}
+
+/* ---- Saúde: a data e hora cabem numa linha do quadro (em 22 px quebravam em duas); o último alerta mostra três linhas
+   e o resto fica no title — a fileira não estica */
+.pg-painel .tile.quando b{font-size:17px;white-space:nowrap}
+.pg-painel .tile.quando span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ---- a coluna "Origem" do questionário: o break-all do relatorio.css encolhia a coluna até o nome do arquivo quebrar
+   no meio das palavras ("Edit / al - EDIT / AL PREGAO"). Quebra onde der (espaço, hífen) e, só se não der, no meio. */
+.pg-relatorio td.info{min-width:17ch}
+.pg-relatorio td.info a{word-break:normal;overflow-wrap:break-word}
+.pg-relatorio td.info .pag{white-space:nowrap}
+
+/* ---- link no meio do texto ("2.016 no histórico", "voltar às abertas"): a cor da tinta, sublinhado — não o azul nem
+   o roxo de visitado do navegador, que destoavam no claro e mal se liam no escuro */
+.pg-painel header a,.pg-painel .sub a,.pg-relatorio .sub a{color:var(--ink2);text-underline-offset:2px}
+.pg-painel header a:hover,.pg-painel .sub a:hover,.pg-relatorio .sub a:hover{color:var(--ink);text-decoration-thickness:2px}
+
+/* ---- os números do topo (componentes/QuadrosResumo). Uma faixa só, como o cabeçalho de um relatório: colunas
+ * separadas por fio — a sombra de 1 px de cada coluna
+   desenha o fio só ENTRE elas, e a célula que sobra numa fileira incompleta fica da cor do cartão, sem bloco cinza. Em
+   cada coluna: o rótulo, o número em Plex Sans grande, a unidade embaixo (uma linha, igual em todas, para as barras
+   alinharem) e a barra do que o número é feito. As cores da barra têm sentido: as do prazo são as da barrinha dos
+   cards; as dos provedores, três tons neutros. */
+:root{--cat1:#3E5F92;--cat2:#7A5C99;--cat3:#8B96A3;--neutro:#C8C2B5}
+.pg-painel .resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));background:var(--surf);
+border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pg-painel .resumo .grupo{display:flex;flex-direction:column;gap:12px;min-width:0;padding:18px 22px 20px;
+box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line)}
+.pg-painel .resumo h2{margin:0;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.01em}
+.pg-painel .resumo .destaque{margin:-2px 0 0;display:flex;flex-direction:column;gap:5px}
+.pg-painel .resumo .destaque b{font-family:var(--sans);font-size:36px;line-height:1.05;font-weight:600;
+letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.pg-painel .resumo .destaque span{font-size:13px;line-height:1.35;color:var(--muted)}
+.pg-painel .resumo .destaque.ok b{color:var(--teal)}
+.pg-painel .resumo .destaque.al b{color:var(--red)}
+/* as cores com sentido, numa variável: a barra, o quadradinho da legenda e o da linha usam a mesma */
+.pg-painel .resumo .al{--cor:var(--red)}
+.pg-painel .resumo .am{--cor:var(--amber)}
+.pg-painel .resumo .ok{--cor:var(--teal)}
+.pg-painel .resumo .neutro{--cor:var(--neutro)}
+.pg-painel .resumo .c1{--cor:var(--cat1)}
+.pg-painel .resumo .c2{--cor:var(--cat2)}
+.pg-painel .resumo .c3{--cor:var(--cat3)}
+.pg-painel .resumo .partes{display:flex;gap:2px;height:8px;border-radius:4px;overflow:hidden}
+.pg-painel .resumo .partes i{min-width:3px;background:var(--cor)}
+.pg-painel .resumo .legenda-partes{list-style:none;margin:-3px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:3px 14px;
+font-size:12.5px;line-height:1.4;color:var(--muted)}
+.pg-painel .resumo .legenda-partes li{display:inline-flex;align-items:center;gap:6px}
+.pg-painel .resumo .legenda-partes li::before,.pg-painel .resumo dl>div[class] dt::before{content:'';flex:none;
+width:8px;height:8px;border-radius:2px;background:var(--cor)}
+.pg-painel .resumo .legenda-partes b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.pg-painel .resumo dl{margin:0;display:flex;flex-direction:column;gap:8px;padding-top:12px;
+border-top:1px solid var(--line);font-size:13px}
+.pg-painel .resumo dl>div{display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+.pg-painel .resumo dt{color:var(--ink2);min-width:0}
+.pg-painel .resumo dl>div[class] dt::before{display:inline-block;margin-right:7px;vertical-align:0}
+.pg-painel .resumo dt small{display:block;margin-top:1px;font-size:11.5px;line-height:1.35;color:var(--muted)}
+.pg-painel .resumo dd{margin:0;flex:none;text-align:right;font-size:13.5px;font-weight:600;
+font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.pg-painel .resumo dd.ok{color:var(--teal)}
+.pg-painel .resumo dd.al{color:var(--red)}
+.pg-painel .resumo dd.am{color:var(--amber)}
+.pg-painel .resumo .nota{margin:auto 0 0;font-size:11.5px;line-height:1.4;color:var(--muted)}
+
+/* ---- o que cada instituição financeira comprou: a busca pelo nome do banco ao lado do período da compra;
+   o que está fora do escopo (só com "mostrar fora do escopo") sai apagado e marcado.
+   A busca tem o desenho da Lista (componentes/Lista.tsx) — o rótulo ao lado, 38 px de altura, canto de 8 px — e largura
+   em px: com width:min(340px,100%), os 100% eram a largura do próprio rótulo,
+   a caixa descia para baixo dele e ficava 14 px abaixo da lista do período. */
+.pg-analytics .busca-banco{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.pg-analytics .busca-banco span{font-size:13px;color:var(--muted)}
+.pg-analytics .busca-banco input{width:340px;max-width:100%;min-width:0;min-height:38px;padding:8px 10px;
+border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:inherit;font-size:14px;
+line-height:20px}
+.pg-analytics table.compras-do-banco tr.fora-escopo td{color:var(--muted)}
+.pg-analytics .resumo-banco{margin:2px 0 0}
+
+/* ---- celular, até 640 px.
+   A tabela das republicadas rolava de lado com 760 px e só a coluna "Onde" aparecia, cada linha com a altura das seis
+   datas: aqui ela vira um cartão por cadeia — onde; a publicação e a situação na mesma linha; o histórico embaixo,
+   corrido. Os filtros ocupam a linha inteira, as abas dividem a largura e os quadros do Analytics ficam três por
+   linha, em vez de 2 + 1. */
+@media(max-width:640px){
+  .pg-analytics .rolagem>table.republicadas{min-width:0}
+  .pg-analytics table.republicadas thead{display:none}
+  .pg-analytics table.republicadas,.pg-analytics table.republicadas tbody{display:block}
+  .pg-analytics table.republicadas tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;
+  padding:13px 14px;border-top:1px solid var(--line)}
+  .pg-analytics table.republicadas tr:first-child{border-top:0}
+  .pg-analytics table.republicadas td{display:block;padding:0;border:0}
+  .pg-analytics table.republicadas td:nth-child(1){grid-column:1/-1}
+  .pg-analytics table.republicadas td:nth-child(2){grid-column:1;grid-row:2;align-self:center}
+  .pg-analytics table.republicadas td:nth-child(4){grid-column:2;grid-row:2;text-align:right}
+  .pg-analytics table.republicadas td:nth-child(3){grid-column:1/-1}
+  .pg-analytics table.republicadas tr.sem-comprador{box-shadow:inset 3px 0 0 var(--red)}
+  .pg-analytics table.republicadas tr.sem-comprador td:first-child{border-left:0}
+  .pg-analytics table.republicadas .tentativas{flex-direction:row;flex-wrap:wrap;gap:4px 12px;font-size:12.5px}
+  .pg-analytics .tiles{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .pg-analytics .tile{padding:10px 11px}
+  .pg-analytics .tile b{font-size:19px}
+  .pg-analytics .tile span{font-size:11.5px;line-height:1.35;display:block}
+  /* o que cada banco comprou: um cartão por compra — a licitação; a rodada e a data; o preço e o contrato */
+  .pg-analytics .busca-banco{width:100%}
+  .pg-analytics .busca-banco input{flex:1;width:auto}
+  .pg-analytics .rolagem>table.compras-do-banco{min-width:0}
+  .pg-analytics table.compras-do-banco thead{display:none}
+  .pg-analytics table.compras-do-banco,.pg-analytics table.compras-do-banco tbody{display:block}
+  .pg-analytics table.compras-do-banco tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;
+  padding:12px 14px;border-top:1px solid var(--line)}
+  .pg-analytics table.compras-do-banco tr:first-child{border-top:0}
+  .pg-analytics table.compras-do-banco td{display:block;padding:0;border:0}
+  .pg-analytics table.compras-do-banco td:nth-child(1){grid-column:1/-1}
+  .pg-analytics table.compras-do-banco td:nth-child(2){grid-column:1;grid-row:2}
+  .pg-analytics table.compras-do-banco td:nth-child(4){grid-column:2;grid-row:2;text-align:right}
+  .pg-analytics table.compras-do-banco td:nth-child(3){grid-column:1;grid-row:3;font-weight:600}
+  .pg-analytics table.compras-do-banco td:nth-child(5){grid-column:2;grid-row:3;text-align:right}
+  .pg-painel .barra .lista{flex:1 1 100%}
+  .pg-painel .barra .lista span{min-width:5.5em}
+  .pg-painel .barra .lista select{flex:1}
+  .pg-painel .barra .lista-multipla>button{flex:1}
+  .pg-painel .barra button.primario{flex:1 1 100%}
+  .abas a{flex:1 1 100%;text-align:center;padding:12px 14px;font-size:13px}
+}
+
+/* ---- modo escuro (quem usa escolhe no menu, e fica guardado no
+   navegador — lib/tema.ts). Os mesmos tokens em outra luz: o fundo é o azul da tinta quase apagado, não preto; o texto
+   é um branco frio, não puro; vermelho, verde e âmbar clareiam para ler no escuro (todos passam de 5:1). As cores
+   fixas dos CSS gerados (painel.css, relatorio.css) se corrigem aqui, só no escuro: o tema claro não muda nada. */
+:root[data-tema=escuro]{color-scheme:dark;
+--ink:#E3E9F0;--ink2:#B7C3D1;--paper:#0F1722;--surf:#16202D;--surf2:#1C2837;--line:#2C3A4C;--muted:#8F9CAD;
+--red:#F08A80;--reds:#3A2024;--teal:#5CC4B1;--teals:#12302C;--amber:#E0B55A;--ambers:#342A12}
+/* o cabeçalho de tabela era a tinta cheia: no escuro viraria uma faixa branca */
+:root[data-tema=escuro] th{background:#1F2D40;color:var(--ink)}
+/* texto sobre cor cheia (botão verde, tag vermelha, "sem PDF"): as cores clarearam, então o texto escurece */
+:root[data-tema=escuro] .primario,:root[data-tema=escuro] .tagsusp,:root[data-tema=escuro] .marca.sem-pdf{color:var(--paper)}
+:root[data-tema=escuro] .grafico .area-grafico{background:linear-gradient(180deg,#1A2636 0%,var(--surf) 60%);box-shadow:none}
+:root[data-tema=escuro] .grafico .foco circle{stroke:var(--surf);filter:none}
+:root[data-tema=escuro] .grafico .quadro-mes{background:rgba(22,32,45,.97);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+:root[data-tema=escuro] .aviso-sem-pdf{background:rgba(224,181,90,.1)}
+:root[data-tema=escuro]{--cat1:#8DAEE0;--cat2:#BDA2DC;--cat3:#A6B0BC;--neutro:#4A5B70}
+/* a aba e o filtro ligados eram a tinta cheia: no escuro, um bloco branco que ofusca. Aqui, um tom acima do cartão,
+   a borda e o texto claros */
+:root[data-tema=escuro] .abas a.active,:root[data-tema=escuro] .barra button[aria-pressed=true]{background:#243449;
+border-color:var(--ink2);color:var(--ink)}
+

@@ -1,0 +1,2158 @@
+{
+  "name": "W01 Descoberta",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W01 Descoberta — seg-sex 06:00 (America/Sao_Paulo)\nAcha no PNCP o que é **compra de folha de 2026** e registra no banco. Custo de modelo: R$ 0 (o Jev custa ~US$ 0,00002 por chamada).\n\n- **Recorte de 2026 NA CONSULTA** — Fopa-v2/11-Produto-v3/Recorte de 2026 e escopo na v3.md §2: duas consultas por termo — `anos=<ano_minimo>|…|<ano atual>` + `status=todos`, e `status=recebendo_proposta` sem ano (RN-24: o ano do controle é o da compra; o credenciamento de 2025 com janela aberta só vem por aqui)\n- **Termos do admin** — scripts/20_monitor.py:58-78 → tabela `termos`; `ano_minimo` em `configuracao` (db/018_recorte_2026.sql:12-21)\n- **Paginação explícita, uma página por volta, gravada ANTES da próxima** — scripts/fopa/pncp.py:118-160 e db/007_execucoes_workflow_buscas_termos_orcamento.sql:1-6 (nunca a paginação embutida do HTTP Request: perde o parcial no 1º erro)\n- **429/5xx: 30 s e UMA nova tentativa; conexão derrubada: até 5 tentativas (1, 2, 4, 8 s)** — scripts/fopa/pncp.py:62-100 (o 429 do PNCP não manda Retry-After; em 24/09/2026 às 04h o PNCP resetava ~40% das conexões, com curl e com o n8n)\n- **Dedup por numero_controle_pncp** — RN-24, scripts/fopa/pncp.py:dedup\n- **Regra antes de IA** — scripts/20_monitor.py:90-94 (texto = description+objeto+objetoCompra+title) → `POST /escopo` do worker (ADR-003)\n- **Uma chamada de fn_registrar_vista por resultado** — db/020_registrar_vista.sql:1-21: ignora o fora do recorte, insere nova/fora de escopo/fora de janela, retifica, marca visto; **seco não escreve nada**\n- **Jev = score do filtro, nunca decisão** (T25) — api/jev.py:58-72: `p_filtro_ok` = P(folha) se a regra aceitou, 1 − P(folha) se recusou; só nas linhas inseridas, teto 300 por rodada (100 na rodada Manual, que é a de teste)\n- **Cega ≠ nada a fazer** — scripts/20_monitor.py:408-435: todas as consultas falharam → e-mail `cego` na FILA (o W50 envia)\n- `saveExecutionProgress=false`: ~70 páginas de 50 itens regravariam a execução inteira a cada nó (O(n²) no banco do n8n); a execução terminada continua nó a nó.\n- Gatilhos: agenda (seco=false), Manual (seco=false, teste), W11 → `{seco, execucao_id?}` (com execucao_id, a linha já existe e o site a acompanha).\n- **Fim da rodada → W10 sem esperar** (plano §5 W01 passo 19) se `!seco && orcamento.auto_processar`; o nó fica **desligado**: a fila anda pela agenda do próprio W10, das 6h às 7h50 (nota \"Fim da rodada → W10\").",
+        "height": 700,
+        "width": 1180
+      },
+      "id": "f15cab7f-563b-560c-aa6f-0e248b610e54",
+      "name": "Sobre o W01",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -1266
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Páginas do PNCP — uma por volta\n1ª passada: a página 1 de cada consulta (12 = 6 termos × 2). 2ª passada: as demais, **até ceil(total/50)** e nunca além de `termos.paginas` (recorte) ou 2 (abertas) — scripts/fopa/pncp.py:118-160.\nPágina curta ou que falhou encerra a consulta (plano §5 W01 passo 8): a pergunta é feita ao banco, ao que já foi GRAVADO.\nHTTP com Never Error + On Error → saída de erro: DNS, recusa e timeout também viram linha (`falhou=true`, motivo), nunca exceção muda (plano §5, convenções).",
+        "height": 2226,
+        "width": 3528,
+        "color": 7
+      },
+      "id": "fff5a3ed-d6a3-5e3e-915b-c7df4352502e",
+      "name": "Paginação",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        -216
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Classificar e registrar — uma chamada por resultado\nDedup pelo que foi GRAVADO (RN-24) → normaliza (db/020_registrar_vista.sql:125-146) → UMA chamada a `POST /escopo` com todos os textos (ADR-003) → `fn_registrar_vista` por item (db/020). O Jev só vê o que ESTA rodada inseriu (nova e fora de escopo), nunca no seco, e só pontua: `sinais_jev` é tabela à parte (db/017_sinais_jev.sql:1-12).",
+        "height": 756,
+        "width": 3120,
+        "color": 5
+      },
+      "id": "572f1a79-16df-523a-bb3b-960ba9d2ed8d",
+      "name": "Registro",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5136,
+        -762
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Fim da rodada → W10 (a esteira) — sai DESLIGADO\nPlano §5 W01 passo 19: **IF `!seco && orcamento.auto_processar` → Execute Sub-workflow W10 (wait=false)**. A rodada que GRAVOU (agenda ou Manual; nunca o \"Verificar agora\", que é seco) acorda a fila; o W10 reivindica até 4 − extraindo (db/021) e dispara um W20 por licitação, sem o W01 esperar.\n\n**Por que desligado:** o `orcamento` vigente tem `auto_processar = true` e esta agenda roda seg-sex 06:00 — ligado, amanhã cedo a fila REAL (centenas em `preparada`) iria ao W20 com o provedor `simulado` (o T15 recusa a vigência e tudo vira erro). É o mesmo motivo da agenda do W10 sair desligada.\n\n**Como ligar (junto com a agenda do W10):** no canvas, *Activate* no nó \"W10 Fila (sem esperar)\" — ou `\"disabled\": true` → remover em n8n/workflows/W01.json e `python n8n/importar.py`. Desligue SÓ o Execute: o IF desligado deixaria o item passar direto para o W10.",
+        "height": 400,
+        "width": 620,
+        "color": 3
+      },
+      "id": "3b83b515-0683-5d8b-ae52-177836691851",
+      "name": "Fim da rodada → W10 (desligado)",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6288,
+        834
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "f4df43a1-1178-513c-ae6a-c102c44106cb",
+      "name": "Agenda 06:00 seg-sex",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        330
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f76c6d09-cae9-5989-a957-534ebe8e92cf",
+      "name": "Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        750
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "seco",
+              "type": "boolean"
+            },
+            {
+              "name": "execucao_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "9dbb1aa9-91f4-5b45-aa8c-a4b198ae60d0",
+      "name": "Chamado por outro fluxo",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        1170
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — um gatilho por rodada. Agenda e Manual rodam de verdade (seco=false); o W11 (\"Verificar agora\")\n// chama com {seco, execucao_id?}: seco NÃO escreve em licitacoes (db/020_registrar_vista.sql:12-21) e\n// execucao_id é a linha de execucoes_workflow que o W11 já abriu e devolveu ao site (plano §5 W11).\nconst rodou = (n) => { try { return $(n).isExecuted; } catch (e) { return false; } };\nconst e = $input.first().json || {};\nconst gatilho = rodou('Chamado por outro fluxo') ? 'subfluxo' : rodou('Agenda 06:00 seg-sex') ? 'agenda' : 'manual';\nconst num = (v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v))) ? null : Number(v);\nreturn [{ json: {\n  hoje: $now.setZone('America/Sao_Paulo').toISODate(),\n  inicio: $now.toUTC().toISO(),\n  gatilho,\n  // Sem `seco` explícito, o chamado por outro fluxo é seco: listar nunca pode gravar por descuido.\n  seco: gatilho === 'subfluxo' ? e.seco !== false : false,\n  execucao_id: gatilho === 'subfluxo' ? num(e.execucao_id) : null,\n  // Teto de chamadas ao Jev por rodada (sinal pago, T25). A rodada Manual é a de teste: 100.\n  jev_teto: gatilho === 'manual' ? 100 : 300,\n  pncp_base: 'https://pncp.gov.br/api/search/',\n  tam_pagina: 50,\n  paginas_abertas: 2,\n} }];\n"
+      },
+      "id": "a21ac8e2-69ce-56fa-aaf8-fdb4cd61eedc",
+      "name": "Parâmetros da rodada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        750
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — toda rodada deixa rastro em execucoes_workflow (db/007_execucoes_workflow_buscas_termos_orcamento.sql:8-26).\n-- Com execucao_id (W11, \"Verificar agora\") a linha JÁ existe e o site a acompanha: usa-se ela, não se abre outra.\nWITH dada AS (\n    UPDATE execucoes_workflow\n       SET n8n_execution_id = $2,\n           gatilho = coalesce(gatilho, $3),\n           argumentos = coalesce(argumentos, '{}'::jsonb) || $4::jsonb,\n           status = 'em_curso'\n     WHERE id = $1::bigint AND workflow = 'W01'\n    RETURNING id\n), nova AS (\n    INSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, argumentos, status)\n    SELECT 'W01', $2, $3, $4::jsonb, 'em_curso'\n     WHERE NOT EXISTS (SELECT 1 FROM dada)\n    RETURNING id\n)\nSELECT id AS execucao_id, true AS reaproveitada FROM dada\nUNION ALL\nSELECT id, false FROM nova",
+        "options": {
+          "queryReplacement": "={{ [ $json.execucao_id ?? null, $execution.id, $json.gatilho, JSON.stringify({ seco: $json.seco, hoje: $json.hoje, gatilho: $json.gatilho, jev_teto: $json.jev_teto }) ] }}"
+        }
+      },
+      "id": "b180ca51-709d-589d-8106-0292b6be8bdf",
+      "name": "Abrir execução",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        576,
+        750
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — os termos do monitor (scripts/20_monitor.py:58-78) moram em `termos`, editáveis no admin; o ano mínimo,\n-- em configuracao (db/018_recorte_2026.sql:12-21): o admin muda sem migração e a consulta acompanha.\nSELECT coalesce(json_agg(json_build_object('termo', termo, 'paginas', paginas) ORDER BY prioridade, termo), '[]'::json) AS termos,\n       fn_ano_minimo() AS ano_minimo,\n       extract(year FROM $1::date)::int AS ano_atual\n  FROM termos\n WHERE ativo",
+        "options": {
+          "queryReplacement": "={{ [ $('Parâmetros da rodada').first().json.hoje ] }}"
+        }
+      },
+      "id": "7a338057-7d0d-5446-af7c-badc4da09714",
+      "name": "Termos ativos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        750
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — ADR-015 NA CONSULTA (Fopa-v2/11-Produto-v3/Recorte de 2026 e escopo na v3.md §2): duas consultas por termo.\n//   recorte: anos=<ano_minimo>|...|<ano atual> + status=todos — o ano inteiro, aberto ou não (o encerrado calibra preço);\n//   abertas: status=recebendo_proposta, sem ano — o credenciamento registrado em 2025 com janela aberta\n//            (RN-24: o ano do controle é o da compra, não o da sessão).\n// Sempre tipos_documento=edital, ordenacao=-data, tam_pagina=50 (scripts/fopa/pncp.py:144-148).\nconst p = $('Parâmetros da rodada').first().json;\nconst execucaoId = $('Abrir execução').first().json.execucao_id;\nconst t = $input.first().json;\nconst termos = Array.isArray(t.termos) ? t.termos : [];\nif (!termos.length) throw new Error('W01: nenhum termo ativo em `termos` — sem termo, a coleta seria cega sem aviso');\nconst minimo = Number(t.ano_minimo);\nconst atual = Math.max(Number(t.ano_atual), minimo);\nconst anos = [];\nfor (let a = minimo; a <= atual; a++) anos.push(a);\nconst qs = (o) => Object.entries(o).map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(String(v))).join('&');\nconst url = (termo, filtros, pagina) => p.pncp_base + '?' + qs({ q: termo, tipos_documento: 'edital', ordenacao: '-data',\n                                                                 pagina, tam_pagina: p.tam_pagina, ...filtros });\nconst itens = [];\nfor (const x of termos) {\n  const consultas = [\n    { modo: 'recorte', rotulo: `${x.termo} [${minimo}]`, limite: Math.max(1, Number(x.paginas) || 1),\n      filtros: { status: 'todos', anos: anos.join('|') } },\n    { modo: 'abertas', rotulo: `${x.termo} [abertas]`, limite: p.paginas_abertas,\n      filtros: { status: 'recebendo_proposta' } },\n  ];\n  for (const c of consultas) {\n    itens.push({ json: { execucao_id: execucaoId, fase: 1, rotulo: c.rotulo, termo: x.termo, modo: c.modo, pagina: 1,\n                         limite: c.limite, total: null, filtros: c.filtros, url: url(x.termo, c.filtros, 1) } });\n  }\n}\nreturn itens;\n"
+      },
+      "id": "e4c18ea7-d639-5e52-9f60-ce59ccd85186",
+      "name": "Página 1 de cada consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        750
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "58889308-c6d7-5453-86c1-6d2de4a7f9d3",
+      "name": "Páginas 1 — uma por vez",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1440,
+        750
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — página curta ou que falhou encerra a consulta: não se pede a seguinte (scripts/fopa/pncp.py:147-160;\n-- plano §5 W01, passo 8). A pergunta é feita ao banco: vale o que já foi GRAVADO nesta rodada.\nSELECT p.*,\n       NOT EXISTS (SELECT 1 FROM buscas_paginas b\n                    WHERE b.workflow_execucao_id = p.execucao_id AND b.termo = p.rotulo AND b.pagina < p.pagina\n                      AND (b.falhou OR jsonb_array_length(coalesce(b.itens, '[]'::jsonb)) < $2::int)) AS ler\n  FROM jsonb_to_record($1::jsonb) AS p(execucao_id bigint, fase int, rotulo text, termo text, modo text,\n                                       pagina int, limite int, total int, filtros jsonb, url text)",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify($json), $('Parâmetros da rodada').first().json.tam_pagina ] }}"
+        }
+      },
+      "id": "b1dc52de-6383-5150-891d-0fad69d0af00",
+      "name": "Ler esta página?",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1728,
+        1212
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "97da2917-f0ec-54ed-a08c-123b6dc8b35d",
+              "leftValue": "={{ $json.ler }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "338fbc1a-0e63-5c3d-b045-d19e0685268b",
+      "name": "Ler?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        1212
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "FOPA/3 (monitoramento de licitacoes de folha; estudo de viabilidade; contato: contato@exemplo.com)"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "db8a00a0-0e21-5102-a27b-492d87fde029",
+      "name": "GET página no PNCP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2304,
+        960
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// regra — depois de uma página curta ou que falhou não se pede a seguinte (scripts/fopa/pncp.py:147-160):\n// ela fica \"não lida\" — sem linha em buscas_paginas, e a cobertura da consulta mostra o que faltou.\nreturn { json: { ...$json, pulada: true, n_itens: 0 } };\n"
+      },
+      "id": "5dd561d6-059b-5fa6-bbf5-a8d6b4252e5a",
+      "name": "Página pulada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        1632
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// regra — 429 e 5xx esperam 30 s e tentam UMA vez mais: o 429 do PNCP não manda Retry-After e às vezes vem em HTML\n// (scripts/fopa/pncp.py:62-100). Conexão derrubada (reset, socket hang up, DNS, timeout) tenta até 5 vezes com espera\n// crescente (pncp.py:_get também insiste em toda exceção). Medido em 24/09/2026 às 04h: o PNCP resetava ~40% das\n// conexões na hora, com curl e com o n8n, e uma 2ª tentativa só não bastava (6 de 23 páginas caíram duas vezes).\nconst ctx = $('Ler esta página?').item.json;\nconst tentativa = 1;\nconst r = $json || {};\nlet status = typeof r.statusCode === 'number' ? r.statusCode : null;\nlet rede = null;\nif (r.error !== undefined && status === null) {\n  const e = r.error || {};\n  rede = String(e.message || e.code || e.description || JSON.stringify(e)).slice(0, 300);\n  if (/^\\d{3}$/.test(String(e.httpCode || ''))) status = Number(e.httpCode);\n}\nlet corpo = r.body;\nif (typeof corpo === 'string') { try { corpo = JSON.parse(corpo); } catch (x) { /* o 429 do PNCP vem em HTML */ } }\nconst itens = corpo && typeof corpo === 'object' && Array.isArray(corpo.items) ? corpo.items : null;\nlet motivo = null;\nlet tipo = null;\nif (rede) { motivo = 'rede: ' + rede; tipo = 'rede'; }\nelse if (status === 429 || (status !== null && status >= 500)) { motivo = 'HTTP ' + status; tipo = 'limite'; }\nelse if (status !== 200) { motivo = 'HTTP ' + status; tipo = 'http'; }\nelse if (!itens) { motivo = 'HTTP 200 sem items'; tipo = 'rede'; }\nconst falhou = motivo !== null;\nconst historico = [...(ctx.historico || []), ...(falhou ? [tentativa + 'ª: ' + motivo] : [])];\n// 429/5xx: UMA espera de 30 s e nova tentativa. Conexão derrubada: até 5 tentativas, esperando 1, 2, 4 e 8 s (a queda é instantânea e sem padrão de tempo).\nconst repetir = falhou && ((tipo === 'limite' && !ctx.esperou_limite) || (tipo === 'rede' && tentativa < 5));\nreturn { json: {\n  ...ctx,\n  tentativa,\n  status,\n  falhou,\n  motivo: falhou ? historico.join(' | ') : null,\n  historico,\n  repetir,\n  esperou_limite: ctx.esperou_limite === true || (repetir && tipo === 'limite'),\n  espera_s: tipo === 'limite' ? 30 : Math.min(8, 2 ** (tentativa - 1)),\n  total: itens ? (Number(corpo.total) || 0) : (ctx.total ?? null),\n  itens,\n} };\n"
+      },
+      "id": "bf060986-d4cb-5922-b117-a0965b52fe3a",
+      "name": "Conferir 1ª resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8589c7ce-ff83-5fbc-95ef-f436b5699baa",
+              "leftValue": "={{ $json.repetir }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "8fe8abb6-8458-5fd2-874e-8e1ad572669f",
+      "name": "Repetir?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2880,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.espera_s }}",
+        "unit": "seconds"
+      },
+      "id": "1e4f1917-3cd4-54d5-a96b-193f2ca1efd0",
+      "name": "Esperar e tentar de novo",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3168,
+        1422
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "FOPA/3 (monitoramento de licitacoes de folha; estudo de viabilidade; contato: contato@exemplo.com)"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "b041bf78-7ecd-5ad6-88bc-7a02ecbf9924",
+      "name": "GET página (nova tentativa)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3456,
+        1422
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// regra — mesma avaliação da 1ª; esgotadas as tentativas, a página fica `falhou=true` com o histórico de motivos e a\n// consulta para aqui (scripts/fopa/pncp.py:147-154 — o parcial já gravado é aproveitado).\nconst ctx = $('Esperar e tentar de novo').item.json;\nconst tentativa = (Number(ctx.tentativa) || 1) + 1;\nconst r = $json || {};\nlet status = typeof r.statusCode === 'number' ? r.statusCode : null;\nlet rede = null;\nif (r.error !== undefined && status === null) {\n  const e = r.error || {};\n  rede = String(e.message || e.code || e.description || JSON.stringify(e)).slice(0, 300);\n  if (/^\\d{3}$/.test(String(e.httpCode || ''))) status = Number(e.httpCode);\n}\nlet corpo = r.body;\nif (typeof corpo === 'string') { try { corpo = JSON.parse(corpo); } catch (x) { /* o 429 do PNCP vem em HTML */ } }\nconst itens = corpo && typeof corpo === 'object' && Array.isArray(corpo.items) ? corpo.items : null;\nlet motivo = null;\nlet tipo = null;\nif (rede) { motivo = 'rede: ' + rede; tipo = 'rede'; }\nelse if (status === 429 || (status !== null && status >= 500)) { motivo = 'HTTP ' + status; tipo = 'limite'; }\nelse if (status !== 200) { motivo = 'HTTP ' + status; tipo = 'http'; }\nelse if (!itens) { motivo = 'HTTP 200 sem items'; tipo = 'rede'; }\nconst falhou = motivo !== null;\nconst historico = [...(ctx.historico || []), ...(falhou ? [tentativa + 'ª: ' + motivo] : [])];\n// 429/5xx: UMA espera de 30 s e nova tentativa. Conexão derrubada: até 5 tentativas, esperando 1, 2, 4 e 8 s (a queda é instantânea e sem padrão de tempo).\nconst repetir = falhou && ((tipo === 'limite' && !ctx.esperou_limite) || (tipo === 'rede' && tentativa < 5));\nreturn { json: {\n  ...ctx,\n  tentativa,\n  status,\n  falhou,\n  motivo: falhou ? historico.join(' | ') : null,\n  historico,\n  repetir,\n  esperou_limite: ctx.esperou_limite === true || (repetir && tipo === 'limite'),\n  espera_s: tipo === 'limite' ? 30 : Math.min(8, 2 ** (tentativa - 1)),\n  total: itens ? (Number(corpo.total) || 0) : (ctx.total ?? null),\n  itens,\n} };\n"
+      },
+      "id": "e76f4364-26f4-5385-9ff9-55a1e56b699c",
+      "name": "Conferir nova resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        1422
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — cada página é gravada ANTES de pedir a próxima: o parcial nunca se perde, nem num 429 no meio do termo\n-- (db/007_execucoes_workflow_buscas_termos_orcamento.sql:1-6, 37-50; scripts/fopa/pncp.py:147-154).\nWITH p AS (\n    SELECT * FROM jsonb_to_record($1::jsonb) AS x(execucao_id bigint, fase int, rotulo text, termo text, modo text,\n                                                  pagina int, limite int, total int, filtros jsonb, status int,\n                                                  falhou bool, motivo text, itens jsonb, tentativa int)\n), gravada AS (\n    INSERT INTO buscas_paginas (workflow_execucao_id, termo, pagina, itens, status, falhou, motivo)\n    SELECT execucao_id, rotulo, pagina, CASE WHEN falhou THEN NULL ELSE itens END, status, falhou, motivo FROM p\n    RETURNING id, pagina, falhou, coalesce(jsonb_array_length(itens), 0) AS n_itens\n)\nSELECT g.id AS pagina_id, p.execucao_id, p.fase, p.rotulo, p.termo, p.modo, g.pagina, p.limite, p.total,\n       p.filtros, p.status, g.falhou, p.motivo, g.n_itens, p.tentativa\n  FROM gravada g CROSS JOIN p",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify($json) ] }}"
+        }
+      },
+      "id": "bdab1140-f579-5684-911b-9264f33a37db",
+      "name": "Persistir página",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4032,
+        960
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 0.5,
+        "unit": "seconds"
+      },
+      "id": "42b0d71b-08f1-57cf-8b12-74beaf13b728",
+      "name": "Pausa 0,5 s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4320,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0b5ccda8-ecb3-5018-a48c-c7c1ff4e918e",
+              "leftValue": "={{ $json.fase }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "d1222898-4696-53d2-9a4e-0e628e7d39de",
+      "name": "De volta ao laço",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4608,
+        1212
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — o total declarado diz quantas páginas existem (scripts/fopa/pncp.py:118-160; ADR-007): pede-se até\n// ceil(total/50), nunca além de termos.paginas (recorte) ou 2 (abertas). Página 1 curta ou que falhou encerra a consulta.\nconst p = $('Parâmetros da rodada').first().json;\nconst primeiras = $input.all().map(i => i.json);\nconst qs = (o) => Object.entries(o).map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(String(v))).join('&');\nconst url = (termo, filtros, pagina) => p.pncp_base + '?' + qs({ q: termo, tipos_documento: 'edital', ordenacao: '-data',\n                                                                 pagina, tam_pagina: p.tam_pagina, ...filtros });\nconst consultas = primeiras.map(c => ({ rotulo: c.rotulo, termo: c.termo, modo: c.modo, limite: c.limite,\n                                        total: c.total ?? null }));\nconst saida = [];\nfor (const c of primeiras) {\n  if (c.falhou || Number(c.n_itens) < p.tam_pagina) continue;\n  const n = Math.min(Number(c.limite), Math.ceil(Number(c.total || 0) / p.tam_pagina));\n  for (let pg = 2; pg <= n; pg++) {\n    saida.push({ execucao_id: c.execucao_id, fase: 2, rotulo: c.rotulo, termo: c.termo, modo: c.modo, pagina: pg,\n                 limite: c.limite, total: c.total, filtros: c.filtros, url: url(c.termo, c.filtros, pg) });\n  }\n}\n// `consultas` (o total declarado de cada uma) vai no 1º item: o Consolidar lê daqui.\nif (!saida.length) return [{ json: { nenhuma: true, consultas } }];\nsaida[0].consultas = consultas;\nreturn saida.map(json => ({ json }));\n"
+      },
+      "id": "5f06b4b9-92ee-52bc-ae2e-9b432253bd11",
+      "name": "Demais páginas pelo total",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        36
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f4bc9812-d1ac-5c91-a5dc-d168297ed1b9",
+              "leftValue": "={{ !$json.nenhuma }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "abf47ceb-e916-5062-8325-6cf4a36cda57",
+      "name": "Há demais páginas?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        36
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "bc3b9cef-07ae-5a8f-82ad-c1f919888c16",
+      "name": "Demais páginas — uma por vez",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2304,
+        36
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — cobertura DECLARADA por consulta (ADR-007; scripts/fopa/pncp.py:118-160): o total que o PNCP diz ter,\n-- quanto foi lido, a %, se o teto de páginas cortou e em que página falhou. `buscas` é imutável: uma linha por\n-- consulta por rodada. Cega = TODAS as consultas falharam (scripts/20_monitor.py:408-435).\nWITH c AS (\n    SELECT * FROM jsonb_to_recordset($2::jsonb) AS x(rotulo text, termo text, modo text, limite int, total int)\n), p AS (\n    SELECT termo AS rotulo,\n           count(*) FILTER (WHERE NOT falhou) AS lidas,\n           coalesce(sum(jsonb_array_length(itens)) FILTER (WHERE NOT falhou), 0) AS lidos,\n           bool_or(falhou) AS falhou,\n           min(pagina) FILTER (WHERE falhou) AS pagina_falha,\n           (array_agg(motivo ORDER BY pagina) FILTER (WHERE falhou))[1] AS motivo\n      FROM buscas_paginas\n     WHERE workflow_execucao_id = $1::bigint\n     GROUP BY termo\n), ins AS (\n    INSERT INTO buscas (workflow_execucao_id, termo, paginas_lidas, total_declarado, lidos, cobertura_pct,\n                        teto_atingido, falhou, pagina_falha)\n    SELECT $1::bigint, c.rotulo, coalesce(p.lidas, 0), c.total, coalesce(p.lidos, 0),\n           CASE WHEN c.total > 0 THEN least(round(100.0 * coalesce(p.lidos, 0) / c.total, 1), 999.9)\n                WHEN c.total = 0 THEN 100.0 END,\n           coalesce(p.lidas, 0) >= c.limite AND coalesce(c.total, 0) > coalesce(p.lidos, 0),\n           coalesce(p.falhou, true), p.pagina_falha\n      FROM c LEFT JOIN p USING (rotulo)\n    RETURNING id, termo, paginas_lidas, total_declarado, lidos, cobertura_pct, teto_atingido, falhou, pagina_falha\n)\nSELECT json_agg(json_build_object('termo', i.termo, 'total_declarado', i.total_declarado,\n                                  'paginas_lidas', i.paginas_lidas, 'lidos', i.lidos,\n                                  'cobertura_pct', i.cobertura_pct, 'teto_atingido', i.teto_atingido,\n                                  'falhou', i.falhou, 'pagina_falha', i.pagina_falha, 'motivo', p.motivo)\n                ORDER BY i.id) AS consultas,\n       count(*)::int AS n_consultas,\n       (count(*) FILTER (WHERE i.falhou))::int AS consultas_falhas,\n       coalesce(bool_and(i.falhou), true) AS cego,\n       coalesce(sum(i.paginas_lidas), 0)::int AS paginas_lidas,\n       coalesce(sum(i.lidos), 0)::int AS lidos\n  FROM ins i LEFT JOIN p ON p.rotulo = i.termo",
+        "options": {
+          "queryReplacement": "={{ [ $('Abrir execução').first().json.execucao_id, JSON.stringify($('Demais páginas pelo total').first().json.consultas) ] }}"
+        }
+      },
+      "id": "35054b36-5f60-517b-87fa-99bdc2d9176d",
+      "name": "Consolidar consultas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5184,
+        36
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — RN-24: um resultado por numero_controle_pncp (scripts/fopa/pncp.py:dedup), lido do que foi GRAVADO em\n-- buscas_paginas: o que o W01 classifica é exatamente o que ficou de prova.\nSELECT u.controle, u.item\n  FROM (SELECT DISTINCT ON (i ->> 'numero_controle_pncp')\n               i ->> 'numero_controle_pncp' AS controle, i AS item, b.id AS pagina_id\n          FROM buscas_paginas b\n         CROSS JOIN LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(b.itens) = 'array' THEN b.itens\n                                                      ELSE '[]'::jsonb END) AS i\n         WHERE b.workflow_execucao_id = $1::bigint AND NOT b.falhou\n           AND coalesce(i ->> 'numero_controle_pncp', '') <> ''\n         ORDER BY i ->> 'numero_controle_pncp', b.id) u\n ORDER BY u.pagina_id, u.controle",
+        "options": {
+          "queryReplacement": "={{ [ $('Abrir execução').first().json.execucao_id ] }}"
+        }
+      },
+      "id": "80c53db5-dd1e-584a-b44d-19609b16d257",
+      "name": "Itens únicos da rodada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5472,
+        -300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — do api/search do PNCP para as colunas de licitacoes (db/020_registrar_vista.sql:125-146): controle =\n// numero_controle_pncp (RN-24), objeto = description[:1200], fim_prazo = data_fim_vigencia (scripts/20_monitor.py:97-105),\n// atualizado_pncp = data_atualizacao_pncp[:19] (20_monitor.py:121-128). O texto que a REGRA de escopo julga é o do\n// monitor: description + objeto + objetoCompra + title (scripts/20_monitor.py:90-94).\nconst RE = /^(\\d{14})-(\\d+)-(\\d+)\\/(\\d{4})$/;\nconst txt = (v) => (v === null || v === undefined || v === false || v === 0) ? '' : String(v);\nconst saida = [];\nfor (const { json: r } of $input.all()) {\n  const it = r.item || {};\n  const controle = String(r.controle || '').trim();\n  const m = RE.exec(controle);\n  if (!m) continue;   // fora do formato, a CHECK de licitacoes recusaria: conta como descarte no resumo\n  const cnpj = /^\\d{14}$/.test(String(it.orgao_cnpj || '')) ? String(it.orgao_cnpj) : m[1];\n  const ano = Number(it.ano) || Number(m[4]);\n  const seq = Number(it.numero_sequencial) || Number(m[3]);\n  saida.push({ json: {\n    controle,\n    texto_escopo: ['description', 'objeto', 'objetoCompra', 'title'].map(c => txt(it[c])).join(' '),\n    payload: {\n      controle, ano, seq,\n      orgao: it.orgao_nome ?? null,\n      uf: it.uf ?? null,\n      municipio: it.municipio_nome ?? null,\n      modalidade: it.modalidade_licitacao_nome ?? null,\n      objeto: txt(it.description).slice(0, 1200) || null,\n      situacao: it.situacao_nome ?? null,\n      publicado_em: it.data_publicacao_pncp ?? null,\n      fim_prazo: it.data_fim_vigencia ?? null,\n      atualizado_pncp: it.data_atualizacao_pncp ? String(it.data_atualizacao_pncp).slice(0, 19) : null,\n      link: `https://pncp.gov.br/app/editais/${cnpj}/${ano}/${seq}`,\n    },\n  } });\n}\nreturn saida;\n"
+      },
+      "id": "136858d6-d1f3-578e-8272-2edd265e6194",
+      "name": "Normalizar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5760,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/escopo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ objetos: $('Normalizar').all().map(i => i.json.texto_escopo) }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "5747af0d-4691-511c-b43c-ec7a1ab7d0ab",
+      "name": "Regra de escopo (worker)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6048,
+        -300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "executeOnce": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — ADR-003: a REGRA decide o escopo, antes de qualquer IA (scripts/fopa/escopo.py via POST /escopo,\n// api/worker.py:208-221). escopo_versao vai junto: quando a regra muda, db/019 reavalia pelo que foi gravado.\nconst r = $input.first().json;\nconst norm = $('Normalizar').all();\nconst res = Array.isArray(r.resultados) ? r.resultados : null;\nif (!res || res.length !== norm.length) {\n  throw new Error(`W01: /escopo devolveu ${res ? res.length : 'nada'} vereditos para ${norm.length} objetos`);\n}\nreturn norm.map(({ json: n }, i) => ({ json: {\n  controle: n.controle,\n  dentro: res[i].dentro === true,\n  texto_escopo: n.texto_escopo,\n  payload: { ...n.payload, escopo_dentro: res[i].dentro === true, escopo_motivo: res[i].motivo ?? null,\n             escopo_versao: r.escopo_versao ?? null },\n} }));\n"
+      },
+      "id": "c82f8ee4-6cfe-558e-bc6b-ad2c61c83a48",
+      "name": "Aplicar a regra",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6336,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — worker fora é erro da rodada, não silêncio (plano §5 W01, \"Erros\"): a linha fecha com o motivo e o\n-- Stop and Error seguinte leva ao W90 (e-mail de erro na fila). As páginas já gravadas ficam.\nUPDATE execucoes_workflow\n   SET status = 'erro', erro = $2, duracao_s = round(extract(epoch FROM clock_timestamp() - $3::timestamptz)::numeric, 3)\n WHERE id = $1::bigint\nRETURNING id",
+        "options": {
+          "queryReplacement": "={{ [ $('Abrir execução').first().json.execucao_id, 'worker /escopo: ' + String(($json.error && ($json.error.message || $json.error.code)) || JSON.stringify($json.error || $json)).slice(0, 400), $('Parâmetros da rodada').first().json.inicio ] }}"
+        }
+      },
+      "id": "418d1ed7-a62c-5944-ab24-df12858f601b",
+      "name": "Worker fora: fechar com erro",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6336,
+        78
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "errorMessage": "=W01: o worker não respondeu ao POST /escopo — a rodada não classifica sem a regra (ADR-003). Linha {{ $('Abrir execução').first().json.execucao_id }} de execucoes_workflow fechada com erro."
+      },
+      "id": "1887d1c7-4f3d-5bd1-861d-77facd248065",
+      "name": "Parar: worker fora",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        6624,
+        78
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — UMA chamada por resultado, e ela decide sozinha, sem ramo no canvas: ignorar (fora do recorte de 2026,\n-- ADR-015) | inserir_nova | inserir_fora_escopo | inserir_fora_janela | retificar | visto — e, seca, não escreve nada\n-- (db/020_registrar_vista.sql:1-21). Idempotente: a 2ª rodada vê 'visto'.\nSELECT $1::text AS controle, v.vista, v.acao, $5::bool AS dentro\n  FROM fn_registrar_vista($1::text, $2::jsonb, $3::date, $4::bool, 'W01') AS v",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, JSON.stringify($json.payload), $('Parâmetros da rodada').first().json.hoje, $('Parâmetros da rodada').first().json.seco, $json.dentro ] }}",
+          "queryBatching": "independently"
+        }
+      },
+      "id": "7e75fba8-f098-5c09-86e4-d826447e564f",
+      "name": "Registrar vista",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6624,
+        -300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — o Jev é SINAL, nunca decide (T25; api/jev.py:1-14; Fopa-v2/11-Produto-v3/Jev na v3.md): score só das\n// linhas que ESTA rodada inseriu (nova e fora de escopo), nunca no seco; teto de chamadas por rodada, e o que passou\n// do teto fica registrado no resumo (contadores.jev.fora_do_teto).\nconst p = $('Parâmetros da rodada').first().json;\nif (p.seco) return [];\nconst regs = $input.all().map(i => i.json);\nconst aplic = $('Aplicar a regra').all().map(i => i.json);\nconst alvo = [];\nregs.forEach((r, i) => {\n  if (r.acao !== 'inserir_nova' && r.acao !== 'inserir_fora_escopo') return;\n  if (!aplic[i] || aplic[i].controle !== r.controle) throw new Error('W01: registro e regra fora de ordem em ' + r.controle);\n  alvo.push({ controle: r.controle, objeto: aplic[i].texto_escopo, nova: r.acao === 'inserir_nova' });\n});\n// As novas primeiro: são as que entram na fila paga.\nalvo.sort((a, b) => Number(b.nova) - Number(a.nova));\nconst vez = alvo.slice(0, p.jev_teto);\nreturn [{ json: { itens: vez.map(({ controle, objeto }) => ({ controle, objeto })),\n                  fora_do_teto: alvo.slice(p.jev_teto).map(a => a.controle), teto: p.jev_teto } }];\n"
+      },
+      "id": "144a4e43-18b6-50df-8fe7-48f2308dc921",
+      "name": "Escolher para o Jev",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6912,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/jev/escopo/corpos",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ itens: $json.itens }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "b9c25363-468e-569b-a31a-32dd14ab2af0",
+      "name": "Jev: montar corpos (worker)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        7200,
+        -300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — o worker MONTA a pergunta (o critério MEDIDO, api/jev.py:36 e 52-56; hoje v3) e diz o que a regra decidiu ao lado:\n// é contra ela que o Jev discorda. O n8n só faz a chamada, com a credencial `jev` (segredo só em Credential).\nconst d = $input.first().json;\nif (!Array.isArray(d.requisicoes)) return [];\nreturn d.requisicoes.map(r => ({ json: { url: d.url, controle: r.controle, regra_dentro: r.regra_dentro === true, body: r.body } }));\n"
+      },
+      "id": "51127e1d-cce2-5683-86e2-c2be40fa8ff1",
+      "name": "Uma requisição por item",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7488,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "timeout": 30000,
+          "batching": {
+            "batch": {
+              "batchSize": 5,
+              "batchInterval": 1000
+            }
+          }
+        }
+      },
+      "id": "3304dc87-8847-5710-a883-36c994dece8f",
+      "name": "Jev (TypeSafe)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        7776,
+        -300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:jev}}",
+          "name": "jev"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/jev/escopo/interpretar",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ controle: $('Uma requisição por item').item.json.controle, regra_dentro: $('Uma requisição por item').item.json.regra_dentro, resposta: $json.error ? { erro: String($json.error.message || $json.error.code || 'falhou') } : $json }) }}",
+        "options": {
+          "timeout": 30000,
+          "batching": {
+            "batch": {
+              "batchSize": 5,
+              "batchInterval": 250
+            }
+          }
+        }
+      },
+      "id": "9856559b-0071-5af3-91e5-41c829b99dd2",
+      "name": "Jev: interpretar (worker)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        8064,
+        -300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — \"nada a fazer\" ≠ \"não consegui olhar\" (scripts/20_monitor.py:408-435): a rodada fecha com contadores,\n// cobertura e `cego`. Este ramo roda DEPOIS do de cima inteiro (executionOrder v1: ramo de cima primeiro, até o fim),\n// então lê o que o registro e o Jev fizeram — e também fecha quando o de cima parou sem item (nada lido).\nconst p = $('Parâmetros da rodada').first().json;\nconst cons = $input.first().json;\nconst rodou = (n) => { try { return $(n).isExecuted; } catch (e) { return false; } };\nconst todos = (n) => rodou(n) ? $(n).all().map(i => i.json) : [];\nconst regs = todos('Registrar vista');\nconst por_acao = {};\nfor (const r of regs) por_acao[r.acao] = (por_acao[r.acao] || 0) + 1;\nconst lista = (a) => regs.filter(r => r.acao === a).map(r => r.controle);\nconst escolha = todos('Escolher para o Jev')[0] || null;\nconst reqs = todos('Uma requisição por item');\nconst respJev = todos('Jev (TypeSafe)');\nconst sinais = todos('Jev: interpretar (worker)').map((s, i) => ({ ...s, controle: reqs[i] ? reqs[i].controle : null }));\nconst comP = sinais.filter(s => typeof s.p_filtro_ok === 'number');\nconst corpos = todos('Jev: montar corpos (worker)')[0] || null;\nconst jev = {\n  teto: p.jev_teto,\n  chamadas: respJev.length,\n  com_resposta: comP.length,\n  falhas: respJev.filter(j => j.error).length + sinais.filter(s => s.error).length,\n  p_filtro_ok_medio: comP.length ? Math.round(10000 * comP.reduce((a, s) => a + s.p_filtro_ok, 0) / comP.length) / 10000 : null,\n  candidatas: sinais.filter(s => s.candidata).map(s => s.controle),\n  discordancias: sinais.filter(s => s.discorda).length,\n  usd: Math.round(1e8 * sinais.reduce((a, s) => a + (Number(s.usd) || 0), 0)) / 1e8,\n  fora_do_teto: escolha ? escolha.fora_do_teto : [],\n  erro: corpos && corpos.error ? String(corpos.error.message || corpos.error) : null,\n  motivo: p.seco ? 'seco: o Jev não é chamado' : null,\n};\nconst unicos = todos('Itens únicos da rodada').length;\nconst novas = lista('inserir_nova');\nconst retificadas = lista('retificar');\n// regra — o \"Verificar agora\" do site é SECO (W11 → W01 seco): as novas não vão para licitacoes, então a tela\n// só consegue listá-las se a rodada as guardar. Até 50, com o que o operador precisa para decidir se olha;\n// a contagem `novas` continua sendo o total.\nconst payloadDe = {};\nfor (const x of todos('Normalizar')) payloadDe[x.controle] = x.payload || {};\nconst novas_lista = novas.slice(0, 50).map((ctrl) => {\n  const y = payloadDe[ctrl] || {};\n  return { controle: ctrl, municipio: y.municipio ?? null, uf: y.uf ?? null, modalidade: y.modalidade ?? null,\n           objeto: y.objeto ? String(y.objeto).slice(0, 200) : null, fim_prazo: y.fim_prazo ?? null,\n           link: y.link ?? null };\n});\nconst contadores = {\n  vistas: regs.length,\n  novas: novas.length,\n  retificadas: retificadas.length,\n  fora_escopo: por_acao.inserir_fora_escopo || 0,\n  fora_janela: por_acao.inserir_fora_janela || 0,\n  fora_recorte: por_acao.ignorar || 0,\n  conhecidas: por_acao.visto || 0,\n  paginas_lidas: cons.paginas_lidas,\n  lidos: cons.lidos,\n  unicos,\n  descartados: Math.max(0, unicos - regs.length),\n  consultas_falhas: cons.consultas_falhas,\n  jev_chamadas: jev.chamadas,\n  seco: p.seco,\n  por_acao,\n  novas_lista,\n  jev,\n};\nconst esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n// regra — o 1º dos DOIS e-mails do produto: UM por licitação que esta rodada inseriu como 'inserir_nova' (dentro do escopo e da\n// janela, db/020) — nunca na rodada seca, que não grava. Vai para os admins (para = NULL, o W50 resolve). A coleta\n// CEGA não manda mais e-mail: fica em execucoes_workflow.cego e na página /saude.\nconst site = String($env.FOPA_SITE_PUBLIC_URL || '').replace(/\\/+$/, '');\nconst quando = (iso) => {\n  if (!iso) return 'sem data';\n  const d = new Date(iso);\n  return isNaN(d) ? String(iso) : d.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit',\n    month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });\n};\nconst avisos = p.seco ? [] : novas.map((ctrl) => {\n  const y = payloadDe[ctrl] || {};\n  const onde = `${y.municipio || y.orgao || ctrl}/${y.uf || '—'}`;\n  return {\n    controle: ctrl,\n    assunto: `[FOPA] Licitação nova de folha: ${onde}${y.modalidade ? ' · ' + y.modalidade : ''}`,\n    corpo_html: `<p><b>${esc(onde)}</b>${y.orgao ? ' — ' + esc(y.orgao) : ''}</p>`\n      + `<p>${esc(y.modalidade || 'modalidade não informada')} · prazo: <b>${esc(quando(y.fim_prazo))}</b></p>`\n      + (y.objeto ? `<p>${esc(String(y.objeto).slice(0, 600))}</p>` : '')\n      + `<p><a href=\"${esc(site)}/licitacao/${esc(ctrl.replace('/', '-'))}\">Abrir no site</a>`\n      + (y.link ? ` · <a href=\"${esc(y.link)}\">PNCP</a>` : '') + `</p>`\n      + `<p style=\"color:#666\">controle ${esc(ctrl)} · encontrada pelo W01 em ${esc(p.hoje)}</p>`,\n  };\n});\nreturn [{ json: {\n  execucao_id: $('Abrir execução').first().json.execucao_id,\n  contadores, cego: cons.cego === true, avisos, inicio: p.inicio,\n  saida: { vistas: regs.length, por_acao, novas, retificadas, cego: cons.cego === true, seco: p.seco,\n           jev: { chamadas: jev.chamadas, com_resposta: jev.com_resposta, p_filtro_ok_medio: jev.p_filtro_ok_medio,\n                  candidatas: jev.candidatas, usd: jev.usd, fora_do_teto: jev.fora_do_teto.length },\n           consultas: cons.consultas },\n} }];\n"
+      },
+      "id": "dd309e50-1504-5a92-9805-ba719492d98c",
+      "name": "Resumo da rodada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5472,
+        582
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — a rodada fecha com duração, contadores e `cego` (a coleta cega aparece no site; e-mail de coleta cega\n-- saiu do produto em 25/09/2026). E enfileira o 1º dos DOIS e-mails do produto: UMA \"licitação nova\" por\n-- licitação que esta rodada inseriu como nova (a lista vem do Resumo da rodada, vazia na seca) e que segue dentro\n-- do filtro (fn_escopo_efetivo, db/031); quem envia é o W50, para os admins (para = NULL). Nunca repete. O W01 não\n-- chama modelo de extração: custo_brl = 0 (o centavo do Jev fica em sinais_jev.usd e em contadores.jev.usd).\nWITH fecha AS (\n    UPDATE execucoes_workflow\n       SET duracao_s = round(extract(epoch FROM clock_timestamp() - $5::timestamptz)::numeric, 3),\n           contadores = $2::jsonb, cego = $3::bool, status = 'ok', custo_brl = 0, erro = NULL\n     WHERE id = $1::bigint\n    RETURNING id, duracao_s\n), avisos AS (\n    INSERT INTO emails (tipo, controle, assunto, corpo_html)\n    SELECT 'licitacao_nova', a.controle, a.assunto, a.corpo_html\n      FROM jsonb_to_recordset($4::jsonb) AS a (controle text, assunto text, corpo_html text)\n      JOIN licitacoes l ON l.controle = a.controle\n     WHERE fn_escopo_efetivo(l.controle, l.escopo_dentro)\n       AND NOT EXISTS (SELECT 1 FROM emails e WHERE e.tipo = 'licitacao_nova' AND e.controle = a.controle)\n    RETURNING id\n)\nSELECT (SELECT id FROM fecha) AS execucao_id, (SELECT duracao_s FROM fecha) AS duracao_s,\n       NULL::bigint AS email_id, (SELECT count(*) FROM avisos)::int AS emails_novas",
+        "options": {
+          "queryReplacement": "={{ [ $json.execucao_id, JSON.stringify($json.contadores), $json.cego, JSON.stringify($json.avisos || []), $json.inicio ] }}"
+        }
+      },
+      "id": "bcdc0a49-2d59-59d4-a40a-f1c1d774110e",
+      "name": "Fechar execução",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5760,
+        582
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — o que o W11 e quem chamar recebem: {vistas, por_acao, novas, retificadas, cego, jev} (plano §5 W01, passo 20).\nconst r = $('Resumo da rodada').first().json;\nconst f = $input.first().json;\nreturn [{ json: { execucao_id: f.execucao_id, duracao_s: f.duracao_s, email_cego_id: f.email_id ?? null, emails_novas: f.emails_novas ?? 0, ...r.saida } }];\n"
+      },
+      "id": "7dd326d2-b6a9-5dc0-a4cb-b1f96058201a",
+      "name": "Saída da rodada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6048,
+        1086
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — plano §5 W01 passo 19: só a rodada que grava empurra a fila, e só se o orçamento deixar.\n-- Mesma leitura do W10 (\"Disjuntor e orçamento\"): orçamento vigente; sem linha vigente vale o padrão da\n-- coluna (db/007: auto_processar DEFAULT true).\nSELECT COALESCE(o.auto_processar, true) AS auto_processar\n  FROM (SELECT 1) u LEFT JOIN orcamento o ON o.vigente",
+        "options": {}
+      },
+      "id": "36c3d9ef-7212-5a12-b037-12ae005ee8e5",
+      "name": "Orçamento: auto_processar?",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6048,
+        582
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "791f1d7d-68b2-502a-88e4-b4492339f0a2",
+              "leftValue": "={{ !$('Parâmetros da rodada').first().json.seco && $json.auto_processar === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "79a789be-7206-5813-a6c4-92c390459d7b",
+      "name": "Empurrar a fila?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6336,
+        582
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W10}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "1d788470-54d7-5989-ae3e-bd6233cfec66",
+      "name": "W10 Fila (sem esperar)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        6624,
+        414
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Agenda 06:00 seg-sex**\n\nGatilho agendado: dispara a descoberta às 06:00, de segunda a sexta, no horário de Brasília.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "45eda434-c621-5b47-9f53-3bafc8747f11",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Manual**\n\nGatilho manual, para rodar a descoberta pelo editor. É a rodada de teste: o teto de chamadas ao Jev cai para 100.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9e5b219e-c252-56df-a597-864c9ff8720c",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Chamado por outro fluxo**\n\nEntrada usada pelo W11 quando alguém clica em “Verificar agora” no site. Recebe se a rodada é seca (sem gravar) e o id da execução já aberta.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "42c32360-0146-5878-a9f6-867742e1e2b0",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        1320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · Parâmetros da rodada**\n\nIdentifica o gatilho e monta os parâmetros: data de hoje, se a rodada é seca, teto de chamadas ao Jev e o endereço da busca do PNCP. Chamada sem essa indicação, a rodada é seca.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3f5227ac-111c-5a0a-aa67-ad28812a6f11",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Abrir execução**\n\nAbre (ou retoma) a linha da rodada em execucoes_workflow. Todo registro seguinte leva esse id; a página Execuções do site mostra a rodada.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f1d8e690-9437-52e4-9809-3bcd9d23bd5e",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Termos ativos**\n\nLê os termos de busca ativos (editáveis no Admin), com o limite de páginas de cada um, e o ano mínimo do recorte.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "1a0fb2c5-450a-55e1-9aa9-237a1f3401ed",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Página 1 de cada consulta**\n\nPara cada termo, monta duas consultas ao PNCP: o recorte do ano (abertas e encerradas) e as que ainda recebem propostas. O recorte de 2026 já vai na consulta.",
+        "height": 222,
+        "width": 260,
+        "color": 4
+      },
+      "id": "39e12ff3-0c4d-5869-9e16-c02641001b34",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · Páginas 1 — uma por vez**\n\nLaço que percorre as páginas 1, uma de cada vez: cada página é gravada antes de pedir a próxima, e nada se perde se o PNCP cair.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "dfaa57e2-7908-579e-b89a-703d61397163",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Ler esta página?**\n\nPergunta ao banco se uma página anterior da mesma consulta falhou ou veio incompleta. Nesse caso, esta página não é pedida.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e01baca5-53d0-5522-84dc-bd26079e51cb",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        1362
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Ler?**\n\nSegue para a consulta ao PNCP ou marca a página como pulada.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ece16592-92c3-5c28-a92b-684370c027f1",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        1362
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 15 · GET página no PNCP**\n\nPede a página à API pública do PNCP, identificando o sistema e um contato. Espera até 60 s; erro de rede também vira resultado.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "b2042c77-684e-5d9e-bc8a-d519319432f2",
+      "name": "Nota — passo 15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        1110
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 16 · Conferir 1ª resposta**\n\nConfere a resposta e classifica a falha: rede (até 5 tentativas), limite da API (espera 30 s e tenta de novo) ou outro erro (não repete).",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "cb1979fa-5cd8-5da6-b940-80e200a74d15",
+      "name": "Nota — passo 16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        1110
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 17 · Repetir?**\n\nDecide entre esperar e tentar de novo ou gravar a página.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6c6ecc2d-96e2-5a8e-8098-04953df51c16",
+      "name": "Nota — passo 17",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        1110
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 18 · Esperar e tentar de novo**\n\nEspera o tempo indicado: 30 s no limite da API; de 1 a 8 s na queda de rede.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "755337fe-5ba1-5247-959a-447abeace458",
+      "name": "Nota — passo 18",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        1572
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 19 · GET página (nova tentativa)**\n\nRepete o pedido da página ao PNCP, com os mesmos cuidados do primeiro.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "32091448-c667-5f12-afac-15b0daf28a57",
+      "name": "Nota — passo 19",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        1572
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 20 · Conferir nova resposta**\n\nAvalia a nova tentativa. Esgotadas as tentativas, a página fica registrada como falha, com o histórico dos motivos, e a consulta para ali.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "db21472d-a39f-516c-a820-b9a3483b7095",
+      "name": "Nota — passo 20",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        1572
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 21 · Persistir página**\n\nGrava a página em buscas_paginas, com os itens, o status HTTP e o motivo da falha, se houver. É a prova da coleta.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6b65e4ee-3874-5419-9a67-5b97e6ec47fe",
+      "name": "Nota — passo 21",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        1110
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 22 · Pausa 0,5 s**\n\nPausa de meio segundo entre páginas: cuidado com a API pública e menor chance de bloqueio.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "b62eb0a5-a95c-5fe9-ba19-82e0772c5b0c",
+      "name": "Nota — passo 22",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4240,
+        1110
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 23 · Página pulada**\n\nMarca a página como pulada (sem itens) e devolve ao laço. A cobertura da consulta mostra o que faltou.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7aeb2b9a-1185-5b2d-9306-4602252c4c12",
+      "name": "Nota — passo 23",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        1782
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 24 · De volta ao laço**\n\nDevolve o item ao laço certo: o das páginas 1 ou o das demais páginas.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "24fd61e6-9498-5673-8be6-d67e5ca54c18",
+      "name": "Nota — passo 24",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4528,
+        1362
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 25 · Demais páginas pelo total**\n\nPelo total que o PNCP declarou, calcula as páginas seguintes de cada consulta, respeitando o limite do termo.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "11a7f7d2-c04d-51ee-a780-5da46863b91c",
+      "name": "Nota — passo 25",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        186
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 26 · Há demais páginas?**\n\nSe há páginas seguintes, entra no segundo laço; senão, vai direto à consolidação.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "bb6dcccf-ea53-58cf-a6e6-0cc1dfd42390",
+      "name": "Nota — passo 26",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        186
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 27 · Demais páginas — uma por vez**\n\nO mesmo laço, agora para as páginas 2 em diante.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "17a54ec5-6717-5119-ac3f-e44dea934d1c",
+      "name": "Nota — passo 27",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        186
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 28 · Consolidar consultas**\n\nGrava uma linha por consulta: páginas lidas, total declarado, cobertura e falhas. Marca a rodada como “cega” se todas as consultas falharam.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "feb11c37-46a0-5fbd-aa3a-2b03c9072258",
+      "name": "Nota — passo 28",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5104,
+        186
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 29 · Itens únicos da rodada**\n\nJunta os itens de todas as páginas gravadas e deixa um por número de controle: o mesmo edital achado por vários termos vira um só.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "2cf0d84b-5512-58d2-8fea-1a77aeccd090",
+      "name": "Nota — passo 29",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5392,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 30 · Normalizar**\n\nConverte cada resultado nas colunas da licitação (órgão, UF, município, modalidade, objeto, prazos, link) e descarta controle fora do formato.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "026e7954-059e-5b38-bd91-9f2fac7afe78",
+      "name": "Nota — passo 30",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5680,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 31 · Regra de escopo (worker)**\n\nEnvia os textos ao worker, que aplica a regra determinística de escopo e devolve, para cada um, se é compra de folha e o motivo.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4dec7a06-0e2f-5c93-8a9e-b9afc7ad07ab",
+      "name": "Nota — passo 31",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5968,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 32 · Worker fora: fechar com erro**\n\nSe o worker não respondeu, fecha a rodada com erro e o motivo. As páginas já gravadas permanecem.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6efb8828-b90f-5cef-8d4d-cbc8edac332b",
+      "name": "Nota — passo 32",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6256,
+        228
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 33 · Parar: worker fora**\n\nEncerra a execução com erro: sem a regra, a rodada não classifica. O erro aciona o W90.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e850cbbf-ad42-508b-9fff-fc77771970a9",
+      "name": "Nota — passo 33",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6544,
+        228
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 34 · Aplicar a regra**\n\nConfere que há um veredito por licitação e anexa a cada uma o resultado da regra, o motivo e a versão da regra.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ecdb7f00-e562-550b-9881-6fd3154f4d5d",
+      "name": "Nota — passo 34",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6256,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 35 · Registrar vista**\n\nRegistra cada licitação; o banco decide a ação: nova (vai para a fila), fora do escopo, fora da janela, retificada ou já conhecida. Na rodada seca, nada é gravado.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5334f005-8bb0-52ba-bd91-cc088edef1b5",
+      "name": "Nota — passo 35",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6544,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 36 · Escolher para o Jev**\n\nEscolhe só as licitações inseridas nesta rodada, as novas primeiro, até o teto de chamadas. O Jev apenas pontua; quem decide é a regra.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "031820f3-8111-5daa-ac8f-bd7ed6506a7f",
+      "name": "Nota — passo 36",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6832,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 37 · Jev: montar corpos (worker)**\n\nO worker monta a pergunta ao Jev com o critério medido. Em caso de erro, segue: o Jev nunca derruba a rodada.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5214c051-0fa7-58b3-8023-a4317d65fcb0",
+      "name": "Nota — passo 37",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7120,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 38 · Uma requisição por item**\n\nSepara a resposta do worker em um pedido por licitação.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "b027a12a-89d2-5890-bfd1-72993b45fd8b",
+      "name": "Nota — passo 38",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7408,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 39 · Jev (TypeSafe)**\n\nConsulta o Jev, o modelo que estima a probabilidade de ser compra de folha. Lotes de 5 por segundo; a chave fica só na credencial do n8n.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4c297a9d-49f5-5818-95a6-a44e0f7baa1e",
+      "name": "Nota — passo 39",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7696,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 40 · Jev: interpretar (worker)**\n\nO worker converte a resposta na probabilidade de a regra ter acertado, marca as discordâncias e grava o sinal.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "d209ce75-3118-5faa-9bdd-f5e6180ef80b",
+      "name": "Nota — passo 40",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        7984,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 41 · Resumo da rodada**\n\nMonta os contadores da rodada (vistas, novas, retificadas, descartes, falhas, uso do Jev), a lista de novas para o site e os e-mails de licitação nova.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "604727c8-ada4-5c1b-8e01-d29a426984a5",
+      "name": "Nota — passo 41",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5392,
+        732
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 42 · Fechar execução**\n\nFecha a rodada com duração e contadores, e enfileira o e-mail de licitação nova uma única vez por licitação, para os administradores.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "36a59849-54e7-5647-b2a7-cf5110284724",
+      "name": "Nota — passo 42",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5680,
+        732
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 43 · Saída da rodada**\n\nDevolve o resultado a quem chamou; no “Verificar agora”, é o que o site mostra.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "23b7dee5-3f8d-53e1-8e8a-a5a59f59f792",
+      "name": "Nota — passo 43",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5968,
+        1236
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 44 · Orçamento: auto_processar?**\n\nLê no orçamento se o processamento automático está ligado.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7758d815-37c1-535b-b705-70d464fa4c40",
+      "name": "Nota — passo 44",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5968,
+        732
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 45 · Empurrar a fila?**\n\nSegue só se a rodada gravou e o processamento automático está ligado.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "b0359322-1ade-543b-865e-16650e0c9b15",
+      "name": "Nota — passo 45",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6256,
+        732
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 46 · W10 Fila (sem esperar)**\n\nDesligado: a fila roda pela agenda do próprio W10, das 6h às 7h50. Ligado, acionaria a fila logo após a descoberta.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "04891627-0de9-5a17-b14d-35cffc2e40cb",
+      "name": "Nota — passo 46",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6544,
+        564
+      ]
+    }
+  ],
+  "connections": {
+    "Agenda 06:00 seg-sex": {
+      "main": [
+        [
+          {
+            "node": "Parâmetros da rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual": {
+      "main": [
+        [
+          {
+            "node": "Parâmetros da rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chamado por outro fluxo": {
+      "main": [
+        [
+          {
+            "node": "Parâmetros da rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parâmetros da rodada": {
+      "main": [
+        [
+          {
+            "node": "Abrir execução",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir execução": {
+      "main": [
+        [
+          {
+            "node": "Termos ativos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Termos ativos": {
+      "main": [
+        [
+          {
+            "node": "Página 1 de cada consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Página 1 de cada consulta": {
+      "main": [
+        [
+          {
+            "node": "Páginas 1 — uma por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Páginas 1 — uma por vez": {
+      "main": [
+        [
+          {
+            "node": "Demais páginas pelo total",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ler esta página?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler esta página?": {
+      "main": [
+        [
+          {
+            "node": "Ler?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler?": {
+      "main": [
+        [
+          {
+            "node": "GET página no PNCP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Página pulada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET página no PNCP": {
+      "main": [
+        [
+          {
+            "node": "Conferir 1ª resposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Conferir 1ª resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conferir 1ª resposta": {
+      "main": [
+        [
+          {
+            "node": "Repetir?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repetir?": {
+      "main": [
+        [
+          {
+            "node": "Esperar e tentar de novo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Persistir página",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar e tentar de novo": {
+      "main": [
+        [
+          {
+            "node": "GET página (nova tentativa)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET página (nova tentativa)": {
+      "main": [
+        [
+          {
+            "node": "Conferir nova resposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Conferir nova resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conferir nova resposta": {
+      "main": [
+        [
+          {
+            "node": "Repetir?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Persistir página": {
+      "main": [
+        [
+          {
+            "node": "Pausa 0,5 s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pausa 0,5 s": {
+      "main": [
+        [
+          {
+            "node": "De volta ao laço",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Página pulada": {
+      "main": [
+        [
+          {
+            "node": "De volta ao laço",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "De volta ao laço": {
+      "main": [
+        [
+          {
+            "node": "Páginas 1 — uma por vez",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Demais páginas — uma por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Demais páginas pelo total": {
+      "main": [
+        [
+          {
+            "node": "Há demais páginas?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Há demais páginas?": {
+      "main": [
+        [
+          {
+            "node": "Demais páginas — uma por vez",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Consolidar consultas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Demais páginas — uma por vez": {
+      "main": [
+        [
+          {
+            "node": "Consolidar consultas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ler esta página?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar consultas": {
+      "main": [
+        [
+          {
+            "node": "Itens únicos da rodada",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Resumo da rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Itens únicos da rodada": {
+      "main": [
+        [
+          {
+            "node": "Normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar": {
+      "main": [
+        [
+          {
+            "node": "Regra de escopo (worker)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Regra de escopo (worker)": {
+      "main": [
+        [
+          {
+            "node": "Aplicar a regra",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Worker fora: fechar com erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Worker fora: fechar com erro": {
+      "main": [
+        [
+          {
+            "node": "Parar: worker fora",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aplicar a regra": {
+      "main": [
+        [
+          {
+            "node": "Registrar vista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar vista": {
+      "main": [
+        [
+          {
+            "node": "Escolher para o Jev",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escolher para o Jev": {
+      "main": [
+        [
+          {
+            "node": "Jev: montar corpos (worker)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jev: montar corpos (worker)": {
+      "main": [
+        [
+          {
+            "node": "Uma requisição por item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uma requisição por item": {
+      "main": [
+        [
+          {
+            "node": "Jev (TypeSafe)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jev (TypeSafe)": {
+      "main": [
+        [
+          {
+            "node": "Jev: interpretar (worker)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumo da rodada": {
+      "main": [
+        [
+          {
+            "node": "Fechar execução",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fechar execução": {
+      "main": [
+        [
+          {
+            "node": "Orçamento: auto_processar?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Saída da rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orçamento: auto_processar?": {
+      "main": [
+        [
+          {
+            "node": "Empurrar a fila?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Empurrar a fila?": {
+      "main": [
+        [
+          {
+            "node": "W10 Fila (sem esperar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "errorWorkflow": "{{WF:W90}}",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": false
+  }
+}

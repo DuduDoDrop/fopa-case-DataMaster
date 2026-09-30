@@ -1,0 +1,388 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/questionario",
+ "status": 200,
+ "corpo": {
+  "versao_prompt": "255fb1467e4dccca63da5462f5beb1a94fedc93bc3ea1c273f283a0617bf734f",
+  "sistema": "Você extrai respostas de editais de licitação de folha de pagamento do setor público brasileiro.\n\nREGRAS ABSOLUTAS\n\n1. Só afirme o que está escrito nos documentos fornecidos. Nunca infira, nunca calcule,\n   nunca complete com conhecimento geral sobre licitações.\n\n2. Toda resposta vem com `trecho_literal` copiado EXATAMENTE do texto, mais o `arquivo`\n   e a `pagina` onde ele aparece. Esse trecho será conferido caractere a caractere contra\n   a página citada. Se você parafrasear, a resposta será rejeitada.\n\n3. Não encontrou? `resposta` = \"Não localizado\", `arquivo` = null, `pagina` = null,\n   `trecho_literal` = null. Isso é uma resposta CORRETA e preferível a uma tentativa.\n\n4. A `pagina` é a página FÍSICA do PDF — o número que aparece no marcador\n   \"=== ARQUIVO x | PÁGINA n ===\", não a numeração impressa no rodapé do documento.\n\n5. Os documentos podem se contradizer. Precedência:\n   aviso de retificação/suspensão mais recente > termo de referência corrigido >\n   edital de maior sequencial > editais anteriores.\n   Ao usar o mais recente, descreva a divergência em `conflito`.\n\n6. Transcreva rótulos como estão. \"valor mínimo\", \"valor estimado\" e \"valor de referência\"\n   são conceitos DIFERENTES em leilão de maior oferta. Não normalize.\n\n7. A pirâmide salarial costuma vir em VÁRIAS TABELAS, separadas por vínculo. Capture todas.\n   Se a soma de uma tabela não bater com o total impresso dela, relate a diferença em\n   `conflito` em vez de ajustar os números.\n\n8. Ignore linhas de assinatura digital (\"Assinado por N pessoas\", \"Para verificar a\n   autenticidade\", \"Código para verificação\"). Não são conteúdo do edital.\n\n9. Nunca calcule percentuais, totais ou valores derivados. Transcreva o percentual e a\n   base de cálculo que o documento declara.",
+  "esquema_lote": {
+   "type": "object",
+   "properties": {
+    "respostas": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "id": {
+        "type": "string",
+        "description": "identificador da pergunta, ex.: Q5"
+       },
+       "resposta": {
+        "type": "string",
+        "description": "A resposta, transcrita do documento. \"Não localizado\" quando a informação não estiver nos documentos fornecidos."
+       },
+       "arquivo": {
+        "type": [
+         "string",
+         "null"
+        ],
+        "description": "nome do arquivo de onde veio a resposta; null se não localizado"
+       },
+       "pagina": {
+        "type": [
+         "integer",
+         "null"
+        ],
+        "description": "página FÍSICA do PDF (a que o leitor mostra); null se não localizado"
+       },
+       "trecho_literal": {
+        "type": [
+         "string",
+         "null"
+        ],
+        "description": "trecho copiado EXATAMENTE do documento que fundamenta a resposta. Será conferido caractere a caractere contra a página citada."
+       },
+       "conflito": {
+        "type": [
+         "string",
+         "null"
+        ],
+        "description": "descrição do conflito quando documentos divergem; null se não houver"
+       },
+       "confianca": {
+        "type": "string",
+        "enum": [
+         "alta",
+         "media",
+         "baixa"
+        ]
+       }
+      },
+      "required": [
+       "id",
+       "resposta",
+       "arquivo",
+       "pagina",
+       "trecho_literal",
+       "conflito",
+       "confianca"
+      ],
+      "additionalProperties": false
+     }
+    }
+   },
+   "required": [
+    "respostas"
+   ],
+   "additionalProperties": false
+  },
+  "perguntas": [
+   {
+    "id": "Q1",
+    "texto": "Qual a Data da Licitação ?",
+    "orienta": "Data e hora da sessão pública. Se houver aviso de retificação, suspensão ou redesignação, a data válida é a DELE, não a do edital.",
+    "formato": "DD/MM/AAAA às HHhMM (horário de Brasília)",
+    "critico": true,
+    "termos": [
+     "sessão pública",
+     "abertura",
+     "data",
+     "hora",
+     "retificação",
+     "redesignação",
+     "suspensão",
+     "cronograma",
+     "recebimento das propostas"
+    ]
+   },
+   {
+    "id": "Q2",
+    "texto": "O que diz o Objeto do Edital ?",
+    "orienta": "Texto integral do objeto, sem resumir.",
+    "formato": "",
+    "critico": false,
+    "termos": [
+     "objeto",
+     "constitui o objeto",
+     "destina-se",
+     "contratação de instituição"
+    ]
+   },
+   {
+    "id": "Q3",
+    "texto": "Qual a Modalidade de Contratação ?",
+    "orienta": "Ex.: PREGÃO ELETRÔNICO, CONCORRÊNCIA, CREDENCIAMENTO, DISPENSA, INEXIGIBILIDADE.",
+    "formato": "",
+    "critico": false,
+    "termos": [
+     "modalidade",
+     "pregão",
+     "concorrência",
+     "credenciamento",
+     "dispensa",
+     "inexigibilidade",
+     "preâmbulo"
+    ]
+   },
+   {
+    "id": "Q4",
+    "texto": "Qual o Tipo do Pregão ?",
+    "orienta": "Critério de julgamento. Em folha costuma ser Maior Lance ou Maior Oferta. Em credenciamento e contratação direta pode não se aplicar.",
+    "formato": "",
+    "critico": false,
+    "termos": [
+     "critério de julgamento",
+     "maior lance",
+     "maior oferta",
+     "tipo",
+     "julgamento"
+    ]
+   },
+   {
+    "id": "Q5",
+    "texto": "Qual o Valor Mínimo de Contratação ?",
+    "orienta": "Transcreva o rótulo COMO ESTÁ no documento: 'valor mínimo', 'valor estimado' e 'valor de referência' são conceitos distintos em leilão de maior oferta. Não normalize o rótulo.",
+    "formato": "R$ X (VALOR POR EXTENSO), com o rótulo literal usado no documento",
+    "critico": true,
+    "termos": [
+     "valor mínimo",
+     "valor estimado",
+     "valor de referência",
+     "R$",
+     "orçamento",
+     "valor da contratação"
+    ]
+   },
+   {
+    "id": "Q6",
+    "texto": "Qual o valor dos Lances Mínimos ?",
+    "orienta": "Intervalo mínimo entre lances, em % ou R$.",
+    "formato": "",
+    "critico": false,
+    "termos": [
+     "intervalo mínimo",
+     "lance",
+     "diferença de valores",
+     "intervalo mínimo de diferença de valores",
+     "lances intermediários"
+    ]
+   },
+   {
+    "id": "Q7",
+    "texto": "Qual é o Prazo de Assinatura do Contrato ?",
+    "orienta": "Prazo e a partir de quando conta.",
+    "formato": "",
+    "critico": false,
+    "termos": [
+     "assinatura do contrato",
+     "convocação",
+     "dias úteis",
+     "assinar o termo de contrato",
+     "convocado para assinar",
+     "decair o direito à contratação",
+     "prazos recursais",
+     "convocará a empresa vencedora",
+     "convocado a assinar"
+    ]
+   },
+   {
+    "id": "Q8",
+    "texto": "Qual é o Prazo de Pagamento ?",
+    "orienta": "Prazo para o banco pagar o valor ofertado ao ente.",
+    "formato": "",
+    "critico": false,
+    "termos": [
+     "prazo de pagamento",
+     "pagamento do valor",
+     "dias úteis após",
+     "recursos financeiros",
+     "realizar o pagamento",
+     "pagamento do maior lance",
+     "não realizará desembolso",
+     "critérios de medição e pagamento"
+    ]
+   },
+   {
+    "id": "Q9",
+    "texto": "Qual o prazo de vigência do contrato ?",
+    "orienta": "Em meses ou anos, com prorrogação se houver.",
+    "formato": "",
+    "critico": true,
+    "termos": [
+     "vigência",
+     "meses",
+     "prorrogado",
+     "duração do contrato"
+    ]
+   },
+   {
+    "id": "Q10",
+    "texto": "Qual o prazo de início de serviços ?",
+    "orienta": "Prazo e prorrogação, se houver.",
+    "formato": "",
+    "critico": false,
+    "termos": [
+     "início da execução",
+     "iniciar a operacionalização",
+     "implantação dos serviços",
+     "iniciar a prestação dos serviços",
+     "apta a iniciar",
+     "começar a executar",
+     "dias para começar",
+     "início efetivo",
+     "prazo para início"
+    ]
+   },
+   {
+    "id": "Q11",
+    "texto": "Quais são as obrigações do banco vencedor ?",
+    "orienta": "Obrigações principais, resumidas sem perder números e prazos.",
+    "formato": "",
+    "critico": false,
+    "termos": [
+     "obrigações da contratada",
+     "obrigações da instituição",
+     "são obrigações",
+     "obrigações da vencedora",
+     "caberá à instituição",
+     "deverá a contratada"
+    ]
+   },
+   {
+    "id": "Q12",
+    "texto": "Qual é a infraestrutura solicitada ?",
+    "orienta": "Agência, PAB, posto de atendimento, caixas eletrônicos e prazo de instalação. Registre se é obrigatória ou facultativa.",
+    "formato": "",
+    "critico": true,
+    "termos": [
+     "agência",
+     "posto de atendimento",
+     "PAB",
+     "caixa eletrônico",
+     "autoatendimento",
+     "instalação",
+     "infraestrutura"
+    ]
+   },
+   {
+    "id": "Q13",
+    "texto": "Qual a quantidade de servidores aberta por faixa salarial ?",
+    "orienta": "PIRÂMIDE COMPLETA. Há quase sempre MAIS DE UMA TABELA, separada por vínculo (contratos, estatutários, ativos, inativos, pensionistas, temporários). Capture todas, some cada uma e confira com o total impresso DELA. Declare qual população a pirâmide cobre e qual ela exclui.",
+    "formato": "\"Vínculo X — Até R$ A: n; R$ A,01 a R$ B: m; Acima de R$ B: k (total N)\" por tabela, mais a população coberta",
+    "critico": true,
+    "termos": [
+     "faixa salarial",
+     "pirâmide",
+     "salário",
+     "quantidade de servidores",
+     "qtde",
+     "até R$",
+     "acima de R$",
+     "inativos",
+     "pensionistas",
+     "ativos"
+    ]
+   },
+   {
+    "id": "Q14",
+    "texto": "Qual a Quantidade total de servidores ?",
+    "orienta": "Número total E A UNIDADE: vínculos ou pessoas físicas. Um servidor pode acumular mais de um vínculo. Se o documento não disser, registre que não diz.",
+    "formato": "\"N vínculos\" ou \"N pessoas\", explicitando qual",
+    "critico": true,
+    "termos": [
+     "total de servidores",
+     "número aproximado",
+     "quantitativo",
+     "vínculos",
+     "servidores"
+    ]
+   },
+   {
+    "id": "Q15",
+    "texto": "Quais são as condições do consignado ?",
+    "orienta": "Margem consignável, taxa-teto, exclusividade, prazos e quem faz a averbação.",
+    "formato": "",
+    "critico": false,
+    "termos": [
+     "consignado",
+     "consignação",
+     "margem consignável",
+     "averbação",
+     "empréstimo",
+     "empréstimo consignado",
+     "cartão de crédito consignado",
+     "consignação em folha"
+    ]
+   },
+   {
+    "id": "Q16",
+    "texto": "Existe necessidade do vencedor realizar prova de vida dos servidores ?",
+    "orienta": "Sim/Não e em que condição. Recadastramento de beneficiários conta como prova de vida.",
+    "formato": "",
+    "critico": false,
+    "termos": [
+     "prova de vida",
+     "recadastramento",
+     "recenseamento",
+     "comprovação de vida",
+     "beneficiários"
+    ]
+   },
+   {
+    "id": "Q17",
+    "texto": "Existe necessidade do vencedor apresentar alguma garantia ?",
+    "orienta": "Sim/Não, percentual, modalidade e A BASE DE CÁLCULO declarada. Pode estar em documento de esclarecimento, não só no edital. Nunca calcule o valor.",
+    "formato": "",
+    "critico": true,
+    "termos": [
+     "garantia",
+     "caução",
+     "seguro-garantia",
+     "fiança bancária",
+     "art. 96",
+     "garantia prestada",
+     "garantia de proposta",
+     "garantia de execução",
+     "garantia contratual",
+     "art. 69"
+    ]
+   }
+  ],
+  "nao_se_aplica": {
+   "dispensa": [
+    "Q1",
+    "Q4",
+    "Q6"
+   ],
+   "inexigibilidade": [
+    "Q1",
+    "Q4",
+    "Q6"
+   ],
+   "credenciamento": [
+    "Q4",
+    "Q6"
+   ]
+  },
+  "marcador": "=== ARQUIVO %s | PÁGINA %d ===",
+  "precedencia": [
+   "retifica",
+   "suspens",
+   "comunicado",
+   "redesign",
+   "errata",
+   "resposta",
+   "esclarecim",
+   "termo de referencia",
+   "edital"
+  ],
+  "sempre_incluir": [
+   "retifica",
+   "suspens",
+   "comunicado",
+   "redesign",
+   "errata",
+   "aviso"
+  ]
+ }
+}

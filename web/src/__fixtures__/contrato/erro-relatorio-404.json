@@ -1,0 +1,8 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/licitacoes/12345678000102-1-000002-2026/relatorio",
+ "status": 404,
+ "corpo": {
+  "detail": "RELATORIO ainda não publicado para esta licitação: a verificação vigente não tem publicação (o W24 publica depois de verificar)"
+ }
+}

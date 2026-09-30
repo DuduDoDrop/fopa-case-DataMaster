@@ -1,0 +1,40 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/custo",
+ "status": 200,
+ "corpo": {
+  "por_dia": [
+   {
+    "dia": "2026-09-26",
+    "brl": 1.5,
+    "usd": 0.29,
+    "chamadas": 1,
+    "sem_preco": 0
+   }
+  ],
+  "por_modelo": [
+   {
+    "origem": "agente",
+    "provedor": "claude-code",
+    "modelo": "claude-opus-5-5",
+    "execucoes": 2,
+    "brl": null,
+    "brl_legado": null,
+    "sem_preco": 2
+   },
+   {
+    "origem": "api",
+    "provedor": "claude",
+    "modelo": "claude-opus-5",
+    "execucoes": 1,
+    "brl": null,
+    "brl_legado": 4.83,
+    "sem_preco": 0
+   }
+  ],
+  "hoje_brl": 1.5,
+  "hoje_sem_preco": 0,
+  "teto_brl_dia": null,
+  "auto_processar": true
+ }
+}

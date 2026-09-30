@@ -1,0 +1,11 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/me",
+ "status": 200,
+ "corpo": {
+  "email": "admin@exemplo.com",
+  "papel": "admin",
+  "nome": "Admin",
+  "supremo": true
+ }
+}

@@ -1,0 +1,11 @@
+{
+ "metodo": "POST",
+ "caminho": "/api/admin/termos",
+ "status": 201,
+ "corpo": {
+  "termo": "folha de pagamento teste",
+  "paginas": 10,
+  "ativo": true,
+  "prioridade": 0
+ }
+}

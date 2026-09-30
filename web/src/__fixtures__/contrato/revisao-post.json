@@ -1,0 +1,18 @@
+{
+ "metodo": "POST",
+ "caminho": "/api/revisoes",
+ "status": 200,
+ "corpo": {
+  "id": 3,
+  "controle": "12345678000103-1-000003/2026",
+  "verificacao_id": 3,
+  "pergunta_id": "Q2",
+  "motivo": "revisão por iniciativa do operador",
+  "status": "corrigida",
+  "resposta_corrigida": "resposta Q2 corrigida",
+  "nota": "conferido no edital",
+  "decidido_por": "admin@exemplo.com",
+  "decidido_em": "2026-09-26T08:40:44.090306+00:00",
+  "criado_em": "2026-09-26T08:40:44.090306+00:00"
+ }
+}

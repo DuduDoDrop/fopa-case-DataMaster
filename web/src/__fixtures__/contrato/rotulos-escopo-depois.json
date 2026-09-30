@@ -1,0 +1,63 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/rotulos-escopo",
+ "status": 200,
+ "corpo": {
+  "itens": [
+   {
+    "controle": "12345678000104-1-000004/2026",
+    "slug": "12345678000104-1-000004-2026",
+    "orgao": "PREFEITURA DE NITEROI",
+    "uf": "RJ",
+    "municipio": "Niterói",
+    "modalidade": "Concorrência",
+    "objeto": "folha de pagamento dos servidores",
+    "fim_prazo": null,
+    "estado": "retificada",
+    "escopo_dentro": true,
+    "escopo_motivo": null,
+    "escopo_versao": null,
+    "jev_filtro": {
+     "p_folha": 0.2,
+     "discorda": true,
+     "candidata": true,
+     "p_filtro_ok": 0.2
+    },
+    "rotulo": {
+     "dentro": true,
+     "motivo": "é a folha dos servidores",
+     "por": "admin@exemplo.com",
+     "em": "2026-09-26T08:40:44.222251+00:00"
+    }
+   },
+   {
+    "controle": "12345678000109-1-000009/2026",
+    "slug": "12345678000109-1-000009-2026",
+    "orgao": "X",
+    "uf": "RS",
+    "municipio": "Pelotas",
+    "modalidade": "Pregão",
+    "objeto": "consignado",
+    "fim_prazo": "2026-11-25T08:40:42.267658+00:00",
+    "estado": "fora_escopo",
+    "escopo_dentro": false,
+    "escopo_motivo": "consignado",
+    "escopo_versao": "legado",
+    "jev_filtro": {
+     "p_folha": 0.81,
+     "discorda": true,
+     "candidata": true,
+     "p_filtro_ok": 0.19
+    },
+    "rotulo": {
+     "dentro": false,
+     "motivo": "consignado, não folha",
+     "por": "operador@teste.br",
+     "em": "2026-09-26T08:40:42.335787+00:00"
+    }
+   }
+  ],
+  "pendentes": 0,
+  "rotuladas": 2
+ }
+}

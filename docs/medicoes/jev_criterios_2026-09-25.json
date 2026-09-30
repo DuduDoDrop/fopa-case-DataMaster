@@ -1,0 +1,1920 @@
+{
+ "resumo": {
+  "gabarito_1": {
+   "A1": {
+    "n_pos": 124,
+    "n_neg": 19,
+    "auc": 0.958,
+    "pos_>=0.5": 0.935,
+    "neg_<0.5": 0.842,
+    "pos_<=0.25 (falso 'não' convicto)": 0,
+    "neg_>=0.75 (falso 'sim' convicto)": 1,
+    "p_pos_mediana": 0.895,
+    "p_neg_mediana": 0.15
+   },
+   "A2": {
+    "n_pos": 124,
+    "n_neg": 19,
+    "auc": 0.959,
+    "pos_>=0.5": 0.952,
+    "neg_<0.5": 0.895,
+    "pos_<=0.25 (falso 'não' convicto)": 0,
+    "neg_>=0.75 (falso 'sim' convicto)": 1,
+    "p_pos_mediana": 0.88,
+    "p_neg_mediana": 0.17
+   },
+   "G": {
+    "n_pos": 124,
+    "n_neg": 19,
+    "auc": 0.939,
+    "pos_>=0.5": 0.911,
+    "neg_<0.5": 0.789,
+    "pos_<=0.25 (falso 'não' convicto)": 0,
+    "neg_>=0.75 (falso 'sim' convicto)": 1,
+    "p_pos_mediana": 0.84,
+    "p_neg_mediana": 0.15
+   },
+   "H": {
+    "n_pos": 124,
+    "n_neg": 19,
+    "auc": 0.952,
+    "pos_>=0.5": 0.927,
+    "neg_<0.5": 0.842,
+    "pos_<=0.25 (falso 'não' convicto)": 0,
+    "neg_>=0.75 (falso 'sim' convicto)": 1,
+    "p_pos_mediana": 0.86,
+    "p_neg_mediana": 0.16
+   },
+   "V4": {
+    "n_pos": 124,
+    "n_neg": 19,
+    "auc": 0.915,
+    "pos_>=0.5": 0.839,
+    "neg_<0.5": 0.842,
+    "pos_<=0.25 (falso 'não' convicto)": 9,
+    "neg_>=0.75 (falso 'sim' convicto)": 1,
+    "p_pos_mediana": 0.945,
+    "p_neg_mediana": 0.24
+   }
+  },
+  "gabarito_2": {
+   "A1": {
+    "n_pos": 2,
+    "n_neg": 29,
+    "auc": 0.983,
+    "pos_>=0.5": 1.0,
+    "neg_<0.5": 0.966,
+    "pos_<=0.25 (falso 'não' convicto)": 0,
+    "neg_>=0.75 (falso 'sim' convicto)": 1,
+    "p_pos_mediana": 0.805,
+    "p_neg_mediana": 0.08
+   },
+   "A2": {
+    "n_pos": 2,
+    "n_neg": 29,
+    "auc": 0.983,
+    "pos_>=0.5": 1.0,
+    "neg_<0.5": 0.966,
+    "pos_<=0.25 (falso 'não' convicto)": 0,
+    "neg_>=0.75 (falso 'sim' convicto)": 1,
+    "p_pos_mediana": 0.79,
+    "p_neg_mediana": 0.08
+   },
+   "G": {
+    "n_pos": 2,
+    "n_neg": 29,
+    "auc": 0.966,
+    "pos_>=0.5": 1.0,
+    "neg_<0.5": 0.966,
+    "pos_<=0.25 (falso 'não' convicto)": 0,
+    "neg_>=0.75 (falso 'sim' convicto)": 1,
+    "p_pos_mediana": 0.615,
+    "p_neg_mediana": 0.15
+   },
+   "H": {
+    "n_pos": 2,
+    "n_neg": 29,
+    "auc": 0.991,
+    "pos_>=0.5": 1.0,
+    "neg_<0.5": 0.966,
+    "pos_<=0.25 (falso 'não' convicto)": 0,
+    "neg_>=0.75 (falso 'sim' convicto)": 1,
+    "p_pos_mediana": 0.805,
+    "p_neg_mediana": 0.1
+   },
+   "V4": {
+    "n_pos": 2,
+    "n_neg": 29,
+    "auc": 0.983,
+    "pos_>=0.5": 1.0,
+    "neg_<0.5": 0.966,
+    "pos_<=0.25 (falso 'não' convicto)": 0,
+    "neg_>=0.75 (falso 'sim' convicto)": 1,
+    "p_pos_mediana": 0.92,
+    "p_neg_mediana": 0.07
+   }
+  },
+  "acertos_0.5": {
+   "A1": {
+    "g1": "132/143",
+    "g2": "30/31"
+   },
+   "A2": {
+    "g1": "135/143",
+    "g2": "30/31"
+   },
+   "G": {
+    "g1": "128/143",
+    "g2": "30/31"
+   },
+   "H": {
+    "g1": "131/143",
+    "g2": "30/31"
+   },
+   "V4": {
+    "g1": "120/143",
+    "g2": "30/31"
+   }
+  },
+  "ruido_A1_A2": {
+   "media": 0.0143,
+   "max": 0.11,
+   "mudou_de_lado": 5
+  },
+  "n_1": 143,
+  "n_2": 31,
+  "usd": 0.0227,
+  "tokens": 540400,
+  "modelo": "jev-1.13.0",
+  "v4": {
+   "pergunta": "This is the 'objeto' (subject) of a Brazilian public procurement notice, written in Portuguese. Is the public body contracting, accrediting or selling to a bank or financial institution the service of paying its servants' salaries — processing, managing, centralizing or crediting the payroll ('folha de pagamento') into the servants' accounts — or the exclusive right to do so? Judge what is being CONTRACTED, not words that are merely mentioned.",
+   "sim": "yes: a bank or financial institution will process, manage, centralize or pay the payroll credits of the servants, retirees or pensioners, or buys, receives or is accredited for the right to do so ('cessão onerosa', 'exclusividade', 'credenciamento') — even when other banking services (tax collection, supplier payments, payroll-deductible loans) are bundled in",
+   "nao": "no: the contract is something else — the public body only pays bank fees or tariffs ('tarifas bancárias') or file transmission services ('envio/retorno de arquivos'); payroll software or a payroll system, including the licensing ('cessão') of a system; payroll calculation, HR outsourcing or consulting by a company that is not a bank; only the channel for payroll-deductible loans ('consignações'); an institutional bank account or investments; training, events or unrelated goods and services"
+  },
+  "h": {
+   "true": {
+    "meaning": "A bank or financial institution will run the payroll of the public body's servants.",
+    "includes": [
+     "processing, managing or paying the payroll credits of the servants",
+     "buying or receiving the exclusive right to do so ('cessão onerosa', 'credenciamento')",
+     "the same contract bundling other banking services such as tax collection, supplier payments or payroll-deductible loans"
+    ]
+   },
+   "false": {
+    "meaning": "The contract is something else.",
+    "includes": [
+     "a payroll-deductible loan product on its own ('empréstimo consignado')",
+     "payroll software or IT services",
+     "consulting or studies about the payroll",
+     "bank fees or file transfer services paid by the body",
+     "an institutional bank account",
+     "unrelated goods or services"
+    ]
+   }
+  }
+ },
+ "gabarito_1": [
+  {
+   "controle": "18335922000115-1-000001/2025",
+   "rotulo": 1,
+   "objeto": "CREDENCIAMENTO de Instituições Bancárias, autorizadas pelo Banco Central do Brasil, interessadas na prestação de serviços contínuos de processamento de crédito da folha de pagamento a magistrados e se",
+   "A1": 0.35,
+   "A2": 0.26,
+   "G": 0.38,
+   "H": 0.34,
+   "V4": 0.48
+  },
+  {
+   "controle": "18094839000100-1-000024/2025",
+   "rotulo": 1,
+   "objeto": "Credenciamento de instituição financeira para prestação de serviços bancários de gerenciamento decréditos provenientes da Folha de Pagamento dos servidores públicos e agentes políticos do Municípiode ",
+   "A1": 0.45,
+   "A2": 0.45,
+   "G": 0.47,
+   "H": 0.46,
+   "V4": 0.2
+  },
+  {
+   "controle": "13195862000169-1-000016/2026",
+   "rotulo": 1,
+   "objeto": "Credenciamento de instituição financeira para prestação de serviços bancários de gerenciamento de créditos provenientes da Folha de Pagamento dos servidores públicos e agentes políticos do Município d",
+   "A1": 0.48,
+   "A2": 0.46,
+   "G": 0.42,
+   "H": 0.5,
+   "V4": 0.19
+  },
+  {
+   "controle": "45316509000186-1-000123/2025",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - CREDENCIAMENTO DE INSTITUIÇÕES FINANCEIRAS PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS DE GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLICOS A",
+   "A1": 0.36,
+   "A2": 0.44,
+   "G": 0.52,
+   "H": 0.41,
+   "V4": 0.24
+  },
+  {
+   "controle": "75392019000120-1-000035/2026",
+   "rotulo": 1,
+   "objeto": "Credenciamento de instituição financeira autorizada pelo banco central do brasil, para centralizar e processar os créditos de folha de pagamentos de todos os servidores da do município de Santa Marian",
+   "A1": 0.86,
+   "A2": 0.86,
+   "G": 0.81,
+   "H": 0.86,
+   "V4": 0.96
+  },
+  {
+   "controle": "36388445000138-1-000082/2026",
+   "rotulo": 1,
+   "objeto": "contratação de instituição financeira pública ou privada, inclusive sob a forma de cooperativa de crédito, autorizada a funcionar pelo Banco Central do Brasil, para a prestação de serviços de processa",
+   "A1": 0.93,
+   "A2": 0.93,
+   "G": 0.91,
+   "H": 0.93,
+   "V4": 0.96
+  },
+  {
+   "controle": "31505027000160-1-000003/2026",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - Seleção de Instituição Financeira Bancária Oficial ou Privada, com agência no município de Quissamã, para prestação de serviços de centralização dos créditos da folha de",
+   "A1": 0.91,
+   "A2": 0.89,
+   "G": 0.85,
+   "H": 0.87,
+   "V4": 0.97
+  },
+  {
+   "controle": "95993085000162-1-000050/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, APTA À PRESTAÇÃO, EM CARÁTER DE EXCLUSIVIDADE, DOS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DOS CRÉDITOS PRO",
+   "A1": 0.74,
+   "A2": 0.75,
+   "G": 0.55,
+   "H": 0.7,
+   "V4": 0.67
+  },
+  {
+   "controle": "00533003000190-1-000001/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA GERENCIAMENTO E PROCESSAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES DA SAMA - GESTÃO DO SANEAMENTO BÁSCIO E DE SERVIÇOS CONCEDIDOS DE MAUÁ/SP. Edital nº 1/202",
+   "A1": 0.96,
+   "A2": 0.97,
+   "G": 0.96,
+   "H": 0.96,
+   "V4": 0.96
+  },
+  {
+   "controle": "01603719000180-1-000029/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO BANCÁRIA, AUTORIZADA PELO BANCO CENTRAL DO BRASIL, COM EXCLUSIVIDADE PARA À PRESTAÇÃO DE SERVIÇOS DE FOLHA DE PAGAMENTO E OUTRAS INDENIZAÇÕES A SERVIDORES CIVIS ATIVOS, INAT",
+   "A1": 0.91,
+   "A2": 0.91,
+   "G": 0.87,
+   "H": 0.89,
+   "V4": 0.97
+  },
+  {
+   "controle": "18303206000156-1-000014/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira para prestação de serviços, em caráter exclusivo, de processamento e gerenciamento de créditos provenientes da folha de pagamento dos servidores ativos, inativos ",
+   "A1": 0.72,
+   "A2": 0.69,
+   "G": 0.57,
+   "H": 0.65,
+   "V4": 0.65
+  },
+  {
+   "controle": "18303214000100-1-000025/2026",
+   "rotulo": 1,
+   "objeto": "CREDENCIAMENTO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL PARA SERVIÇOS BANCÁRIOS DE GERENCIAMENTO E PROCESSAMENTO DE 100% (CEM POR CENTO) DA FOLHA DE PAGAMENTO DOS SERVIDORES P",
+   "A1": 0.96,
+   "A2": 0.96,
+   "G": 0.95,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "07598709000180-1-000032/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS COM EXCLUSIVIDADE PARA OPERACIONALIZAÇÃO E PROCESSAM",
+   "A1": 0.97,
+   "A2": 0.96,
+   "G": 0.93,
+   "H": 0.96,
+   "V4": 0.97
+  },
+  {
+   "controle": "13714803000150-1-000027/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de Instituição Bancária Pública ou Privada para operar os serviços de processamento e gerenciamento de créditos da folha de pagamento dos servidores ativos, inativos e pensionistas abrange",
+   "A1": 0.79,
+   "A2": 0.82,
+   "G": 0.79,
+   "H": 0.78,
+   "V4": 0.84
+  },
+  {
+   "controle": "46631248000151-1-000103/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE EMPRESA ESPECIALIZADA PARA PAGAMENTO DA FOLHA DE VENCIMENTOS Edital nº 48/2026",
+   "A1": 0.88,
+   "A2": 0.86,
+   "G": 0.84,
+   "H": 0.84,
+   "V4": 0.84
+  },
+  {
+   "controle": "18242784000120-1-000121/2025",
+   "rotulo": 1,
+   "objeto": "CONTRATACAO DE INSTITUICAO FINANCEIRA BANCARIA, PUBLICA OU PRIVADA, REGULARMENTE EM ATIVIDADE, CONFORME LEGISLACAO ESPECIFICA, PARA PRESTACAO DE SERVICOS DE PROCESSAMENTO DOS PAGAMENTOS ORIGINADOS DA ",
+   "A1": 0.89,
+   "A2": 0.89,
+   "G": 0.68,
+   "H": 0.86,
+   "V4": 0.96
+  },
+  {
+   "controle": "06140404000167-1-000039/2025",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira (banco) para a cessão onerosa do direito de efetuar o processamento e operacionalização da folha de pagamento dos servidores ativos, efetivos, contratados e comis",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.97,
+   "H": 0.96,
+   "V4": 0.97
+  },
+  {
+   "controle": "46643466000106-1-000967/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATACAO DE INSTITUICAO BANCARIA PARA OPERAR OS SERVICOS DE PROCESSAMENTO E GERENCIAMENTO DE CREDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORES ATIVOS, INATIVOS, EMPREGADOS, PENSIONISTAS E ",
+   "A1": 0.68,
+   "A2": 0.65,
+   "G": 0.47,
+   "H": 0.65,
+   "V4": 0.28
+  },
+  {
+   "controle": "07387343000108-1-000096/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, DORAVANTE DENOMINADA BANCO, PARA PRESTAÇÃO DE SERVIÇOS DA GESTÃO DA FOLHA DE PAGAMENTO DE SALÁRIO DOS SERVIDORES ATIVOS, INATIVOS E PENSIONISTAS DO MUNICÍPIO DE ",
+   "A1": 0.97,
+   "A2": 0.98,
+   "G": 0.97,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "05507500000138-1-000013/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira, autorizada pelo Banco Central do Brasil, para prestação de serviço de processamento (operacionalização e gerenciamento) da folha de pagamento dos colaboradores d",
+   "A1": 0.96,
+   "A2": 0.96,
+   "G": 0.94,
+   "H": 0.95,
+   "V4": 0.97
+  },
+  {
+   "controle": "09145368000112-1-000018/2026",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - SELEÇÃO DE INSTITUIÇÃO FINANCEIRA DE CLASSIFICAÇÃO S1 E S2 PARA OCUPAR E EXPLORAR, A TÍTULO PRECÁRIO, ATRAVÉS DE CONCESSÃO ONEROSA DE USO, PELO PERÍODO DE 05 (CINCO) ANO",
+   "A1": 0.96,
+   "A2": 0.96,
+   "G": 0.93,
+   "H": 0.96,
+   "V4": 0.96
+  },
+  {
+   "controle": "46634564000187-1-000994/2025",
+   "rotulo": 1,
+   "objeto": "OBJETO: CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA, INCLUSIVE SOB A FORMA DE COOPERATIVA DE CRÉDITO, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, PARA A PRESTAÇÃO DE SERVIÇOS DE ",
+   "A1": 0.77,
+   "A2": 0.77,
+   "G": 0.75,
+   "H": 0.81,
+   "V4": 0.74
+  },
+  {
+   "controle": "31505027000160-1-000131/2025",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - Seleção de Instituição Financeira Bancária Oficial ou Privada, com agência no município de Quissamã, para prestação de serviços de centralização dos créditos da folha de",
+   "A1": 0.91,
+   "A2": 0.9,
+   "G": 0.83,
+   "H": 0.85,
+   "V4": 0.96
+  },
+  {
+   "controle": "26753137000100-1-000025/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO BANCARIA PARA O GERENCIAMENTO DA FOLHA DE PAGAMENTO DO MUNICIPIO DE LAGOA DA CONFUSÃO-TO, ATENDENDO A SECRETARIA MUNICIPAL DE FINAÇAS E ORÇAMENTO. Ato que autoriza a Contrat",
+   "A1": 0.95,
+   "A2": 0.95,
+   "G": 0.95,
+   "H": 0.94,
+   "V4": 0.96
+  },
+  {
+   "controle": "88775390000112-1-000250/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira pública ou cooperativa de crédito, devidamente autorizada pelo Banco Central do Brasil, para a prestação de serviços de gerenciamento, processamento e operacional",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.95,
+   "H": 0.97,
+   "V4": 0.96
+  },
+  {
+   "controle": "46478053000113-1-000003/2026",
+   "rotulo": 1,
+   "objeto": "contratação de instituição financeira, autorizada pelo BANCO CENTRAL DO BRASIL, para o gerenciamento e processamento da folha de pagamento dos servidores públicos do poder executivo da PREFEITURA MUNI",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.96,
+   "H": 0.96,
+   "V4": 0.97
+  },
+  {
+   "controle": "44567014000167-1-000049/2026",
+   "rotulo": 1,
+   "objeto": "CREDENCIAMENTO SEM CARATER DE EXCLUSIVIDADE, CONTRATACAO DE INSTITUICAO FINANCEIRA PARA PRESTACAO DE SERVICOS DE PAGAMENTO DA FOLHA DE SALARIO DOS SERVIDORES ATIVOS, EFETIVOS, CONTRATADOS, COMISSIONAD",
+   "A1": 0.9,
+   "A2": 0.9,
+   "G": 0.87,
+   "H": 0.89,
+   "V4": 0.95
+  },
+  {
+   "controle": "07598618000144-1-000096/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, QUE ATENDA AS REGRAS DE FUNCIONAMENTO ESTABELECIDAS PELO BANCO CENTRAL DO BRASIL, PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS DA FOLHA D",
+   "A1": 0.81,
+   "A2": 0.81,
+   "G": 0.7,
+   "H": 0.81,
+   "V4": 0.78
+  },
+  {
+   "controle": "66234360000166-1-000018/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de Instituição Bancária Pública ou Privada para operar os serviços de processamento e gerenciamento de créditos da folha de pagamento dos servidores ativos, contratados, inativos e pension",
+   "A1": 0.76,
+   "A2": 0.74,
+   "G": 0.67,
+   "H": 0.7,
+   "V4": 0.77
+  },
+  {
+   "controle": "01615423000189-1-000023/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira pública, privada ou cooperativa de crédito, devidamente autorizada a funcionar pelo Banco Central do Brasil, para a prestação de serviços contínuos de centralizaç",
+   "A1": 0.85,
+   "A2": 0.87,
+   "G": 0.84,
+   "H": 0.87,
+   "V4": 0.93
+  },
+  {
+   "controle": "44563583000134-1-000133/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição bancária para operar os serviços de processamento e gerenciamento de créditos provenientes da folha de pagamento dos servidores da Prefeitura Municipal de Ipaussu em caráter",
+   "A1": 0.76,
+   "A2": 0.74,
+   "G": 0.59,
+   "H": 0.67,
+   "V4": 0.79
+  },
+  {
+   "controle": "82804212000196-1-000264/2026",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA APTA À PRESTAÇÃO DOS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DOS CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLI",
+   "A1": 0.75,
+   "A2": 0.76,
+   "G": 0.72,
+   "H": 0.76,
+   "V4": 0.63
+  },
+  {
+   "controle": "13128780004431-1-000086/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA A PRESTAÇÃO DOS SERVIÇOS DE GERENCIAMENTO, PROCESSAMENTO, OPERACIONALIZAÇÃO E PAGAMENTO DA FOLHA DE SERVIDORES PÚBLICOS MUNICIPAIS, BEM COMO PARA A CENTRALIZ",
+   "A1": 0.98,
+   "A2": 0.98,
+   "G": 0.97,
+   "H": 0.98,
+   "V4": 0.97
+  },
+  {
+   "controle": "18303180000146-1-000027/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO BANCÁRIA PÚBLICA OU PRIVADA PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS DA FOLHA DE PAGAMENTO DOS SERVIDORES ATIVOS, CONTRATADOS, INATIVOS E PENSION",
+   "A1": 0.83,
+   "A2": 0.83,
+   "G": 0.79,
+   "H": 0.84,
+   "V4": 0.91
+  },
+  {
+   "controle": "08159089000145-1-000104/2025",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira ou de pagamento, que atenda as regras de funcionamento estabelecidas pelo Banco Central do Brasil, para operar os serviços de processamento e gerenciamento de cré",
+   "A1": 0.77,
+   "A2": 0.77,
+   "G": 0.81,
+   "H": 0.77,
+   "V4": 0.72
+  },
+  {
+   "controle": "11034741000100-1-000012/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de Instituição Bancária Pública ou Privada para operar os serviços de processamento e gerenciamento de créditos da folha de pagamento dos servidores ativos, inativos e pensionistas, abrang",
+   "A1": 0.75,
+   "A2": 0.8,
+   "G": 0.65,
+   "H": 0.67,
+   "V4": 0.74
+  },
+  {
+   "controle": "40893646000160-1-000022/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira, doravante denominada Banco, autorizada pelo Banco Central do Brasil, para centralizar e processar os créditos da folha de pagamento abrangendo todos os servidore",
+   "A1": 0.93,
+   "A2": 0.92,
+   "G": 0.9,
+   "H": 0.92,
+   "V4": 0.97
+  },
+  {
+   "controle": "20920625000189-1-000001/2026",
+   "rotulo": 1,
+   "objeto": "[LICITANET] - Contratação de Instituição Financeira, devidamente autorizada pelo Banco Central do Brasil (BACEN), para a Cessão Onerosa, mediante a outorga da Exclusividade, para a Gestão e o Processa",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.97,
+   "H": 0.96,
+   "V4": 0.98
+  },
+  {
+   "controle": "22953681000145-1-000033/2026",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, PÚBLICA OU PRIVADA, AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA PRESTAÇÃO, EM CARÁTER DE EXCLUSIVIDADE, DOS SERVIÇOS DE CENTRALI",
+   "A1": 0.9,
+   "A2": 0.91,
+   "G": 0.79,
+   "H": 0.85,
+   "V4": 0.94
+  },
+  {
+   "controle": "45787678000102-1-000091/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira bancária para a prestação de serviços bancários de processamento e gerenciamento de créditos provenientes da folha de pagamento dos servidores municipais ativos E",
+   "A1": 0.56,
+   "A2": 0.61,
+   "G": 0.5,
+   "H": 0.56,
+   "V4": 0.27
+  },
+  {
+   "controle": "82765488000102-1-000165/2026",
+   "rotulo": 1,
+   "objeto": "PRESTAÇÃO, POR INSTITUIÇÃO FINANCEIRA DEVIDAMENTE AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL PARA, EM CARÁTER DE EXCLUSIVIDADE, REALIZAR OS SERVIÇOS DE CENTRALIZAÇÃO, PROCESSAMENTO E GERENCIA",
+   "A1": 0.98,
+   "A2": 0.98,
+   "G": 0.97,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "01612770000158-1-000049/2026",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - SELEÇÃO DE INSTITUIÇÃO FINANCEIRA DE CLASSIFICAÇÃO S1 E S2 PARA OCUPAR E EXPLORAR, A TÍTULO PRECÁRIO, ATRAVÉS DE CONCESSÃO ONEROSA DE USO, PELO PERÍODO DE 05 (CINCO) ANO",
+   "A1": 0.94,
+   "A2": 0.95,
+   "G": 0.91,
+   "H": 0.95,
+   "V4": 0.96
+  },
+  {
+   "controle": "82892324000146-1-000337/2025",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA CAIXA ECONÔMICA FEDERAL PARA PRESTAÇÃO DE SERVIÇOS DE PROCESSAMENTO DA FOLHA DE PAGAMENTO, CENTRALIZAÇÃO DA MOVIMENTAÇÃO E DAS APLICAÇÕES FINANCEIRAS DO MUNICÍPIO",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.96,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "13780770000146-1-000040/2025",
+   "rotulo": 1,
+   "objeto": "[LICITANET] - CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA BANCÁRIA AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA OPERACIONALIZAÇÃO, EM CARÁTER DE EXCLUSIVIDADE, DO PAGAMENTO DA FOLHA DE SALÁRIOS DOS SERVIDO",
+   "A1": 0.96,
+   "A2": 0.96,
+   "G": 0.92,
+   "H": 0.96,
+   "V4": 0.98
+  },
+  {
+   "controle": "03424272000107-1-000015/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, PÚBLICA OU PRIVADA, AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA PRESTAÇÃO DE SERVIÇOS DE GERENCIAMENTO E PROCESSAMENTO DA FOLHA DE PAGAMENTO DOS VENCIMENTOS, P",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.96,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "82777319000192-1-000103/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição Financeira, pública ou privada, para a prestação de serviços de Pagamento, com exclusividade, de vencimentos e salários dos servidores ativos, inativos, aposentados, pension",
+   "A1": 0.96,
+   "A2": 0.95,
+   "G": 0.92,
+   "H": 0.92,
+   "V4": 0.97
+  },
+  {
+   "controle": "03073673000160-1-000056/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira, pública ou privada, para a prestação de serviços bancários ao Município de Bonito - MS, com exclusividade no processamento dos créditos da folha de pagamento dos",
+   "A1": 0.95,
+   "A2": 0.95,
+   "G": 0.84,
+   "H": 0.94,
+   "V4": 0.97
+  },
+  {
+   "controle": "18308726000151-1-000076/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, PÚBLICA OU PRIVADA, PARA OPERAR, COM EXCLUSIVIDADE, OS SERVIÇOS DE GESTÃO E PROCESSAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES DO MUNICÍPIO DE CAMACHO/MG, SEM ÔN",
+   "A1": 0.96,
+   "A2": 0.96,
+   "G": 0.94,
+   "H": 0.96,
+   "V4": 0.97
+  },
+  {
+   "controle": "13655089000176-1-000027/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA, DEVIDAMENTE AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS NA OPERACIONALIZAÇÃO DA FOLHA DE PAGAMENTO, BEM COMO",
+   "A1": 0.93,
+   "A2": 0.92,
+   "G": 0.93,
+   "H": 0.93,
+   "V4": 0.96
+  },
+  {
+   "controle": "16418766000120-1-000043/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de Instituição Financeira autorizada pelo Banco Central para explorar a exclusividade da folha de pagamento dos servidores públicos do município de Caraíbas-BA Edital nº 013/2026/2026",
+   "A1": 0.87,
+   "A2": 0.86,
+   "G": 0.83,
+   "H": 0.8,
+   "V4": 0.96
+  },
+  {
+   "controle": "49528128000111-1-000019/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição bancária oficial para operar os serviços de processamento e gerenciamento de créditos provenientes da Folha de Pagamento dos vereadores, servidores ativos e estagiários da C",
+   "A1": 0.85,
+   "A2": 0.83,
+   "G": 0.71,
+   "H": 0.8,
+   "V4": 0.94
+  },
+  {
+   "controle": "46634242000138-1-000008/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição bancária para operar os serviços de processamento e gerenciamento de créditos provenientes da folha de pagamento dos funcionários/servidores em regimes celetista e estatutár",
+   "A1": 0.48,
+   "A2": 0.51,
+   "G": 0.38,
+   "H": 0.49,
+   "V4": 0.24
+  },
+  {
+   "controle": "87866745000116-1-000219/2026",
+   "rotulo": 1,
+   "objeto": "Cessao onerosa do direito de efetuar o pagamento da folha dos 2.210 servidores publicos do Municipio de Vacaria com exclusividade pelo periodo de 60 sessenta meses",
+   "A1": 0.92,
+   "A2": 0.92,
+   "G": 0.9,
+   "H": 0.92,
+   "V4": 0.94
+  },
+  {
+   "controle": "75381178000129-1-000018/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL PARA PRESTAÇÃO DE SERVIÇOS DE GERENCIAMENTO, PROCESSAMENTO E OPERACIONALIZAÇÃO DA FOLHA DE PAGAMENTO DOS SERVI",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.96,
+   "H": 0.96,
+   "V4": 0.97
+  },
+  {
+   "controle": "07711666000105-1-000056/2025",
+   "rotulo": 1,
+   "objeto": "CONT. DE INST. FINANC PÚBLICA OU PRIVADA OU DE PAGAMENTO, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, PARA PREST. DE SERV. BANCÁRIOS, OBJET. A OPERAC. E PROC. INTEGRAL DA FOLHA DE PAGAMENTO (",
+   "A1": 0.93,
+   "A2": 0.94,
+   "G": 0.93,
+   "H": 0.93,
+   "V4": 0.93
+  },
+  {
+   "controle": "78200482000110-1-000065/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira, com exclusividade, para operacionalização, processamento e gerenciamento da folha de pagamento, mediante cessão onerosa do direito de exploração, referente aos a",
+   "A1": 0.97,
+   "A2": 0.96,
+   "G": 0.96,
+   "H": 0.95,
+   "V4": 0.96
+  },
+  {
+   "controle": "83831719000100-1-000020/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES, AGENTES POLÍTICOS E ESTAGIÁRIOS DA CÂMARA MUNICIPAL DE CHAPECÓ, INC",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.96,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "08349086000174-1-000035/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira ou de pagamento pública ou privada, autorizada a funcionar pelo Banco Central do Brasil, para prestação de serviços bancários, objetivando a operacionalização e p",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.96,
+   "H": 0.97,
+   "V4": 0.96
+  },
+  {
+   "controle": "09151598000194-1-000028/2026",
+   "rotulo": 1,
+   "objeto": "Contrato a prestação de serviços bancários de gerenciamento de créditos provenientes da Folha de Pagamento e a Concessão de Empréstimos Consignados Sem Exclusividade aos servidores públicos e agentes ",
+   "A1": 0.34,
+   "A2": 0.31,
+   "G": 0.32,
+   "H": 0.3,
+   "V4": 0.22
+  },
+  {
+   "controle": "01614599000116-1-000011/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira para prestação de serviços, em caráter de exclusividade, do processamento de 100% (cem por cento) dos créditos provenientes da folha de pagamento da Prefeitura Mu",
+   "A1": 0.87,
+   "A2": 0.88,
+   "G": 0.86,
+   "H": 0.86,
+   "V4": 0.96
+  },
+  {
+   "controle": "11348570000193-1-000061/2026",
+   "rotulo": 1,
+   "objeto": "[LICITANET] - CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORES DA PREFEITURA MUNICIPAL DE VE",
+   "A1": 0.57,
+   "A2": 0.55,
+   "G": 0.47,
+   "H": 0.54,
+   "V4": 0.38
+  },
+  {
+   "controle": "07658917000127-1-000025/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira ou de pagamento, que atenda as regras de funcionamento estabelecidas pelo Banco Central do Brasil, para operar os serviços de processamento e gerenciamento de cré",
+   "A1": 0.83,
+   "A2": 0.83,
+   "G": 0.84,
+   "H": 0.82,
+   "V4": 0.82
+  },
+  {
+   "controle": "07598618000144-1-000018/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA OU DE PAGAMENTO, QUE ATENDA AS REGRAS DE FUNCIONAMENTO ESTABELECIDAS PELO BANCO CENTRAL DO BRASIL, PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉ",
+   "A1": 0.8,
+   "A2": 0.8,
+   "G": 0.77,
+   "H": 0.79,
+   "V4": 0.74
+  },
+  {
+   "controle": "08357667000158-1-000006/2025",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira ou de pagamento, que atenda as regras de funcionamento estabelecidas pelo Banco Central do Brasil, para operar os serviços de processamento e gerenciamento de cré",
+   "A1": 0.76,
+   "A2": 0.77,
+   "G": 0.6,
+   "H": 0.78,
+   "V4": 0.69
+  },
+  {
+   "controle": "02295640000100-1-000010/2026",
+   "rotulo": 1,
+   "objeto": "O OBJETO DA CONTRATAÇÃO É A OPERAÇÃO DOS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORES DA PREFEITURA MUNICIPAL DE URUANA ESTADO DE GOIÁS, SEM ",
+   "A1": 0.48,
+   "A2": 0.56,
+   "G": 0.47,
+   "H": 0.44,
+   "V4": 0.46
+  },
+  {
+   "controle": "95641916000137-1-000058/2025",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira, inclusive sob a forma de cooperativa de credito, autorizada pelo Banco Central do Brasil, para operar o serviço de folha de pagamento de subsídios e vencimentos ",
+   "A1": 0.92,
+   "A2": 0.91,
+   "G": 0.91,
+   "H": 0.9,
+   "V4": 0.95
+  },
+  {
+   "controle": "01237403000111-1-000018/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA FEDERAL, PARA PRESTAÇÃO DE SERVIÇO DE PROCESSAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES DO MUNICÍPIO DE ARAGUATINS-TO Ato que autoriza a Contratação Dire",
+   "A1": 0.96,
+   "A2": 0.96,
+   "G": 0.95,
+   "H": 0.95,
+   "V4": 0.94
+  },
+  {
+   "controle": "13780770000146-1-000055/2026",
+   "rotulo": 1,
+   "objeto": "[LICITANET] - CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA BANCÁRIA AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA OPERACIONALIZAÇÃO, EM CARÁTER DE EXCLUSIVIDADE, DO PAGAMENTO DA FOLHA DE SALÁRIOS DOS SERVIDO",
+   "A1": 0.96,
+   "A2": 0.97,
+   "G": 0.93,
+   "H": 0.95,
+   "V4": 0.98
+  },
+  {
+   "controle": "18296681000142-1-000091/2026",
+   "rotulo": 1,
+   "objeto": "Processamento da folha de pagamento dos servidores públicos Ato que autoriza a Contratação Direta nº 40/2026",
+   "A1": 0.63,
+   "A2": 0.62,
+   "G": 0.62,
+   "H": 0.61,
+   "V4": 0.67
+  },
+  {
+   "controle": "75392019000120-1-000050/2026",
+   "rotulo": 1,
+   "objeto": "CREDENCIAMENTO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA CENTRALIZAR E PROCESSAR OS CRÉDITOS DE FOLHA DE PAGAMENTOS DE TODOS OS SERVIDORES DA ADMINISTRAÇÃO PÚBLICA MUNICI",
+   "A1": 0.83,
+   "A2": 0.85,
+   "G": 0.78,
+   "H": 0.83,
+   "V4": 0.95
+  },
+  {
+   "controle": "03184041000173-1-000099/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira pública ou privada, regularmente autorizada a funcionar, para o processamento, em caráter de exclusividade e sem ônus para a Administração, dos créditos decorrent",
+   "A1": 0.85,
+   "A2": 0.84,
+   "G": 0.84,
+   "H": 0.79,
+   "V4": 0.93
+  },
+  {
+   "controle": "18715490000178-1-000111/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira para a prestação dos serviços de gerenciamento, processamento e operacionalização da folha de pagamento dos servidores públicos do Município de Ibirité/MG e dos b",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.97,
+   "H": 0.97,
+   "V4": 0.98
+  },
+  {
+   "controle": "01621714000180-1-000089/2026",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - CESSÃO ONEROSA DE FOLHA DE PAGAMENTO EXECUTIVO E LEGISLATIVO DO MUNICÍPIO DE MUITOS CAPÕES. Edital nº 20/2026",
+   "A1": 0.76,
+   "A2": 0.78,
+   "G": 0.76,
+   "H": 0.74,
+   "V4": 0.83
+  },
+  {
+   "controle": "01612500000147-1-000019/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA TEM COMO FINALIDADE A PRESTAÇÃO DE SERVIÇOS BANCÁRIOS NECESSÁRIOS AO PROCESSAMENTO E GERENCIAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLICOS DO MUNICÍPIO DE P",
+   "A1": 0.94,
+   "A2": 0.94,
+   "G": 0.95,
+   "H": 0.95,
+   "V4": 0.96
+  },
+  {
+   "controle": "69555019000109-1-000010/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição bancária, registrada no Banco Central do Brasil - BACEN, para operar os serviços de processamento e gerenciamento de créditos provenientes da Folha de Pagamento dos servidor",
+   "A1": 0.84,
+   "A2": 0.79,
+   "G": 0.7,
+   "H": 0.82,
+   "V4": 0.94
+  },
+  {
+   "controle": "79373767000116-1-000040/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA A PRESTAÇÃO DE SERVIÇOS, EM CARÁTER DE EXCLUSIVIDADE, PELO PERÍODO DE 60 (SESSENTA) MESES, PARA PROCESSAMENTO E GERENCIAMENTO DOS CRÉDITOS DE PROVENTOS DA FO",
+   "A1": 0.65,
+   "A2": 0.7,
+   "G": 0.51,
+   "H": 0.69,
+   "V4": 0.9
+  },
+  {
+   "controle": "78121878000172-1-000105/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA CENTRALIZAR, PROCESSAR E GERENCIAR, COM EXCLUSIVIDADE, OS CRÉDITOS REFERENTES A 100% DA FOLHA DE PAGAMENTO DOS SERVI",
+   "A1": 0.9,
+   "A2": 0.88,
+   "G": 0.87,
+   "H": 0.9,
+   "V4": 0.98
+  },
+  {
+   "controle": "15023922000191-1-000096/2026",
+   "rotulo": 1,
+   "objeto": "seleção de instituição financeira ou cooperativa de crédito, regularmente autorizada a funcionar pelo Banco Central do Brasil, para a prestação, em caráter de exclusividade, dos serviços de centraliza",
+   "A1": 0.78,
+   "A2": 0.73,
+   "G": 0.61,
+   "H": 0.7,
+   "V4": 0.77
+  },
+  {
+   "controle": "20720165000145-1-000032/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de Instituição Financeira, Pública ou Privada, inclusive cooperativa de crédito, devidamente autorizada a funcionar pelo Banco Central do Brasil, para operar os serviços de processamento d",
+   "A1": 0.87,
+   "A2": 0.86,
+   "G": 0.8,
+   "H": 0.84,
+   "V4": 0.92
+  },
+  {
+   "controle": "87849923000109-1-000317/2026",
+   "rotulo": 1,
+   "objeto": "ABERTURA DE PROCESSO LICITATÓRIO, NA MODALIDADE CONCORRÊNCIA, MAIOR LANCE, PARA CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA A CESSÃO ONEROSA DO DIREITO DE EFETUAR O PROCESSAMENTO E OPERACIONALIZAÇÃO DA",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.97,
+   "H": 0.97,
+   "V4": 0.96
+  },
+  {
+   "controle": "01612413000190-1-000031/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira para prestação de serviços bancários de gerenciamento de créditos provenientes da Folha de Pagamento dos servidores públicos e agentes políticos do Município de R",
+   "A1": 0.51,
+   "A2": 0.53,
+   "G": 0.53,
+   "H": 0.49,
+   "V4": 0.2
+  },
+  {
+   "controle": "02186708000104-1-000041/2026",
+   "rotulo": 1,
+   "objeto": "SOLICITAÇÃO CONTRATAÇÃO DE INSTITUIÇÃO BANCÁRIA PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLICOS ATIVOS, INATIVOS E PENSI",
+   "A1": 0.65,
+   "A2": 0.64,
+   "G": 0.55,
+   "H": 0.6,
+   "V4": 0.39
+  },
+  {
+   "controle": "44925691000100-1-000039/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição bancária pública ou privada, bem como cooperativa de crédito, autorizada pelo Banco Central do Brasil para operar os serviços de processamento e gerenciamento de créditos pr",
+   "A1": 0.67,
+   "A2": 0.72,
+   "G": 0.68,
+   "H": 0.69,
+   "V4": 0.37
+  },
+  {
+   "controle": "46634440000100-1-000003/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO BANCÁRIA, REGISTRADA NO BANCO CENTRAL DO BRASIL - BACEN, PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDOR",
+   "A1": 0.69,
+   "A2": 0.72,
+   "G": 0.55,
+   "H": 0.64,
+   "V4": 0.35
+  },
+  {
+   "controle": "13824248000119-1-000018/2026",
+   "rotulo": 1,
+   "objeto": "contratação de instituição de pagamento, que atenda as regras de funcionamento estabelecidas pelo Banco Central do Brasil, para operar os serviços de processamento e gerenciamento de créditos da folha",
+   "A1": 0.82,
+   "A2": 0.8,
+   "G": 0.82,
+   "H": 0.82,
+   "V4": 0.78
+  },
+  {
+   "controle": "06553556000191-1-000017/2025",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira com objetivo de centralização, Estado do Piauí, por intermédio da Secretaria da Fazenda no Banco do Brasil S/A de 100% (cem por cento) dos créditos provenientes d",
+   "A1": 0.83,
+   "A2": 0.82,
+   "G": 0.81,
+   "H": 0.84,
+   "V4": 0.94
+  },
+  {
+   "controle": "17744558000184-1-000012/2026",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - Contratação de instituição financeira pública ou privada, inclusive sob a forma de cooperativa de crédito, autorizada a funcionar pelo Banco Central do Brasil, para a pr",
+   "A1": 0.77,
+   "A2": 0.79,
+   "G": 0.67,
+   "H": 0.69,
+   "V4": 0.63
+  },
+  {
+   "controle": "25005166000121-1-000254/2025",
+   "rotulo": 1,
+   "objeto": "CREDENCIAMENTO DE INSTITUIÇÃO FINANCEIRA PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS DE GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLICOS E AGENTES POLÍTICOS DO MUNICÍPIO D",
+   "A1": 0.53,
+   "A2": 0.47,
+   "G": 0.4,
+   "H": 0.49,
+   "V4": 0.23
+  },
+  {
+   "controle": "07982036000167-1-000195/2025",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA PRESTAÇÃO DE SERVIÇOS DE: A) PROCESSAMENTO DOS PAGAMENTOS ORIGINADOS DA FOLHA DE SALÁRIOS DOS SERVIDORES ATIVOS EFETIVOS, CONTRATADOS, COMISSIONADOS, INATIVO",
+   "A1": 0.96,
+   "A2": 0.96,
+   "G": 0.92,
+   "H": 0.95,
+   "V4": 0.97
+  },
+  {
+   "controle": "44855443000130-1-000055/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de empresa especializada, sendo esta uma instituição financeira oficial ou privada ou instituição de pagamento, para a prestação de serviços de pagamento de salários, proventos, vencimento",
+   "A1": 0.94,
+   "A2": 0.93,
+   "G": 0.87,
+   "H": 0.87,
+   "V4": 0.96
+  },
+  {
+   "controle": "46634507000106-1-000379/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira, autorizada pelo Banco Central do Brasil, para a prestação de serviços bancários de processamento e gerenciamento de créditos provenientes da folha de pagamento d",
+   "A1": 0.49,
+   "A2": 0.51,
+   "G": 0.46,
+   "H": 0.49,
+   "V4": 0.21
+  },
+  {
+   "controle": "05648696000180-1-000063/2026",
+   "rotulo": 1,
+   "objeto": "[LICITANET] - Contratação de instituição financeira pública ou privada, para a prestação de serviços de gerenciamento de créditos provenientes da folha de pagamento dos servidores públicos da Prefeitu",
+   "A1": 0.56,
+   "A2": 0.51,
+   "G": 0.49,
+   "H": 0.52,
+   "V4": 0.19
+  },
+  {
+   "controle": "75771238000110-1-000045/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA, PRIVADA OU COOPERATIVAS DE CRÉDITO, PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORE",
+   "A1": 0.71,
+   "A2": 0.74,
+   "G": 0.63,
+   "H": 0.7,
+   "V4": 0.37
+  },
+  {
+   "controle": "16444143000122-1-000011/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira pública ou privada, devidamente autorizada pelo Banco Central do Brasil, para prestação de serviços bancários na operacionalização da folha de pagamento, bem como",
+   "A1": 0.91,
+   "A2": 0.91,
+   "G": 0.92,
+   "H": 0.91,
+   "V4": 0.95
+  },
+  {
+   "controle": "01631604000107-1-000003/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira, pública ou privada, autorizada pelo Banco Central do Brasil, para operacionalização, gerenciamento e processamento da folha de pagamento dos servidores e demais ",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.96,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "78200482000110-1-000180/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira para operar os serviços de processamento e gerenciamento de créditos provenientes da folha de pagamento e outras indenizações dos servidores ativos, inativos, pen",
+   "A1": 0.76,
+   "A2": 0.77,
+   "G": 0.75,
+   "H": 0.76,
+   "V4": 0.81
+  },
+  {
+   "controle": "13655089000176-1-000029/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA A PRESTAÇÃO DE SERVIÇOS EM CARATER DE EXCLUSIVIDADE PELO PERÍODO DE 60 (SESSENTA) MESES, PARA PROCESSAMENTO E GERENCIAMENTO DOS CRÉDITOS DE PROVENTOS DA FOLH",
+   "A1": 0.86,
+   "A2": 0.82,
+   "G": 0.77,
+   "H": 0.84,
+   "V4": 0.91
+  },
+  {
+   "controle": "51637593000132-1-000063/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição bancária, registrada no Banco Central do Brasil - BACEN, para operar os serviços de processamento e gerenciamento de créditos provenientes da Folha de Pagamento dos funcioná",
+   "A1": 0.69,
+   "A2": 0.76,
+   "G": 0.65,
+   "H": 0.75,
+   "V4": 0.76
+  },
+  {
+   "controle": "01067255000134-1-000185/2025",
+   "rotulo": 1,
+   "objeto": "Contratação, mediante credenciamento com a condição de critério de terceiro, de instituição financeira para a prestação de serviços relativos à folha de pagamento dos servidores ativos (estatutários, ",
+   "A1": 0.92,
+   "A2": 0.92,
+   "G": 0.92,
+   "H": 0.91,
+   "V4": 0.96
+  },
+  {
+   "controle": "18449140000107-1-000118/2026",
+   "rotulo": 1,
+   "objeto": "[LICITANET] - CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA OFICIAL INTEGRANTE DA ADMINISTRAÇÃO PÚBLICA INDIRETA, AUTORIZADA PELO BANCO CENTRAL DO BRASIL - BACEN, PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS DE GEREN",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.95,
+   "H": 0.97,
+   "V4": 0.98
+  },
+  {
+   "controle": "06554356000153-1-000002/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de Instituição bancária oficial, empresa pública, em caráter de exclusividade, para a prestação dos serviços de processamento de créditos da folha de pagamento dos servidores municipais, a",
+   "A1": 0.9,
+   "A2": 0.86,
+   "G": 0.65,
+   "H": 0.86,
+   "V4": 0.96
+  },
+  {
+   "controle": "04381083000167-1-000130/2025",
+   "rotulo": 1,
+   "objeto": "Credenciamento de Instituições Bancárias, inclusive Cooperativas de Crédito, autorizadas pelo Banco Central do Brasil, com vistas à prestação de serviços de pagamento da folha de pessoal e indenizaçõe",
+   "A1": 0.86,
+   "A2": 0.85,
+   "G": 0.8,
+   "H": 0.88,
+   "V4": 0.95
+  },
+  {
+   "controle": "27174135000120-1-000072/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA CENTRALIZAÇÃO E PROCESSAMENTO DE CRÉDITOS( FOLHA DE PAGAMENTO ) Edital nº 000017/2026",
+   "A1": 0.84,
+   "A2": 0.85,
+   "G": 0.86,
+   "H": 0.8,
+   "V4": 0.94
+  },
+  {
+   "controle": "76205962000149-1-000111/2026",
+   "rotulo": 1,
+   "objeto": "SERVIÇO DE PROCESSAMENTO E GERENCIAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES OÚBLICOS MUNICIPAIS, INCLUINDO CENTRALIZAÇÃO DOS CRÉDITOS DECORRENTES DA FOLHA E SERVIÇOS BANCÁRIOS. Aviso de Contratação ",
+   "A1": 0.9,
+   "A2": 0.91,
+   "G": 0.91,
+   "H": 0.9,
+   "V4": 0.9
+  },
+  {
+   "controle": "13460266000169-1-000070/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira enquadrada nos segmentos S1 ou S2, para a concessão onerosa, em caráter precário, do direito de processar e gerenciar, com exclusividade, a folha de pagamento dos",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.94,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "19259951000108-1-000006/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA EFETUAR OS PAGAMENTOS DE VENCIMENTOS, SALÁRIOS E SIMILARES A TODOS OS SERVIDORES ATIVOS E INATIVOS DA ADMINISTRAÇÃO PÚBLICA MUNICIPAL Edital nº 00000926/2026",
+   "A1": 0.96,
+   "A2": 0.96,
+   "G": 0.94,
+   "H": 0.93,
+   "V4": 0.97
+  },
+  {
+   "controle": "07811946000187-1-000023/2026",
+   "rotulo": 1,
+   "objeto": "LICITAÇÃO DO TIPO MAIOR PREÇO PARA CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA OU DE PAGAMENTO COM AGÊNCIA BANCÁRIA, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, PARA PRESTAÇÃO DE",
+   "A1": 0.97,
+   "A2": 0.98,
+   "G": 0.96,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "23563067000130-1-000083/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira, pública ou privada, autorizada a funcionar pelo Banco Central do Brasil, para prestação dos serviços de processamento, gerenciamento e operacionalização dos créd",
+   "A1": 0.75,
+   "A2": 0.81,
+   "G": 0.8,
+   "H": 0.77,
+   "V4": 0.81
+  },
+  {
+   "controle": "94706124000130-1-000001/2026",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA A CESSÃO ONEROSA DO DIREITO DE EFETUAR O PROCESSAMENTO E OPERACIONALIZAÇÃO DA FOLHA DE PAGAMENTO DOS SERVIDORES DA PREFEITURA ",
+   "A1": 0.96,
+   "A2": 0.96,
+   "G": 0.96,
+   "H": 0.96,
+   "V4": 0.96
+  },
+  {
+   "controle": "75381178000129-1-000057/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL PARA PRESTAÇÃO DE SERVIÇOS DE GERENCIAMENTO, PROCESSAMENTO E OPERACIONALIZAÇÃO DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLIC",
+   "A1": 0.95,
+   "A2": 0.95,
+   "G": 0.92,
+   "H": 0.94,
+   "V4": 0.92
+  },
+  {
+   "controle": "07063589000116-1-000008/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA OU DE PAGAMENTO OU SCD, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS, OBJETIVANDO A OPERACIONALIZA",
+   "A1": 0.96,
+   "A2": 0.96,
+   "G": 0.95,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "76208834000159-1-000344/2026",
+   "rotulo": 1,
+   "objeto": "A presente licitação tem por objeto a contratação de instituição financeira ou cooperativa de crédito, devidamente autorizada a funcionar pelo Banco Central do Brasil, para, mediante contrapartida fin",
+   "A1": 0.85,
+   "A2": 0.84,
+   "G": 0.78,
+   "H": 0.85,
+   "V4": 0.83
+  },
+  {
+   "controle": "28645786000113-1-000087/2026",
+   "rotulo": 1,
+   "objeto": "[LICITANET] - Contratação de instituição financeira para processar e gerir créditos provenientes da folha de pagamento da Administração Direta, Indireta, Fundacional e Autárquica do Município de São S",
+   "A1": 0.72,
+   "A2": 0.72,
+   "G": 0.71,
+   "H": 0.74,
+   "V4": 0.36
+  },
+  {
+   "controle": "46446696000185-1-000297/2026",
+   "rotulo": 1,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL PARA A PRESTAÇÃO DE SERVIÇOS DE CENTRALIZAÇÃO E PROCESSAMENTO DOS CRÉDITOS DAS FOLHAS DE PAGAMENTO LÍQUIDAS DOS SERVIDORES",
+   "A1": 0.9,
+   "A2": 0.88,
+   "G": 0.89,
+   "H": 0.88,
+   "V4": 0.97
+  },
+  {
+   "controle": "13892187000127-1-000002/2026",
+   "rotulo": 1,
+   "objeto": "contratação de instituição bancária e cooperativas de crédito autorizadas pelo Banco Central do Brasil, em caráter de exclusividade, para operar os serviços de processamento e gerenciamento de crédito",
+   "A1": 0.67,
+   "A2": 0.66,
+   "G": 0.53,
+   "H": 0.66,
+   "V4": 0.27
+  },
+  {
+   "controle": "18017392000167-1-000067/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de Instituição Financeira pública para a prestação de serviços bancários ao Município de Janaúba/MG, compreendendo, de forma integrada, a operacionalização da folha de pagamento dos servid",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.95,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "82892290000190-1-000102/2025",
+   "rotulo": 1,
+   "objeto": "Contratação da Instituição financeira/bancária Caixa Econômica Federal do Brasil para prestação de serviços financeiros e correlatos para o processamento da folha de pagamento dos servidores do Municí",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.94,
+   "H": 0.96,
+   "V4": 0.97
+  },
+  {
+   "controle": "46523049000120-1-000145/2026",
+   "rotulo": 1,
+   "objeto": "- CONTRATAÇÃO DE INSTITUIÇÃO BANCÁRIA PARA A PRESTAÇÃO DE SERVIÇOS DE PROCESSAMENTO DA FOLHA DE PAGAMENTO DO MUNICÍPIO DE COTIA Edital nº 039/2026",
+   "A1": 0.94,
+   "A2": 0.94,
+   "G": 0.95,
+   "H": 0.93,
+   "V4": 0.96
+  },
+  {
+   "controle": "59952259000185-1-000014/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira bancária, com registro específico no BACEN, para operar os serviços de processamento e gerenciamento de créditos provenientes da Folha de Pagamento dos servidores",
+   "A1": 0.73,
+   "A2": 0.67,
+   "G": 0.56,
+   "H": 0.69,
+   "V4": 0.61
+  },
+  {
+   "controle": "20720165000145-1-000040/2026",
+   "rotulo": 1,
+   "objeto": "Contratação para a centralização dos negócios financeiros da Câmara Municipal de Uberlândia e Gestão da Folha de Pagamentos dos servidores e Agentes Políticos.",
+   "A1": 0.84,
+   "A2": 0.84,
+   "G": 0.83,
+   "H": 0.84,
+   "V4": 0.83
+  },
+  {
+   "controle": "44892693000140-1-000208/2026",
+   "rotulo": 1,
+   "objeto": "- CONTRATAÇÃO DE EMPRESA ESPECIALIZADA, PARA PRESTAÇÃO DE SERVIÇO DE PAGAMENTO DE FOLHA DE SALÁRIO DOS SERVIDORES ATIVOS E APOSENTADOS DO MUNICÍPIO DE CARAPICUÍBA.",
+   "A1": 0.89,
+   "A2": 0.87,
+   "G": 0.88,
+   "H": 0.84,
+   "V4": 0.73
+  },
+  {
+   "controle": "48568372000145-1-000040/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição financeira ou cooperativa de crédito autorizada a funcionar pelo Banco Central do Brasil para prestação de serviços de processamento e gerenciamento da folha de pagamento do",
+   "A1": 0.97,
+   "A2": 0.98,
+   "G": 0.97,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "35444991000186-1-000021/2026",
+   "rotulo": 1,
+   "objeto": "Contratação de instituição bancária pública ou privada, bem como cooperativa de crédito, autorizada pelo banco central do brasil para centralizar e processar pelo período de 60 (sessenta) meses, os cr",
+   "A1": 0.91,
+   "A2": 0.9,
+   "G": 0.82,
+   "H": 0.85,
+   "V4": 0.96
+  },
+  {
+   "controle": "01612372000131-1-000068/2026",
+   "rotulo": 1,
+   "objeto": "[Portal de Compras Públicas] - Contratação para cessão do direito de processamento da folha de pagamento dos servidores municipais à instituição financeira, pública ou privada, autorizada pelo Banco C",
+   "A1": 0.97,
+   "A2": 0.97,
+   "G": 0.96,
+   "H": 0.97,
+   "V4": 0.97
+  },
+  {
+   "controle": "01335363000140-1-000043/2026",
+   "rotulo": 0,
+   "objeto": "Nº 29038. ADOÇÃO DAS PROVIDÊNCIAS NECESSÁRIAS PARA CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA OFICIALMENTE AUTORIZADA PELO BANCO CENTRAL DO BRASIL, EM ESPECÍFICO PARA OS BANCOS: CAIXA ECONÔMICA FEDERAL E B",
+   "A1": 0.1,
+   "A2": 0.11,
+   "G": 0.12,
+   "H": 0.11,
+   "V4": 0.12
+  },
+  {
+   "controle": "01963093000112-1-000005/2024",
+   "rotulo": 0,
+   "objeto": "Prestação de serviços cessão onerosa de sistema de folha de pagamento para processamento das informações relativas ao exercício 2024. Ato que autoriza a Contratação Direta nº 4/2024",
+   "A1": 0.56,
+   "A2": 0.56,
+   "G": 0.67,
+   "H": 0.55,
+   "V4": 0.24
+  },
+  {
+   "controle": "07616162000106-1-000060/2024",
+   "rotulo": 0,
+   "objeto": "CONTRATAÇÃO DE SERVIÇOS ESPECIALIZADOS PARA REALIZAÇÃO DE ESTUDO TÉCNICO DE VIABILIDADE ECONÔMICO-FINANCEIRA – EVEF, PARA ESTIMAR O MELHOR VALOR A SER PAGO PELOS SERVIÇOS REFERENTES À GESTÃO BANCÁRIA ",
+   "A1": 0.23,
+   "A2": 0.19,
+   "G": 0.22,
+   "H": 0.27,
+   "V4": 0.37
+  },
+  {
+   "controle": "03155926000144-1-000082/2024",
+   "rotulo": 0,
+   "objeto": "Contratação de empresa para prestação de serviços especializados para realização de Estudo Técnico de Viabilidade Econômico-financeira – EVEF, para estimar o melhor valor a ser pago pelos serviços ref",
+   "A1": 0.31,
+   "A2": 0.2,
+   "G": 0.3,
+   "H": 0.37,
+   "V4": 0.57
+  },
+  {
+   "controle": "03155934000190-1-000008/2026",
+   "rotulo": 0,
+   "objeto": "CONTRATAÇÃO “AD ÊXITO” DE EMPRESA ESPECIALIZADA PARA A EXECUÇÃO DE SERVIÇOS TÉCNICOS ESPECIALIZADOS, CONSISTENTE NA ELABORAÇÃO DE ESTUDO TÉCNICO DE VIABILIDADE ECONÔMICO-FINANCEIRA- EVEF, DESTINADO A ",
+   "A1": 0.06,
+   "A2": 0.06,
+   "G": 0.07,
+   "H": 0.05,
+   "V4": 0.13
+  },
+  {
+   "controle": "03681582000107-1-000122/2024",
+   "rotulo": 0,
+   "objeto": "CONTRATAÇÃO DE SERVIÇOS ESPECIALIZADOS PARA REALIZAÇÃO DE ESTUDO TÉCNICO DE VIABILIDADE ECONÔMICO-FINANCEIRA – EVEF, PARA ESTIMAR O MELHOR VALOR A SER PAGO PELOS SERVIÇOS REFERENTES À GESTÃO BANCÁRIA ",
+   "A1": 0.38,
+   "A2": 0.34,
+   "G": 0.67,
+   "H": 0.53,
+   "V4": 0.64
+  },
+  {
+   "controle": "01911667000109-1-000011/2026",
+   "rotulo": 0,
+   "objeto": "PRESTACAO DE SERVICO RELACIONADO A TARIFAS BANCARIAS E OPERACIONALIZACAO INCIDENTES SOBRE OS SERVICOS PRESTADOS POR INSTITUICAO FINANCEIRA PUBLICA OFICIAL, BEM COMO A REALIZACAO DE OPERACOES FINANCEIR",
+   "A1": 0.92,
+   "A2": 0.92,
+   "G": 0.89,
+   "H": 0.93,
+   "V4": 0.91
+  },
+  {
+   "controle": "05105283000150-1-000052/2026",
+   "rotulo": 0,
+   "objeto": "[Portal de Compras Públicas] - CONTRATAÇÃO DE EMPRESA PARA CONTRATAÇÃO DE PRESTADORA DE SERVIÇOS ESPECIALIZADOS DE IMPLEMENTAÇÃO, INTEGRAÇÃO E OTIMIZAÇÃO DA FOLHA DE PAGAMENTO, A QUAL JÁ ATENDE AS NEC",
+   "A1": 0.19,
+   "A2": 0.18,
+   "G": 0.29,
+   "H": 0.16,
+   "V4": 0.42
+  },
+  {
+   "controle": "05521027000143-1-000001/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de instituição financeira oficial para prestação de serviços bancários, consistentes na manutenção de conta bancária institucional destinada ao recebimento de duodécimos, realização de pag",
+   "A1": 0.04,
+   "A2": 0.05,
+   "G": 0.04,
+   "H": 0.03,
+   "V4": 0.05
+  },
+  {
+   "controle": "05903125000145-1-000214/2025",
+   "rotulo": 0,
+   "objeto": "A contratação de serviços especializados para realização de Estudo Técnico de Viabilidade Econômico-financeira-(EVEF), para estimar o melhor valor a ser pago pelos serviços referentes à gestão bancári",
+   "A1": 0.43,
+   "A2": 0.4,
+   "G": 0.2,
+   "H": 0.34,
+   "V4": 0.39
+  },
+  {
+   "controle": "07000268000172-1-000024/2024",
+   "rotulo": 0,
+   "objeto": "Contratação de serviços especializados para realização de Estudo Técnico Preliminar, para estimar o melhor valor a ser pago pelos serviços referente à gestão bancária da folha de pagamento dos servido",
+   "A1": 0.15,
+   "A2": 0.24,
+   "G": 0.19,
+   "H": 0.34,
+   "V4": 0.41
+  },
+  {
+   "controle": "07535446000160-1-000094/2024",
+   "rotulo": 0,
+   "objeto": "CONTRATAÇÃO DE EMPRESA ESPECIALIZADA PARA REALIZAR A MIGRAÇÃO DE DADOS (BANCO DE DADOS FIREBIRD PARA BANCO DE DADOS POSTGRESQL) DO SISTEMA DE FOLHA DE PAGAMENTO DOS ANOS 2013 A 2022. Ato que autoriza ",
+   "A1": 0.03,
+   "A2": 0.03,
+   "G": 0.03,
+   "H": 0.02,
+   "V4": 0.03
+  },
+  {
+   "controle": "12200176000176-1-000513/2024",
+   "rotulo": 0,
+   "objeto": "contratação de serviços especializados para realização de Estudo Técnico de Viabilidade Econômico-financeira – EVEF, para estimar o melhor valor a ser pago pelos serviços referentes à gestão bancária ",
+   "A1": 0.15,
+   "A2": 0.17,
+   "G": 0.14,
+   "H": 0.21,
+   "V4": 0.33
+  },
+  {
+   "controle": "29115474000160-1-000288/2026",
+   "rotulo": 0,
+   "objeto": "Prestação de serviços de concessão de empréstimo pessoal, compra de dívida dos Servidores Públicos Municipais Estatutários diretos, ativos, inativos e pensionistas da Administração Direta e do Institu",
+   "A1": 0.05,
+   "A2": 0.05,
+   "G": 0.05,
+   "H": 0.04,
+   "V4": 0.07
+  },
+  {
+   "controle": "35050756000120-1-000129/2025",
+   "rotulo": 0,
+   "objeto": "CONTRATAÇÃO DE EMPRESA ESPECIALIZADA PARA REALIZAR A MIGRAÇÃO DE DADOS (BANCO DE DADOS FIREBIRD PARA BANCO DE DADOS POSTGRESQL) DO SISTEMA DE FOLHA DE PAGAMENTO DOS ANOS DE 2013 A 2022, NO ÂMBITO DA S",
+   "A1": 0.03,
+   "A2": 0.03,
+   "G": 0.03,
+   "H": 0.02,
+   "V4": 0.03
+  },
+  {
+   "controle": "45310125000156-1-000012/2025",
+   "rotulo": 0,
+   "objeto": "Objeto: Contratação de empresa de informática para prestação de serviços de backup’s diários de arquivos e banco de dados do servidor do SASSOM: movimentação de cadastro de convênios médicos, folha de",
+   "A1": 0.03,
+   "A2": 0.03,
+   "G": 0.02,
+   "H": 0.02,
+   "V4": 0.02
+  },
+  {
+   "controle": "95440517000108-1-000189/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de instituição bancária para pagamento de tarifas folha de pagamento. Ato que autoriza a Contratação Direta nº 49/2026",
+   "A1": 0.5,
+   "A2": 0.46,
+   "G": 0.5,
+   "H": 0.46,
+   "V4": 0.47
+  },
+  {
+   "controle": "95440517000108-1-000190/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de instituição bancária para serviços de envio/retorno de arquivos de folhas de pagamento dos funcionários do Fundeb, convênio 27514. Ato que autoriza a Contratação Direta nº 50/2026",
+   "A1": 0.1,
+   "A2": 0.11,
+   "G": 0.11,
+   "H": 0.09,
+   "V4": 0.14
+  },
+  {
+   "controle": "95440517000108-1-000191/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de instituição bancária para serviços de envio/retorno de arquivos de contas a pagar, folhas de pagamento e respectivas tarifas, convênio 03651. Ato que autoriza a Contratação Direta nº 51",
+   "A1": 0.09,
+   "A2": 0.09,
+   "G": 0.15,
+   "H": 0.09,
+   "V4": 0.18
+  }
+ ],
+ "gabarito_2": [
+  {
+   "controle": "04838793000173-1-000032/2026",
+   "rotulo": 0,
+   "objeto": "[Portal de Compras Públicas] - CONTRATAÇÃO DE EMPRESA PARA REALIZAÇÃO DE SERVIÇOS DE PESQUISA E DESENVOLVIMENTO DE PROJETO COM O OBJETIVO DE PROMOVER A AVALIAÇÃO ECONÔMICO-FINANCEIRA DO PAGAMENTO DOS ",
+   "A1": 0.07,
+   "A2": 0.08,
+   "G": 0.07,
+   "H": 0.06,
+   "V4": 0.14
+  },
+  {
+   "controle": "04502688000169-1-000006/2026",
+   "rotulo": 0,
+   "objeto": "serviços de assessoramento na área de processamento de folha de pagamento e rotinas de pessoal",
+   "A1": 0.1,
+   "A2": 0.12,
+   "G": 0.15,
+   "H": 0.14,
+   "V4": 0.09
+  },
+  {
+   "controle": "18307405000132-1-000005/2025",
+   "rotulo": 1,
+   "objeto": "CREDENCIAMENTO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA CENTRALIZAR E PROCESSAR OS CRÉDITOS DE FOLHA DE PAGAMENTO DE TODOS OS SERVIDORES DA ADMINISTRAÇÃO PÚBLICA MUNICIP",
+   "A1": 0.78,
+   "A2": 0.77,
+   "G": 0.55,
+   "H": 0.79,
+   "V4": 0.88
+  },
+  {
+   "controle": "45316509000186-1-000123/2025",
+   "rotulo": 0,
+   "objeto": "[Portal de Compras Públicas] - CREDENCIAMENTO DE INSTITUIÇÕES FINANCEIRAS PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS DE GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLICOS A",
+   "A1": 0.43,
+   "A2": 0.46,
+   "G": 0.47,
+   "H": 0.4,
+   "V4": 0.26
+  },
+  {
+   "controle": "10264406000135-1-000014/2026",
+   "rotulo": 0,
+   "objeto": "Locação de imóvel, localizado na Rua Antônio Rosa e Silva, 159, Central, Pesqueira – Pernambuco, CEP 55.200-000, destinado ao funcionamento da Secretaria de Administração, Departamento de Licitação, C",
+   "A1": 0.05,
+   "A2": 0.05,
+   "G": 0.06,
+   "H": 0.03,
+   "V4": 0.04
+  },
+  {
+   "controle": "00799207000178-1-000009/2026",
+   "rotulo": 0,
+   "objeto": "PROCEDIMENTO LICITATORIO PARA CONTRATAÇÃO DE SERVIÇOS BANCARIOS COM FOLHAS DE PAGAMENTO E OUTROS SERVIÇOS COM DEBITOS NAS CONTAS, SERVIÇOS DESTINADO AS ATIVIDADES ADMINISTRATIVAS DA CÂMARA MUNICIPAL D",
+   "A1": 0.8,
+   "A2": 0.79,
+   "G": 0.81,
+   "H": 0.79,
+   "V4": 0.91
+  },
+  {
+   "controle": "01704460000163-1-000004/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de instituição financeira pública para valores em disponibilidade e demais serviços, exceto folha de pagamento",
+   "A1": 0.04,
+   "A2": 0.04,
+   "G": 0.04,
+   "H": 0.03,
+   "V4": 0.05
+  },
+  {
+   "controle": "09062893000174-1-000004/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de empresa especializada para prestação de serviços de processamento da Folha de Pagamentos da Companhia Docas de São Sebastião, por meio da modelagem da terceirização de processo de negóc",
+   "A1": 0.2,
+   "A2": 0.18,
+   "G": 0.22,
+   "H": 0.18,
+   "V4": 0.08
+  },
+  {
+   "controle": "08866501000167-1-000036/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de empresa ou pessoa física especializada em serviços técnicos de elaboração e processamento de folha de pagamento e gestão de informações relacionadas ao e-Social, visando atender às dema",
+   "A1": 0.08,
+   "A2": 0.08,
+   "G": 0.18,
+   "H": 0.1,
+   "V4": 0.06
+  },
+  {
+   "controle": "05472936000139-1-000097/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de uma entidade sem fins lucrativos, especializada em formação técnico profissional sistemática, para fornecer serviços de recrutamento, seleção, contratação, pagamento da folha de pagamen",
+   "A1": 0.06,
+   "A2": 0.05,
+   "G": 0.06,
+   "H": 0.04,
+   "V4": 0.04
+  },
+  {
+   "controle": "12720256000152-1-000014/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de empresa para prestação de serviços especializados para apoio na organização e encaminhamento de informações ao Setor Contábil da Câmara Municipal de Mamanguape, visando : elaboração e p",
+   "A1": 0.13,
+   "A2": 0.13,
+   "G": 0.18,
+   "H": 0.13,
+   "V4": 0.07
+  },
+  {
+   "controle": "87613022000105-1-000046/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de empresa especializada em prestação de serviços de gestão e processamento da folha de pagamento dos servidores públicos (ativos, inativos e pensionistas).",
+   "A1": 0.43,
+   "A2": 0.43,
+   "G": 0.47,
+   "H": 0.45,
+   "V4": 0.31
+  },
+  {
+   "controle": "07095193000150-1-000009/2026",
+   "rotulo": 0,
+   "objeto": "Prestação de serviços de apoio operacional à gestão de folha de pagamento durante o processamento e revisão da folha mensal e suplementar. Geração, validação e exportação de arquivos magnéticos relati",
+   "A1": 0.07,
+   "A2": 0.07,
+   "G": 0.09,
+   "H": 0.07,
+   "V4": 0.07
+  },
+  {
+   "controle": "10764033000161-1-000009/2026",
+   "rotulo": 0,
+   "objeto": "Empresa Especializada na Elaboração e Processamento de Folha de Pagamento Mensal, Documentos Rescisórios, Geração e Envio das obrigações acessórias (CAGED, SEFIP, eSocial, DIRF, RAIS e DCTFWeb).",
+   "A1": 0.1,
+   "A2": 0.1,
+   "G": 0.16,
+   "H": 0.12,
+   "V4": 0.07
+  },
+  {
+   "controle": "33254558000152-1-000005/2026",
+   "rotulo": 0,
+   "objeto": "PRESTAÇÃO DE SERVIÇOS DE APOIO ADMINISTRATIVO E OPERACIONAL, ABRANGENDO PROCESSAMENTO DE FOLHA DE PAGAMENTO, SUPORTE FINANCEIRO, CADASTRAMENTO E GESTÃO DE INFORMAÇÕES NO SISTEMA MEGASOFT, VISANDO ATEN",
+   "A1": 0.13,
+   "A2": 0.13,
+   "G": 0.19,
+   "H": 0.16,
+   "V4": 0.1
+  },
+  {
+   "controle": "34917229000107-1-000002/2026",
+   "rotulo": 0,
+   "objeto": "Prestação de serviços especializados de elaboração e processamento de folha de pagamentos dos servidores públicos, apuração de vencimentos e proventos, cálculos de descontos (INSS, IRRF, Pensões Alime",
+   "A1": 0.2,
+   "A2": 0.2,
+   "G": 0.25,
+   "H": 0.24,
+   "V4": 0.07
+  },
+  {
+   "controle": "40800575000103-1-000013/2025",
+   "rotulo": 0,
+   "objeto": "Contratação de Pessoa Jurídica para realizar serviços de implementação e manutenção do Sistema de Folha de Pagamento, junto ao Poder Legislativo do município de Espírito Santo/RN",
+   "A1": 0.06,
+   "A2": 0.06,
+   "G": 0.12,
+   "H": 0.05,
+   "V4": 0.07
+  },
+  {
+   "controle": "87334918000155-1-000356/2025",
+   "rotulo": 0,
+   "objeto": "Credenciamento de pessoas jurídicas para a concessão onerosa do canal de consignações em folha de pagamento dos servidores públicos municipais",
+   "A1": 0.28,
+   "A2": 0.22,
+   "G": 0.23,
+   "H": 0.35,
+   "V4": 0.26
+  },
+  {
+   "controle": "04667846000130-1-000034/2025",
+   "rotulo": 0,
+   "objeto": "Contratação de empresa especializada para a prestação de serviços de manutenção do sistema de folha de pagamento Alterdata.",
+   "A1": 0.04,
+   "A2": 0.05,
+   "G": 0.08,
+   "H": 0.04,
+   "V4": 0.05
+  },
+  {
+   "controle": "87334918000155-1-000348/2025",
+   "rotulo": 0,
+   "objeto": "[Portal de Compras Públicas] - Credenciamento de pessoas jurídicas para a concessão onerosa do canal de consignações em folha de pagamento dos servidores públicos municipais",
+   "A1": 0.28,
+   "A2": 0.25,
+   "G": 0.25,
+   "H": 0.36,
+   "V4": 0.28
+  },
+  {
+   "controle": "87334918000155-1-000214/2025",
+   "rotulo": 0,
+   "objeto": "Credenciamento de pessoas jurídicas para a Concessão onerosa do Canal de Consignações em folha de pagamento dos servidores públicos municipais, inativos e pensionistas, em favor de terceiros, nos term",
+   "A1": 0.22,
+   "A2": 0.22,
+   "G": 0.17,
+   "H": 0.28,
+   "V4": 0.25
+  },
+  {
+   "controle": "87334918000155-1-000210/2025",
+   "rotulo": 0,
+   "objeto": "[Portal de Compras Públicas] - Credenciamento de pessoas jurídicas para a concessão onerosa do canal de consignações em folha de pagamento dos servidores públicos municipais",
+   "A1": 0.25,
+   "A2": 0.28,
+   "G": 0.23,
+   "H": 0.31,
+   "V4": 0.32
+  },
+  {
+   "controle": "64037930000100-1-000012/2026",
+   "rotulo": 0,
+   "objeto": "Inscrição de 01 (um) servidor da Registro Previdência - RegiPrev no Encontro Nacional de Gestão de Folha de Pagamento para RPPS (RH para RPPS), promovido pela Associação Paulista de Entidades de Previ",
+   "A1": 0.03,
+   "A2": 0.03,
+   "G": 0.02,
+   "H": 0.02,
+   "V4": 0.02
+  },
+  {
+   "controle": "08434600000170-1-000032/2026",
+   "rotulo": 0,
+   "objeto": "3 Inscrições para participação no Encontro Nacional de Gestão de Folha de Pagamento para RPPS – RH para RPPS promovido pela APEPREM",
+   "A1": 0.04,
+   "A2": 0.05,
+   "G": 0.05,
+   "H": 0.04,
+   "V4": 0.04
+  },
+  {
+   "controle": "76206606000140-1-000307/2026",
+   "rotulo": 0,
+   "objeto": "Inscrição de (01) um servidor da Foz Previdência (Diretor Financeiro/DIFI) no Encontro Nacional de Gestão de Folha de Pagamento para rpps evento desenvolvido exclusivamente para atender às necessidade",
+   "A1": 0.03,
+   "A2": 0.03,
+   "G": 0.03,
+   "H": 0.02,
+   "V4": 0.04
+  },
+  {
+   "controle": "68004118000121-1-000028/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de inscrições para o Encontro Nacional de Gestão de Folha de Pagamento para RPPS – RH para RPPS, promovido pela Associação Paulista das Entidades Previdenciárias Estaduais e Municipais (AP",
+   "A1": 0.03,
+   "A2": 0.03,
+   "G": 0.03,
+   "H": 0.02,
+   "V4": 0.03
+  },
+  {
+   "controle": "09308933000115-1-000004/2026",
+   "rotulo": 0,
+   "objeto": "Contratação de serviços técnicos especializados de assessoramento administrativo junto a Receita Federal, Transmissão e Acompanhamento do E-social e Atos de Gestão de Folha de Pagamento da Câmara Muni",
+   "A1": 0.06,
+   "A2": 0.06,
+   "G": 0.08,
+   "H": 0.06,
+   "V4": 0.06
+  },
+  {
+   "controle": "83539650000137-1-000013/2026",
+   "rotulo": 0,
+   "objeto": "A presente contratação tem por objeto a contratação de empresa para agenciamento de estagiários. Incluindo seguro contra acidentes pessoais, 24 horas, com cobertura médico hospitalar em caso de aciden",
+   "A1": 0.06,
+   "A2": 0.06,
+   "G": 0.07,
+   "H": 0.04,
+   "V4": 0.06
+  },
+  {
+   "controle": "24507865000107-1-000002/2026",
+   "rotulo": 0,
+   "objeto": "CONTRATAÇÃO de empresa para fornecimento de sistema de gerenciamento de folha de pagamento,",
+   "A1": 0.11,
+   "A2": 0.11,
+   "G": 0.28,
+   "H": 0.11,
+   "V4": 0.09
+  },
+  {
+   "controle": "82939455000131-1-000041/2026",
+   "rotulo": 0,
+   "objeto": "Firmar Parceria, por meio de Termo de Fomento (art. 2º, VII c/c art. 17 da Lei 13.019/2014) com a Associação de Pais e Amigos dos Excepcionais de Irani/SC, mantenedora da “ESCOLA ESPECIAL ARCO ÍRIS – ",
+   "A1": 0.03,
+   "A2": 0.03,
+   "G": 0.03,
+   "H": 0.02,
+   "V4": 0.03
+  },
+  {
+   "controle": "18302315000159-1-000012/2024",
+   "rotulo": 1,
+   "objeto": "Credenciamento de instituições financeiras para prestação de serviços bancários, de pagamento dos valores líquidos relativos à folha de pagamento dos servidores ativos, inativos e pensionistas do Muni",
+   "A1": 0.83,
+   "A2": 0.81,
+   "G": 0.68,
+   "H": 0.82,
+   "V4": 0.96
+  }
+ ]
+}

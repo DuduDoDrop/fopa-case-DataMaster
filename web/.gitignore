@@ -1,0 +1,3 @@
+# gerados dentro do container (npm install / vite build); o lock é versionado
+node_modules/
+dist/

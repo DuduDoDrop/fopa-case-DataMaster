@@ -1,0 +1,11 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/me",
+ "status": 200,
+ "corpo": {
+  "email": "leitor@teste.br",
+  "papel": "leitor",
+  "nome": "Leitor",
+  "supremo": false
+ }
+}

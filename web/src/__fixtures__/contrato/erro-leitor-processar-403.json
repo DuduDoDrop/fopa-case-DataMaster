@@ -1,0 +1,8 @@
+{
+ "metodo": "POST",
+ "caminho": "/api/acoes/processar",
+ "status": 403,
+ "corpo": {
+  "detail": "Esta ação requer o perfil admin. Seu perfil atual é leitor."
+ }
+}

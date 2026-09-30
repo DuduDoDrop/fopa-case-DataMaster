@@ -1,0 +1,1983 @@
+{
+ "casos": [
+  {
+   "controle": "76002641000147-1-000324/2026",
+   "pergunta": "Q5",
+   "arquivo": "01 - Edital - EDITAL-Preg 049-2026 - Contratacao de instituicao financeira.pdf",
+   "pagina": 34,
+   "p_citada": 0.97,
+   "negativas": {
+    "36": 0.05,
+    "15": 0.03,
+    "5": 0.03,
+    "14": 0.03,
+    "2": 0.04
+   }
+  },
+  {
+   "controle": "18307470000168-1-000025/2026",
+   "pergunta": "Q15",
+   "arquivo": "01 - Edital - EDITAL_DE_CREDENCIAMENTO.pdf",
+   "pagina": 23,
+   "p_citada": 0.13,
+   "negativas": {
+    "15": 0.02,
+    "2": 0.03,
+    "19": 0.02,
+    "3": 0.02,
+    "18": 0.03
+   }
+  },
+  {
+   "controle": "44880060000111-1-000166/2026",
+   "pergunta": "Q17",
+   "arquivo": "02 - Edital - 016_-_Edital_Alterado_Assinado.pdf.pdf",
+   "pagina": 40,
+   "p_citada": 0.93,
+   "negativas": {
+    "34": 0.04,
+    "2": 0.04,
+    "48": 0.04,
+    "53": 0.03,
+    "6": 0.04
+   }
+  },
+  {
+   "controle": "14109763000180-1-000252/2026",
+   "pergunta": "Q4",
+   "arquivo": "01 - Edital - 201966_editais_1789733158 -- PE01712026.pdf",
+   "pagina": 9,
+   "p_citada": 0.96,
+   "negativas": {
+    "12": 0.31,
+    "7": 0.42,
+    "14": 0.03,
+    "2": 0.07,
+    "29": 0.04
+   }
+  },
+  {
+   "controle": "76002641000147-1-000323/2026",
+   "pergunta": "Q9",
+   "arquivo": "01 - Edital - EDITAL-Preg 049-2026 - Contratacao de instituicao financeira.pdf",
+   "pagina": 37,
+   "p_citada": 0.99,
+   "negativas": {
+    "34": 0.03,
+    "2": 0.03,
+    "15": 0.1,
+    "19": 0.03,
+    "43": 0.03
+   }
+  },
+  {
+   "controle": "95993085000162-1-000050/2026",
+   "pergunta": "Q2",
+   "arquivo": "01 - Edital - Processo_82.2026_PE_36.2026__Instituicao_Banc_assinado_2.pdf",
+   "pagina": 1,
+   "p_citada": 0.96,
+   "negativas": {
+    "34": 0.95,
+    "22": 0.06,
+    "21": 0.05,
+    "10": 0.03,
+    "17": 0.03
+   }
+  },
+  {
+   "controle": "13460266000169-1-000070/2026",
+   "pergunta": "Q11",
+   "arquivo": "02 - Termo de Referência - 02 TR (2).PDF.pdf",
+   "pagina": 7,
+   "p_citada": 0.64,
+   "negativas": {
+    "1": 0.85,
+    "18": 0.88,
+    "3": 0.91,
+    "11": 0.8,
+    "4": 0.84
+   }
+  },
+  {
+   "controle": "27792373000107-1-000006/2026",
+   "pergunta": "Q10",
+   "arquivo": "06 - Edital - 169177_editais_1776437888 -- NOVO_EDITAL_VENDA_DA_FOLHA_1836.25_17.04_-_20.05_assinado.pdf",
+   "pagina": 41,
+   "p_citada": 0.91,
+   "negativas": {
+    "76": 0.95,
+    "38": 0.03,
+    "112": 0.03,
+    "82": 0.69,
+    "68": 0.02
+   }
+  },
+  {
+   "controle": "66234360000166-1-000024/2026",
+   "pergunta": "Q11",
+   "arquivo": "01 - Edital - EDITAL_FOLHA_PE_202026.pdf",
+   "pagina": 36,
+   "p_citada": 0.92,
+   "negativas": {
+    "26": 0.19,
+    "38": 0.2,
+    "51": 0.04,
+    "6": 0.13,
+    "46": 0.94
+   }
+  },
+  {
+   "controle": "01613076000155-1-000033/2026",
+   "pergunta": "Q12",
+   "arquivo": "01 - Edital - EDITAL_DE_LICITA__O_PE_004-2026_GERENCIAMENTO_FOLHA.pdf",
+   "pagina": 31,
+   "p_citada": 0.72,
+   "negativas": {
+    "48": 0.34,
+    "33": 0.29,
+    "46": 0.02,
+    "19": 0.02,
+    "50": 0.58
+   }
+  },
+  {
+   "controle": "07963259000187-1-000107/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - EDITAL_PREGO_ELETRNICO_N_007.2026PE.pdf",
+   "pagina": 17,
+   "p_citada": 0.95,
+   "negativas": {
+    "19": 0.07,
+    "13": 0.03,
+    "9": 0.03,
+    "2": 0.04,
+    "21": 0.03
+   }
+  },
+  {
+   "controle": "45780087000103-1-000110/2026",
+   "pergunta": "Q3",
+   "arquivo": "01 - Edital - Edital_TR_e_apendice_PE_4026.pdf",
+   "pagina": 4,
+   "p_citada": 0.98,
+   "negativas": {
+    "34": 0.94,
+    "20": 0.93,
+    "12": 0.94,
+    "44": 0.93,
+    "1": 0.98
+   }
+  },
+  {
+   "controle": "07847379000119-1-000076/2026",
+   "pergunta": "Q11",
+   "arquivo": "02 - Edital - EDITAL.pdf",
+   "pagina": 37,
+   "p_citada": 0.93,
+   "negativas": {
+    "8": 0.21,
+    "30": 0.02,
+    "21": 0.02,
+    "14": 0.03,
+    "39": 0.25
+   }
+  },
+  {
+   "controle": "06554000000110-1-000030/2026",
+   "pergunta": "Q14",
+   "arquivo": "01 - Edital - 201255_editais_1789179827 -- EDITAL PREGÃO ELETRÔNICO  012.2026 Prestação de Serviços Bancários.pdf",
+   "pagina": 28,
+   "p_citada": 0.63,
+   "negativas": {
+    "32": 0.05,
+    "20": 0.05,
+    "35": 0.05,
+    "21": 0.05,
+    "18": 0.05
+   }
+  },
+  {
+   "controle": "75741330000137-1-000250/2026",
+   "pergunta": "Q17",
+   "arquivo": "01 - Edital - PE 99-2026 - Insituicao Fi -- Edital PE 99-2026 - Banco Folha Pagamento - ADM.pdf",
+   "pagina": 30,
+   "p_citada": 0.96,
+   "negativas": {
+    "4": 0.05,
+    "14": 0.05,
+    "15": 0.05,
+    "28": 0.1,
+    "13": 0.04
+   }
+  },
+  {
+   "controle": "11348570000193-1-000061/2026",
+   "pergunta": "Q12",
+   "arquivo": "02 - Edital - 200845_editais_1789999390 -- EDITAL PREGÃO BANCOS.pdf",
+   "pagina": 20,
+   "p_citada": 0.67,
+   "negativas": {
+    "12": 0.03,
+    "4": 0.03,
+    "16": 0.12,
+    "7": 0.03,
+    "2": 0.03
+   }
+  },
+  {
+   "controle": "16416125000137-1-000026/2026",
+   "pergunta": "Q15",
+   "arquivo": "01 - Edital - 0172026.pdf",
+   "pagina": 27,
+   "p_citada": 0.36,
+   "negativas": {
+    "54": 0.02,
+    "44": 0.02,
+    "41": 0.03,
+    "52": 0.02,
+    "2": 0.13
+   }
+  },
+  {
+   "controle": "03155934000190-1-000057/2026",
+   "pergunta": "Q11",
+   "arquivo": "22 - Termo de Referência - TERMO_DE_REFERENCIA_ADEQUADO.PDF.pdf",
+   "pagina": 14,
+   "p_citada": 0.95,
+   "negativas": {
+    "5": 0.12,
+    "24": 0.94,
+    "19": 0.24,
+    "21": 0.71,
+    "17": 0.7
+   }
+  },
+  {
+   "controle": "07847379000119-1-000076/2026",
+   "pergunta": "Q15",
+   "arquivo": "02 - Edital - EDITAL.pdf",
+   "pagina": 47,
+   "p_citada": 0.56,
+   "negativas": {
+    "22": 0.02,
+    "40": 0.02,
+    "5": 0.02,
+    "45": 0.03,
+    "9": 0.02
+   }
+  },
+  {
+   "controle": "01138122000101-1-000084/2026",
+   "pergunta": "Q6",
+   "arquivo": "01 - Edital - Edital_e_Contrato_Administrativo.pdf",
+   "pagina": 7,
+   "p_citada": 0.98,
+   "negativas": {
+    "73": 0.02,
+    "72": 0.02,
+    "30": 0.03,
+    "5": 0.03,
+    "4": 0.03
+   }
+  },
+  {
+   "controle": "45176153000122-1-000159/2026",
+   "pergunta": "Q14",
+   "arquivo": "03 - Termo de Referência - TR-PE-00_26---Prestacao-de-servicos-folha-de....pdf",
+   "pagina": 4,
+   "p_citada": 0.66,
+   "negativas": {
+    "13": 0.05,
+    "9": 0.06,
+    "11": 0.05,
+    "6": 0.06,
+    "12": 0.07
+   }
+  },
+  {
+   "controle": "46177523000109-1-000249/2026",
+   "pergunta": "Q4",
+   "arquivo": "01 - Edital - EDITAL_PE_67_2026_FOLHA_DE_PAGAMENTO.pdf",
+   "pagina": 44,
+   "p_citada": 0.98,
+   "negativas": {
+    "23": 0.04,
+    "28": 0.05,
+    "42": 0.05,
+    "50": 0.04,
+    "52": 0.03
+   }
+  },
+  {
+   "controle": "46631248000151-1-000103/2026",
+   "pergunta": "Q4",
+   "arquivo": "01 - Edital - 11_-_EDITAL_RETIFICADO_-_P.E._48-2026_-_FOLHA_DE_P.pdf",
+   "pagina": 56,
+   "p_citada": 0.98,
+   "negativas": {
+    "33": 0.04,
+    "25": 0.08,
+    "10": 0.98,
+    "5": 0.1,
+    "45": 0.12
+   }
+  },
+  {
+   "controle": "06554000000110-1-000030/2026",
+   "pergunta": "Q15",
+   "arquivo": "01 - Edital - 201255_editais_1789179827 -- EDITAL PREGÃO ELETRÔNICO  012.2026 Prestação de Serviços Bancários.pdf",
+   "pagina": 28,
+   "p_citada": 0.09,
+   "negativas": {
+    "6": 0.02,
+    "13": 0.03,
+    "21": 0.03,
+    "24": 0.02,
+    "10": 0.02
+   }
+  },
+  {
+   "controle": "16925208000151-1-000047/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - PR_067_-_Cred_007_-_credenciamento_de_institui__o_financeira.pdf",
+   "pagina": 14,
+   "p_citada": 0.97,
+   "negativas": {
+    "20": 0.03,
+    "39": 0.03,
+    "1": 0.03,
+    "11": 0.02,
+    "43": 0.49
+   }
+  },
+  {
+   "controle": "46643466000106-1-000704/2026",
+   "pergunta": "Q3",
+   "arquivo": "01 - Edital - pe169s.pdf",
+   "pagina": 1,
+   "p_citada": 0.98,
+   "negativas": {
+    "18": 0.17,
+    "68": 0.03,
+    "11": 0.39,
+    "31": 0.04,
+    "21": 0.03
+   }
+  },
+  {
+   "controle": "29138328000150-1-000078/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - EDITAL PORTAL.pdf",
+   "pagina": 35,
+   "p_citada": 0.96,
+   "negativas": {
+    "47": 0.04,
+    "40": 0.03,
+    "18": 0.03,
+    "53": 0.02,
+    "59": 0.03
+   }
+  },
+  {
+   "controle": "08358053000190-1-000156/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - 12._EDITAL_E_ANEXOS_-_PE_019_2026_ASS.PDF.pdf",
+   "pagina": 32,
+   "p_citada": 0.96,
+   "negativas": {
+    "61": 0.03,
+    "35": 0.06,
+    "52": 0.02,
+    "13": 0.02,
+    "36": 0.03
+   }
+  },
+  {
+   "controle": "13460266000169-1-000070/2026",
+   "pergunta": "Q12",
+   "arquivo": "03 - Estudo Técnico Preliminar - 03 ETP (5).PDF.pdf",
+   "pagina": 12,
+   "p_citada": 0.26,
+   "negativas": {
+    "8": 0.04,
+    "16": 0.04,
+    "5": 0.18,
+    "20": 0.04,
+    "4": 0.04
+   }
+  },
+  {
+   "controle": "76002641000147-1-000324/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - EDITAL-Preg 049-2026 - Contratacao de instituicao financeira.pdf",
+   "pagina": 15,
+   "p_citada": 0.98,
+   "negativas": {
+    "24": 0.02,
+    "39": 0.03,
+    "42": 0.02,
+    "5": 0.02,
+    "20": 0.04
+   }
+  },
+  {
+   "controle": "76105519000104-1-000225/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - EDITAL PREGAO 049-2026.pdf",
+   "pagina": 17,
+   "p_citada": 0.96,
+   "negativas": {
+    "48": 0.02,
+    "50": 0.03,
+    "3": 0.02,
+    "47": 0.02,
+    "32": 0.03
+   }
+  },
+  {
+   "controle": "07010511000133-1-000008/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - 07._INSTITUIO_FINANCEIRA._EDITAL_111.pdf",
+   "pagina": 66,
+   "p_citada": 0.98,
+   "negativas": {
+    "120": 0.04,
+    "102": 0.03,
+    "16": 0.03,
+    "70": 0.07,
+    "104": 0.03
+   }
+  },
+  {
+   "controle": "07010511000133-1-000008/2026",
+   "pergunta": "Q1",
+   "arquivo": "01 - Edital - 07._INSTITUIO_FINANCEIRA._EDITAL_111.pdf",
+   "pagina": 1,
+   "p_citada": 0.96,
+   "negativas": {
+    "91": 0.03,
+    "67": 0.03,
+    "41": 0.02,
+    "32": 0.05,
+    "34": 0.03
+   }
+  },
+  {
+   "controle": "46634317000180-1-000055/2026",
+   "pergunta": "Q10",
+   "arquivo": "01 - Edital - Edital_03126.pdf",
+   "pagina": 30,
+   "p_citada": 0.89,
+   "negativas": {
+    "2": 0.03,
+    "9": 0.05,
+    "27": 0.05,
+    "43": 0.03,
+    "45": 0.02
+   }
+  },
+  {
+   "controle": "46643466000106-1-000704/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - pe169s.pdf",
+   "pagina": 19,
+   "p_citada": 0.97,
+   "negativas": {
+    "69": 0.03,
+    "58": 0.07,
+    "47": 0.48,
+    "48": 0.07,
+    "8": 0.03
+   }
+  },
+  {
+   "controle": "82804212000196-1-000264/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - EDITAL_233.2026_-_PE_233_-_FOLHA_DE_PAGAMENTO_MAIOR_LANCE.pdf",
+   "pagina": 19,
+   "p_citada": 0.8,
+   "negativas": {
+    "54": 0.03,
+    "32": 0.03,
+    "15": 0.05,
+    "46": 0.03,
+    "49": 0.02
+   }
+  },
+  {
+   "controle": "06116743000108-1-000039/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - 017.pdf",
+   "pagina": 27,
+   "p_citada": 0.94,
+   "negativas": {
+    "6": 0.02,
+    "44": 0.03,
+    "35": 0.04,
+    "30": 0.03,
+    "8": 0.02
+   }
+  },
+  {
+   "controle": "01612444000140-1-000095/2026",
+   "pergunta": "Q4",
+   "arquivo": "05 - Edital - 011- EDITAL PREGAO 31 PNCP.pdf",
+   "pagina": 1,
+   "p_citada": 0.98,
+   "negativas": {
+    "24": 0.97,
+    "27": 0.05,
+    "44": 0.05,
+    "41": 0.05,
+    "11": 0.16
+   }
+  },
+  {
+   "controle": "92451152000129-1-000207/2026",
+   "pergunta": "Q14",
+   "arquivo": "17 - Projeto Básico - PRD1_146_2026_1PJB.pdf",
+   "pagina": 1,
+   "p_citada": 0.59,
+   "negativas": {
+    "8": 0.18,
+    "6": 0.05,
+    "9": 0.04,
+    "11": 0.05,
+    "7": 0.13
+   }
+  },
+  {
+   "controle": "46631248000151-1-000103/2026",
+   "pergunta": "Q5",
+   "arquivo": "01 - Edital - 11_-_EDITAL_RETIFICADO_-_P.E._48-2026_-_FOLHA_DE_P.pdf",
+   "pagina": 56,
+   "p_citada": 0.93,
+   "negativas": {
+    "17": 0.03,
+    "52": 0.05,
+    "54": 0.03,
+    "30": 0.04,
+    "5": 0.04
+   }
+  },
+  {
+   "controle": "44880060000111-1-000166/2026",
+   "pergunta": "Q5",
+   "arquivo": "02 - Edital - 016_-_Edital_Alterado_Assinado.pdf.pdf",
+   "pagina": 7,
+   "p_citada": 0.95,
+   "negativas": {
+    "14": 0.03,
+    "19": 0.03,
+    "17": 0.03,
+    "2": 0.04,
+    "1": 0.04
+   }
+  },
+  {
+   "controle": "75392019000120-1-000050/2026",
+   "pergunta": "Q6",
+   "arquivo": "01 - Edital - Edital Credenciamento 04-2026 da Folha de Pagamento.pdf",
+   "pagina": 8,
+   "p_citada": 0.58,
+   "negativas": {
+    "5": 0.03,
+    "3": 0.04,
+    "25": 0.02,
+    "17": 0.03,
+    "24": 0.03
+   }
+  },
+  {
+   "controle": "03184041000173-1-000099/2026",
+   "pergunta": "Q2",
+   "arquivo": "03 - Edital - EDITAL.PDF.pdf",
+   "pagina": 2,
+   "p_citada": 0.97,
+   "negativas": {
+    "6": 0.04,
+    "47": 0.02,
+    "10": 0.02,
+    "20": 0.03,
+    "24": 0.02
+   }
+  },
+  {
+   "controle": "27792373000107-1-000006/2026",
+   "pergunta": "Q2",
+   "arquivo": "06 - Edital - 169177_editais_1776437888 -- NOVO_EDITAL_VENDA_DA_FOLHA_1836.25_17.04_-_20.05_assinado.pdf",
+   "pagina": 2,
+   "p_citada": 0.96,
+   "negativas": {
+    "34": 0.04,
+    "9": 0.03,
+    "38": 0.07,
+    "16": 0.03,
+    "46": 0.04
+   }
+  },
+  {
+   "controle": "16925208000151-1-000047/2026",
+   "pergunta": "Q9",
+   "arquivo": "01 - Edital - PR_067_-_Cred_007_-_credenciamento_de_institui__o_financeira.pdf",
+   "pagina": 14,
+   "p_citada": 0.98,
+   "negativas": {
+    "34": 0.03,
+    "12": 0.04,
+    "19": 0.04,
+    "53": 0.03,
+    "47": 0.03
+   }
+  },
+  {
+   "controle": "09074592000160-1-000032/2026",
+   "pergunta": "Q14",
+   "arquivo": "01 - Edital - 201640_editais_1789562401 -- 00 - EDITAL - PREGÃO ELETRÔNICO 00018-2026 assinado.pdf",
+   "pagina": 21,
+   "p_citada": 0.8,
+   "negativas": {
+    "36": 0.05,
+    "25": 0.05,
+    "18": 0.04,
+    "23": 0.05,
+    "35": 0.05
+   }
+  },
+  {
+   "controle": "95993085000162-1-000050/2026",
+   "pergunta": "Q3",
+   "arquivo": "01 - Edital - Processo_82.2026_PE_36.2026__Instituicao_Banc_assinado_2.pdf",
+   "pagina": 1,
+   "p_citada": 0.98,
+   "negativas": {
+    "3": 0.17,
+    "6": 0.53,
+    "27": 0.03,
+    "30": 0.86,
+    "17": 0.14
+   }
+  },
+  {
+   "controle": "66229717000118-1-000062/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - PROCESSO_FOLHA_DE_PAGAMENTO.pdf",
+   "pagina": 13,
+   "p_citada": 0.96,
+   "negativas": {
+    "1": 0.03,
+    "10": 0.03,
+    "7": 0.03,
+    "3": 0.02,
+    "29": 0.04
+   }
+  },
+  {
+   "controle": "06116743000108-1-000039/2026",
+   "pergunta": "Q15",
+   "arquivo": "01 - Edital - 017.pdf",
+   "pagina": 23,
+   "p_citada": 0.24,
+   "negativas": {
+    "49": 0.02,
+    "5": 0.02,
+    "18": 0.02,
+    "15": 0.02,
+    "12": 0.02
+   }
+  },
+  {
+   "controle": "95993085000162-1-000050/2026",
+   "pergunta": "Q5",
+   "arquivo": "01 - Edital - Processo_82.2026_PE_36.2026__Instituicao_Banc_assinado_2.pdf",
+   "pagina": 12,
+   "p_citada": 0.95,
+   "negativas": {
+    "3": 0.03,
+    "20": 0.03,
+    "34": 0.05,
+    "27": 0.03,
+    "4": 0.17
+   }
+  },
+  {
+   "controle": "18308726000151-1-000076/2026",
+   "pergunta": "Q10",
+   "arquivo": "01 - Edital - Edital.pdf",
+   "pagina": 45,
+   "p_citada": 0.78,
+   "negativas": {
+    "75": 0.02,
+    "13": 0.04,
+    "11": 0.03,
+    "82": 0.02,
+    "34": 0.03
+   }
+  },
+  {
+   "controle": "03184041000173-1-000099/2026",
+   "pergunta": "Q6",
+   "arquivo": "03 - Edital - EDITAL.PDF.pdf",
+   "pagina": 7,
+   "p_citada": 0.98,
+   "negativas": {
+    "39": 0.02,
+    "49": 0.02,
+    "34": 0.03,
+    "27": 0.03,
+    "5": 0.04
+   }
+  },
+  {
+   "controle": "04213779000184-1-000303/2026",
+   "pergunta": "Q3",
+   "arquivo": "01 - Edital - 6392499317341193742446_EDITAL CCE 05 2026.pdf",
+   "pagina": 1,
+   "p_citada": 0.98,
+   "negativas": {
+    "26": 0.98,
+    "11": 0.18,
+    "29": 0.98,
+    "22": 0.98,
+    "21": 0.11
+   }
+  },
+  {
+   "controle": "76208834000159-1-000344/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - EDITAL P.E. 088 2026.PDF.pdf",
+   "pagina": 13,
+   "p_citada": 0.9,
+   "negativas": {
+    "36": 0.04,
+    "21": 0.05,
+    "23": 0.02,
+    "47": 0.04,
+    "49": 0.02
+   }
+  },
+  {
+   "controle": "44892693000140-1-000208/2026",
+   "pergunta": "Q3",
+   "arquivo": "01 - Edital - P.E. 14-2026 - Contratacao de empresa para Gerenciar Folha de pagamento - TRI-REPUBLICADO.pdf",
+   "pagina": 1,
+   "p_citada": 0.98,
+   "negativas": {
+    "27": 0.9,
+    "53": 0.84,
+    "20": 0.94,
+    "40": 0.87,
+    "42": 0.94
+   }
+  },
+  {
+   "controle": "46643466000106-1-000704/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - pe169s.pdf",
+   "pagina": 48,
+   "p_citada": 0.9,
+   "negativas": {
+    "42": 0.02,
+    "65": 0.03,
+    "30": 0.02,
+    "69": 0.02,
+    "31": 0.03
+   }
+  },
+  {
+   "controle": "87613279000167-1-000091/2026",
+   "pergunta": "Q9",
+   "arquivo": "05 - Outros Documentos - Outros documentos.pdf",
+   "pagina": 7,
+   "p_citada": 0.9,
+   "negativas": {
+    "31": 0.03,
+    "45": 0.02,
+    "22": 0.03,
+    "43": 0.03,
+    "15": 0.03
+   }
+  },
+  {
+   "controle": "11055682000156-1-000480/2026",
+   "pergunta": "Q17",
+   "arquivo": "01 - Edital - EDITAL202685.pdf",
+   "pagina": 44,
+   "p_citada": 0.97,
+   "negativas": {
+    "17": 0.04,
+    "20": 0.04,
+    "11": 0.04,
+    "46": 0.16,
+    "48": 0.04
+   }
+  },
+  {
+   "controle": "82804212000196-1-000264/2026",
+   "pergunta": "Q1",
+   "arquivo": "01 - Edital - EDITAL_233.2026_-_PE_233_-_FOLHA_DE_PAGAMENTO_MAIOR_LANCE.pdf",
+   "pagina": 1,
+   "p_citada": 0.97,
+   "negativas": {
+    "8": 0.03,
+    "55": 0.02,
+    "25": 0.03,
+    "7": 0.03,
+    "67": 0.03
+   }
+  },
+  {
+   "controle": "14109763000180-1-000252/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - 201966_editais_1789733158 -- PE01712026.pdf",
+   "pagina": 1,
+   "p_citada": 0.9,
+   "negativas": {
+    "58": 0.1,
+    "13": 0.02,
+    "43": 0.03,
+    "70": 0.03,
+    "22": 0.03
+   }
+  },
+  {
+   "controle": "16925208000151-1-000047/2026",
+   "pergunta": "Q10",
+   "arquivo": "01 - Edital - PR_067_-_Cred_007_-_credenciamento_de_institui__o_financeira.pdf",
+   "pagina": 22,
+   "p_citada": 0.94,
+   "negativas": {
+    "6": 0.03,
+    "19": 0.04,
+    "59": 0.03,
+    "24": 0.18,
+    "43": 0.6
+   }
+  },
+  {
+   "controle": "66229717000118-1-000062/2026",
+   "pergunta": "Q1",
+   "arquivo": "01 - Edital - PROCESSO_FOLHA_DE_PAGAMENTO.pdf",
+   "pagina": 1,
+   "p_citada": 0.95,
+   "negativas": {
+    "29": 0.03,
+    "15": 0.03,
+    "8": 0.02,
+    "9": 0.02,
+    "20": 0.03
+   }
+  },
+  {
+   "controle": "76205962000149-1-000111/2026",
+   "pergunta": "Q5",
+   "arquivo": "01 - Aviso de Contratação Direta - ADM - FOLHA DE PAGAMENTO.pdf",
+   "pagina": 84,
+   "p_citada": 0.17,
+   "negativas": {
+    "46": 0.02,
+    "5": 0.03,
+    "57": 0.02,
+    "53": 0.02,
+    "31": 0.02
+   }
+  },
+  {
+   "controle": "77001311000108-1-000558/2026",
+   "pergunta": "Q13",
+   "arquivo": "08 - Outros Documentos - ANEXO_2__TERMO_DE_REFERNCIA__133_2026.pdf",
+   "pagina": 3,
+   "p_citada": 0.41,
+   "negativas": {
+    "6": 0.02,
+    "1": 0.02,
+    "7": 0.02,
+    "10": 0.02,
+    "9": 0.01
+   }
+  },
+  {
+   "controle": "18307496000106-1-000041/2026",
+   "pergunta": "Q14",
+   "arquivo": "03 - Outros Documentos - TERMO_DE_REFERENCIA_1.pdf",
+   "pagina": 2,
+   "p_citada": 0.63,
+   "negativas": {
+    "10": 0.05,
+    "4": 0.06,
+    "11": 0.06,
+    "5": 0.05,
+    "8": 0.05
+   }
+  },
+  {
+   "controle": "13460266000169-1-000070/2026",
+   "pergunta": "Q2",
+   "arquivo": "05 - Edital - 01 EDITAL NOVO.PDF.pdf",
+   "pagina": 3,
+   "p_citada": 0.96,
+   "negativas": {
+    "16": 0.18,
+    "7": 0.61,
+    "15": 0.04,
+    "1": 0.97,
+    "13": 0.03
+   }
+  },
+  {
+   "controle": "46634317000180-1-000055/2026",
+   "pergunta": "Q15",
+   "arquivo": "01 - Edital - Edital_03126.pdf",
+   "pagina": 38,
+   "p_citada": 0.1,
+   "negativas": {
+    "13": 0.02,
+    "24": 0.04,
+    "27": 0.03,
+    "18": 0.02,
+    "44": 0.02
+   }
+  },
+  {
+   "controle": "18308726000151-1-000076/2026",
+   "pergunta": "Q9",
+   "arquivo": "01 - Edital - Edital.pdf",
+   "pagina": 72,
+   "p_citada": 0.98,
+   "negativas": {
+    "36": 0.03,
+    "78": 0.04,
+    "3": 0.04,
+    "56": 0.03,
+    "64": 0.04
+   }
+  },
+  {
+   "controle": "56401177000154-1-000115/2026",
+   "pergunta": "Q14",
+   "arquivo": "01 - Edital - 2026000238 -- edital.pdf",
+   "pagina": 23,
+   "p_citada": 0.7,
+   "negativas": {
+    "14": 0.04,
+    "13": 0.05,
+    "26": 0.05,
+    "12": 0.05,
+    "11": 0.05
+   }
+  },
+  {
+   "controle": "18194076000160-1-000068/2026",
+   "pergunta": "Q6",
+   "arquivo": "01 - Edital - EDITAL_E_ANEXOS_-_GERENCIAMENTO_DA_FOLHA.pdf",
+   "pagina": 8,
+   "p_citada": 0.97,
+   "negativas": {
+    "77": 0.02,
+    "35": 0.02,
+    "25": 0.02,
+    "27": 0.03,
+    "46": 0.02
+   }
+  },
+  {
+   "controle": "08358053000190-1-000156/2026",
+   "pergunta": "Q2",
+   "arquivo": "01 - Edital - 12._EDITAL_E_ANEXOS_-_PE_019_2026_ASS.PDF.pdf",
+   "pagina": 4,
+   "p_citada": 0.96,
+   "negativas": {
+    "55": 0.42,
+    "60": 0.03,
+    "22": 0.02,
+    "58": 0.03,
+    "21": 0.02
+   }
+  },
+  {
+   "controle": "95993085000162-1-000050/2026",
+   "pergunta": "Q4",
+   "arquivo": "01 - Edital - Processo_82.2026_PE_36.2026__Instituicao_Banc_assinado_2.pdf",
+   "pagina": 1,
+   "p_citada": 0.98,
+   "negativas": {
+    "12": 0.97,
+    "27": 0.03,
+    "8": 0.1,
+    "39": 0.09,
+    "25": 0.04
+   }
+  },
+  {
+   "controle": "08145153000139-1-000052/2026",
+   "pergunta": "Q4",
+   "arquivo": "01 - Edital - EDITAL+DO+PE+N%c2%ba+011-2026+-+VENDA+DA+FOLHA.pdf",
+   "pagina": 1,
+   "p_citada": 0.97,
+   "negativas": {
+    "17": 0.06,
+    "26": 0.06,
+    "21": 0.06,
+    "8": 0.45,
+    "30": 0.05
+   }
+  },
+  {
+   "controle": "66234360000166-1-000024/2026",
+   "pergunta": "Q10",
+   "arquivo": "01 - Edital - EDITAL_FOLHA_PE_202026.pdf",
+   "pagina": 37,
+   "p_citada": 0.31,
+   "negativas": {
+    "53": 0.03,
+    "28": 0.07,
+    "46": 0.61,
+    "24": 0.09,
+    "13": 0.02
+   }
+  },
+  {
+   "controle": "58197948000169-1-000025/2026",
+   "pergunta": "Q13",
+   "arquivo": "03 - Edital - EDITAL_014_2026_LEILO_INSTITUIO_FINANCEIRA_FOLHA_DE_PAGTO__A.pdf",
+   "pagina": 25,
+   "p_citada": 0.5,
+   "negativas": {
+    "38": 0.02,
+    "8": 0.01,
+    "22": 0.01,
+    "1": 0.02,
+    "31": 0.01
+   }
+  },
+  {
+   "controle": "75381178000129-1-000069/2026",
+   "pergunta": "Q4",
+   "arquivo": "02 - Edital - EDITAL-PREGAO-36.2026.pdf",
+   "pagina": 1,
+   "p_citada": 0.98,
+   "negativas": {
+    "3": 0.96,
+    "11": 0.93,
+    "12": 0.04,
+    "10": 0.05,
+    "9": 0.37
+   }
+  },
+  {
+   "controle": "18308726000151-1-000076/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - Edital.pdf",
+   "pagina": 55,
+   "p_citada": 0.95,
+   "negativas": {
+    "22": 0.02,
+    "73": 0.45,
+    "7": 0.04,
+    "64": 0.06,
+    "80": 0.02
+   }
+  },
+  {
+   "controle": "08145153000139-1-000052/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - EDITAL+DO+PE+N%c2%ba+011-2026+-+VENDA+DA+FOLHA.pdf",
+   "pagina": 12,
+   "p_citada": 0.98,
+   "negativas": {
+    "31": 0.02,
+    "10": 0.02,
+    "18": 0.03,
+    "29": 0.04,
+    "15": 0.03
+   }
+  },
+  {
+   "controle": "45176153000122-1-000159/2026",
+   "pergunta": "Q10",
+   "arquivo": "04 - Edital - PE-62_26---Folha-de-pagamento.pdf",
+   "pagina": 19,
+   "p_citada": 0.9,
+   "negativas": {
+    "6": 0.03,
+    "34": 0.03,
+    "4": 0.03,
+    "39": 0.02,
+    "17": 0.03
+   }
+  },
+  {
+   "controle": "82804212000196-1-000266/2026",
+   "pergunta": "Q2",
+   "arquivo": "01 - Edital - EDITAL 2332026  PE 233  FOLHA DE PAGAMENTO MAIO.pdf",
+   "pagina": 2,
+   "p_citada": 0.97,
+   "negativas": {
+    "26": 0.09,
+    "29": 0.02,
+    "19": 0.03,
+    "56": 0.05,
+    "47": 0.03
+   }
+  },
+  {
+   "controle": "18308726000151-1-000076/2026",
+   "pergunta": "Q1",
+   "arquivo": "01 - Edital - Edital.pdf",
+   "pagina": 2,
+   "p_citada": 0.92,
+   "negativas": {
+    "39": 0.02,
+    "41": 0.03,
+    "20": 0.04,
+    "12": 0.03,
+    "48": 0.02
+   }
+  },
+  {
+   "controle": "07847379000119-1-000076/2026",
+   "pergunta": "Q12",
+   "arquivo": "02 - Edital - EDITAL.pdf",
+   "pagina": 36,
+   "p_citada": 0.91,
+   "negativas": {
+    "21": 0.02,
+    "30": 0.03,
+    "20": 0.02,
+    "24": 0.02,
+    "34": 0.45
+   }
+  },
+  {
+   "controle": "82940776000156-1-000724/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - EDITAL202627.pdf",
+   "pagina": 27,
+   "p_citada": 0.82,
+   "negativas": {
+    "89": 0.03,
+    "93": 0.06,
+    "17": 0.03,
+    "107": 0.11,
+    "13": 0.03
+   }
+  },
+  {
+   "controle": "45176153000122-1-000159/2026",
+   "pergunta": "Q17",
+   "arquivo": "04 - Edital - PE-62_26---Folha-de-pagamento.pdf",
+   "pagina": 31,
+   "p_citada": 0.95,
+   "negativas": {
+    "40": 0.03,
+    "9": 0.04,
+    "39": 0.03,
+    "35": 0.05,
+    "24": 0.03
+   }
+  },
+  {
+   "controle": "45780087000103-1-000110/2026",
+   "pergunta": "Q9",
+   "arquivo": "01 - Edital - Edital_TR_e_apendice_PE_4026.pdf",
+   "pagina": 24,
+   "p_citada": 0.98,
+   "negativas": {
+    "36": 0.03,
+    "65": 0.02,
+    "22": 0.02,
+    "40": 0.04,
+    "69": 0.02
+   }
+  },
+  {
+   "controle": "95993085000162-1-000050/2026",
+   "pergunta": "Q14",
+   "arquivo": "01 - Edital - Processo_82.2026_PE_36.2026__Instituicao_Banc_assinado_2.pdf",
+   "pagina": 19,
+   "p_citada": 0.44,
+   "negativas": {
+    "3": 0.05,
+    "12": 0.06,
+    "9": 0.05,
+    "28": 0.05,
+    "27": 0.05
+   }
+  },
+  {
+   "controle": "75741330000137-1-000250/2026",
+   "pergunta": "Q12",
+   "arquivo": "01 - Edital - PE 99-2026 - Insituicao Fi -- Edital PE 99-2026 - Banco Folha Pagamento - ADM.pdf",
+   "pagina": 19,
+   "p_citada": 0.05,
+   "negativas": {
+    "23": 0.03,
+    "12": 0.03,
+    "3": 0.03,
+    "7": 0.02,
+    "34": 0.02
+   }
+  },
+  {
+   "controle": "76205962000149-1-000111/2026",
+   "pergunta": "Q11",
+   "arquivo": "01 - Aviso de Contratação Direta - ADM - FOLHA DE PAGAMENTO.pdf",
+   "pagina": 83,
+   "p_citada": 0.24,
+   "negativas": {
+    "100": 0.51,
+    "89": 0.04,
+    "17": 0.02,
+    "66": 0.03,
+    "22": 0.02
+   }
+  },
+  {
+   "controle": "45162328000142-1-000047/2026",
+   "pergunta": "Q14",
+   "arquivo": "01 - Edital - Edital_Pregao_Eletronico_232026_Pontes_Gestal_Timbrado.pdf",
+   "pagina": 17,
+   "p_citada": 0.64,
+   "negativas": {
+    "4": 0.05,
+    "21": 0.04,
+    "24": 0.17,
+    "20": 0.05,
+    "22": 0.06
+   }
+  },
+  {
+   "controle": "82940776000156-1-000721/2026",
+   "pergunta": "Q14",
+   "arquivo": "01 - Edital - EDITAL GERENCIAMENTO FOLHA.pdf",
+   "pagina": 49,
+   "p_citada": 0.57,
+   "negativas": {
+    "104": 0.04,
+    "87": 0.05,
+    "46": 0.05,
+    "18": 0.04,
+    "55": 0.81
+   }
+  },
+  {
+   "controle": "01614862000177-1-000068/2026",
+   "pergunta": "Q11",
+   "arquivo": "01 - Edital - 199713_editais_1787937573 -- PL 071-2026.pdf",
+   "pagina": 38,
+   "p_citada": 0.95,
+   "negativas": {
+    "36": 0.04,
+    "44": 0.04,
+    "1": 0.05,
+    "8": 0.02,
+    "34": 0.89
+   }
+  },
+  {
+   "controle": "82804212000196-1-000266/2026",
+   "pergunta": "Q1",
+   "arquivo": "01 - Edital - EDITAL 2332026  PE 233  FOLHA DE PAGAMENTO MAIO.pdf",
+   "pagina": 1,
+   "p_citada": 0.97,
+   "negativas": {
+    "45": 0.03,
+    "31": 0.03,
+    "63": 0.02,
+    "58": 0.02,
+    "49": 0.02
+   }
+  },
+  {
+   "controle": "07963259000187-1-000107/2026",
+   "pergunta": "Q11",
+   "arquivo": "04 - Outros Documentos - ANEXO_I__TERMO_DE_REFERENCIA.pdf",
+   "pagina": 13,
+   "p_citada": 0.93,
+   "negativas": {
+    "3": 0.33,
+    "18": 0.81,
+    "23": 0.21,
+    "17": 0.91,
+    "25": 0.2
+   }
+  },
+  {
+   "controle": "82804212000196-1-000266/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - EDITAL 2332026  PE 233  FOLHA DE PAGAMENTO MAIO.pdf",
+   "pagina": 26,
+   "p_citada": 0.71,
+   "negativas": {
+    "70": 0.06,
+    "53": 0.13,
+    "13": 0.03,
+    "24": 0.15,
+    "41": 0.03
+   }
+  },
+  {
+   "controle": "82940776000156-1-000721/2026",
+   "pergunta": "Q12",
+   "arquivo": "01 - Edital - EDITAL GERENCIAMENTO FOLHA.pdf",
+   "pagina": 80,
+   "p_citada": 0.98,
+   "negativas": {
+    "104": 0.02,
+    "22": 0.02,
+    "51": 0.03,
+    "100": 0.03,
+    "67": 0.03
+   }
+  },
+  {
+   "controle": "18303180000146-1-000038/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - Edital_PAL_0642026_PE_0202026_Folha_de_pagamento.pdf",
+   "pagina": 27,
+   "p_citada": 0.96,
+   "negativas": {
+    "15": 0.03,
+    "14": 0.04,
+    "42": 0.13,
+    "9": 0.03,
+    "23": 0.16
+   }
+  },
+  {
+   "controle": "27792373000107-1-000006/2026",
+   "pergunta": "Q17",
+   "arquivo": "06 - Edital - 169177_editais_1776437888 -- NOVO_EDITAL_VENDA_DA_FOLHA_1836.25_17.04_-_20.05_assinado.pdf",
+   "pagina": 12,
+   "p_citada": 0.96,
+   "negativas": {
+    "5": 0.03,
+    "9": 0.04,
+    "4": 0.04,
+    "94": 0.03,
+    "67": 0.04
+   }
+  },
+  {
+   "controle": "46631248000151-1-000103/2026",
+   "pergunta": "Q2",
+   "arquivo": "01 - Edital - 11_-_EDITAL_RETIFICADO_-_P.E._48-2026_-_FOLHA_DE_P.pdf",
+   "pagina": 1,
+   "p_citada": 0.98,
+   "negativas": {
+    "41": 0.34,
+    "19": 0.04,
+    "16": 0.03,
+    "52": 0.7,
+    "15": 0.02
+   }
+  },
+  {
+   "controle": "82777319000192-1-000103/2026",
+   "pergunta": "Q9",
+   "arquivo": "03 - Termo de Referência - TERMO DE REFERENCIA  PE 172026.pdf",
+   "pagina": 2,
+   "p_citada": 0.95,
+   "negativas": {
+    "8": 0.05,
+    "10": 0.03,
+    "11": 0.03,
+    "5": 0.03,
+    "6": 0.12
+   }
+  },
+  {
+   "controle": "46634531000137-1-000233/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - EDITAL__FOLHA_DE_PAGAMENTO.pdf",
+   "pagina": 18,
+   "p_citada": 0.97,
+   "negativas": {
+    "39": 0.03,
+    "25": 0.03,
+    "13": 0.03,
+    "4": 0.03,
+    "54": 0.04
+   }
+  },
+  {
+   "controle": "76105519000104-1-000225/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - EDITAL PREGAO 049-2026.pdf",
+   "pagina": 27,
+   "p_citada": 0.97,
+   "negativas": {
+    "18": 0.02,
+    "56": 0.85,
+    "36": 0.02,
+    "38": 0.09,
+    "46": 0.03
+   }
+  },
+  {
+   "controle": "01138122000101-1-000084/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - Edital_e_Contrato_Administrativo.pdf",
+   "pagina": 66,
+   "p_citada": 0.76,
+   "negativas": {
+    "47": 0.03,
+    "71": 0.02,
+    "30": 0.06,
+    "56": 0.07,
+    "11": 0.03
+   }
+  },
+  {
+   "controle": "76208834000159-1-000344/2026",
+   "pergunta": "Q1",
+   "arquivo": "01 - Edital - EDITAL P.E. 088 2026.PDF.pdf",
+   "pagina": 3,
+   "p_citada": 0.96,
+   "negativas": {
+    "18": 0.03,
+    "23": 0.02,
+    "53": 0.02,
+    "32": 0.02,
+    "16": 0.03
+   }
+  },
+  {
+   "controle": "01612444000140-1-000095/2026",
+   "pergunta": "Q6",
+   "arquivo": "05 - Edital - 011- EDITAL PREGAO 31 PNCP.pdf",
+   "pagina": 9,
+   "p_citada": 0.96,
+   "negativas": {
+    "22": 0.03,
+    "50": 0.03,
+    "28": 0.02,
+    "12": 0.03,
+    "39": 0.02
+   }
+  },
+  {
+   "controle": "92451152000129-1-000207/2026",
+   "pergunta": "Q11",
+   "arquivo": "19 - Outros Documentos - PRD1_146_2026_3TFD.pdf",
+   "pagina": 13,
+   "p_citada": 0.95,
+   "negativas": {
+    "3": 0.04,
+    "6": 0.04,
+    "9": 0.1,
+    "18": 0.5,
+    "11": 0.16
+   }
+  },
+  {
+   "controle": "18298174000148-1-000063/2025",
+   "pergunta": "Q15",
+   "arquivo": "01 - Termo de Referência - 166746_editai -- Edital Credenciamento Bancos - Folha de Pagamento .pdf",
+   "pagina": 24,
+   "p_citada": 0.04,
+   "negativas": {
+    "30": 0.03,
+    "4": 0.04,
+    "28": 0.03,
+    "37": 0.02,
+    "2": 0.02
+   }
+  },
+  {
+   "controle": "75392019000120-1-000052/2026",
+   "pergunta": "Q9",
+   "arquivo": "01 - Aviso de Contratação Direta - Edital_Credenciamento_042026_da_Folha_de_Pagamento.pdf",
+   "pagina": 7,
+   "p_citada": 0.98,
+   "negativas": {
+    "19": 0.03,
+    "1": 0.92,
+    "24": 0.05,
+    "18": 0.03,
+    "25": 0.03
+   }
+  },
+  {
+   "controle": "18243287000146-1-000130/2026",
+   "pergunta": "Q10",
+   "arquivo": "02 - Termo de Referência - 01 - ANEXO I - TERMO DE REFERENCIA - PREGAO 984287 - 33-2026.pdf",
+   "pagina": 14,
+   "p_citada": 0.26,
+   "negativas": {
+    "9": 0.03,
+    "11": 0.03,
+    "6": 0.63,
+    "12": 0.03,
+    "10": 0.04
+   }
+  },
+  {
+   "controle": "03184041000173-1-000099/2026",
+   "pergunta": "Q10",
+   "arquivo": "04 - Termo de Referência - TERMO-DE-REFERENCIA.PDF.pdf",
+   "pagina": 12,
+   "p_citada": 0.95,
+   "negativas": {
+    "25": 0.03,
+    "17": 0.04,
+    "33": 0.03,
+    "36": 0.04,
+    "23": 0.03
+   }
+  },
+  {
+   "controle": "16416125000137-1-000026/2026",
+   "pergunta": "Q2",
+   "arquivo": "01 - Edital - 0172026.pdf",
+   "pagina": 2,
+   "p_citada": 0.96,
+   "negativas": {
+    "37": 0.9,
+    "46": 0.03,
+    "40": 0.08,
+    "52": 0.03,
+    "10": 0.02
+   }
+  },
+  {
+   "controle": "10150050000109-1-000026/2025",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - Documento_24_2025.pdf",
+   "pagina": 24,
+   "p_citada": 0.98,
+   "negativas": {
+    "17": 0.03,
+    "14": 0.02,
+    "19": 0.03,
+    "50": 0.03,
+    "12": 0.02
+   }
+  },
+  {
+   "controle": "04213779000184-1-000303/2026",
+   "pergunta": "Q6",
+   "arquivo": "01 - Edital - 6392499317341193742446_EDITAL CCE 05 2026.pdf",
+   "pagina": 8,
+   "p_citada": 0.98,
+   "negativas": {
+    "2": 0.04,
+    "6": 0.02,
+    "27": 0.02,
+    "31": 0.03,
+    "22": 0.04
+   }
+  },
+  {
+   "controle": "18428854000139-1-000080/2026",
+   "pergunta": "Q6",
+   "arquivo": "01 - Edital - 199586_editais_1787919357 -- Edital Pregão Eletrônico 50.2026.pdf",
+   "pagina": 7,
+   "p_citada": 0.97,
+   "negativas": {
+    "30": 0.02,
+    "26": 0.02,
+    "11": 0.03,
+    "1": 0.04,
+    "25": 0.02
+   }
+  },
+  {
+   "controle": "18307496000106-1-000041/2026",
+   "pergunta": "Q5",
+   "arquivo": "03 - Outros Documentos - TERMO_DE_REFERENCIA_1.pdf",
+   "pagina": 3,
+   "p_citada": 0.07,
+   "negativas": {
+    "5": 0.03,
+    "8": 0.03,
+    "1": 0.04,
+    "11": 0.04,
+    "9": 0.03
+   }
+  },
+  {
+   "controle": "46422408000152-1-000455/2026",
+   "pergunta": "Q14",
+   "arquivo": "01 - Edital - Edital de Pregao Eletronico.pdf",
+   "pagina": 25,
+   "p_citada": 0.67,
+   "negativas": {
+    "48": 0.04,
+    "64": 0.05,
+    "76": 0.05,
+    "86": 0.03,
+    "70": 0.04
+   }
+  },
+  {
+   "controle": "75381178000129-1-000069/2026",
+   "pergunta": "Q15",
+   "arquivo": "02 - Edital - EDITAL-PREGAO-36.2026.pdf",
+   "pagina": 4,
+   "p_citada": 0.14,
+   "negativas": {
+    "2": 0.04,
+    "7": 0.03,
+    "13": 0.15,
+    "9": 0.04,
+    "12": 0.02
+   }
+  },
+  {
+   "controle": "44880060000111-1-000166/2026",
+   "pergunta": "Q13",
+   "arquivo": "02 - Edital - 016_-_Edital_Alterado_Assinado.pdf.pdf",
+   "pagina": 31,
+   "p_citada": 0.59,
+   "negativas": {
+    "33": 0.02,
+    "38": 0.02,
+    "2": 0.02,
+    "12": 0.01,
+    "5": 0.01
+   }
+  },
+  {
+   "controle": "01787506000155-1-000182/2026",
+   "pergunta": "Q14",
+   "arquivo": "02 - Edital - edital.pdf",
+   "pagina": 40,
+   "p_citada": 0.96,
+   "negativas": {
+    "18": 0.07,
+    "38": 0.06,
+    "20": 0.07,
+    "4": 0.04,
+    "10": 0.04
+   }
+  },
+  {
+   "controle": "06116743000108-1-000039/2026",
+   "pergunta": "Q6",
+   "arquivo": "01 - Edital - 017.pdf",
+   "pagina": 5,
+   "p_citada": 0.98,
+   "negativas": {
+    "2": 0.03,
+    "49": 0.02,
+    "27": 0.03,
+    "32": 0.03,
+    "41": 0.02
+   }
+  },
+  {
+   "controle": "01616271000139-1-000054/2026",
+   "pergunta": "Q11",
+   "arquivo": "01 - Edital - EDITAL_CESSAO_FOLHA_PAGAMENTO.pdf",
+   "pagina": 9,
+   "p_citada": 0.94,
+   "negativas": {
+    "34": 0.29,
+    "11": 0.84,
+    "35": 0.72,
+    "4": 0.03,
+    "29": 0.76
+   }
+  },
+  {
+   "controle": "01612509000158-1-000157/2026",
+   "pergunta": "Q5",
+   "arquivo": "05 - Edital - 197812_editais_1788265727 -- EDITAL RETIFICADO.pdf",
+   "pagina": 38,
+   "p_citada": 0.97,
+   "negativas": {
+    "4": 0.04,
+    "26": 0.03,
+    "16": 0.03,
+    "9": 0.03,
+    "34": 0.04
+   }
+  },
+  {
+   "controle": "29138328000150-1-000078/2026",
+   "pergunta": "Q5",
+   "arquivo": "01 - Edital - EDITAL PORTAL.pdf",
+   "pagina": 5,
+   "p_citada": 0.97,
+   "negativas": {
+    "66": 0.03,
+    "67": 0.03,
+    "39": 0.04,
+    "64": 0.03,
+    "30": 0.05
+   }
+  },
+  {
+   "controle": "56401177000154-1-000115/2026",
+   "pergunta": "Q7",
+   "arquivo": "01 - Edital - 2026000238 -- edital.pdf",
+   "pagina": 21,
+   "p_citada": 0.92,
+   "negativas": {
+    "17": 0.03,
+    "27": 0.03,
+    "28": 0.04,
+    "6": 0.03,
+    "23": 0.11
+   }
+  },
+  {
+   "controle": "82804212000196-1-000264/2026",
+   "pergunta": "Q17",
+   "arquivo": "01 - Edital - EDITAL_233.2026_-_PE_233_-_FOLHA_DE_PAGAMENTO_MAIOR_LANCE.pdf",
+   "pagina": 40,
+   "p_citada": 0.91,
+   "negativas": {
+    "22": 0.92,
+    "53": 0.04,
+    "26": 0.24,
+    "48": 0.03,
+    "3": 0.03
+   }
+  },
+  {
+   "controle": "76105519000104-1-000225/2026",
+   "pergunta": "Q1",
+   "arquivo": "01 - Edital - EDITAL PREGAO 049-2026.pdf",
+   "pagina": 1,
+   "p_citada": 0.94,
+   "negativas": {
+    "37": 0.02,
+    "20": 0.03,
+    "47": 0.02,
+    "33": 0.03,
+    "10": 0.03
+   }
+  },
+  {
+   "controle": "18298174000148-1-000063/2025",
+   "pergunta": "Q4",
+   "arquivo": "01 - Termo de Referência - 166746_editai -- Edital Credenciamento Bancos - Folha de Pagamento .pdf",
+   "pagina": 19,
+   "p_citada": 0.81,
+   "negativas": {
+    "7": 0.06,
+    "43": 0.07,
+    "32": 0.46,
+    "26": 0.1,
+    "47": 0.08
+   }
+  },
+  {
+   "controle": "66234360000166-1-000024/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - EDITAL_FOLHA_PE_202026.pdf",
+   "pagina": 36,
+   "p_citada": 0.59,
+   "negativas": {
+    "26": 0.04,
+    "41": 0.02,
+    "4": 0.02,
+    "9": 0.02,
+    "23": 0.03
+   }
+  },
+  {
+   "controle": "01611007000102-1-000017/2026",
+   "pergunta": "Q17",
+   "arquivo": "01 - Edital - Edital_Folha_de_pagamento_.pdf",
+   "pagina": 29,
+   "p_citada": 0.97,
+   "negativas": {
+    "44": 0.04,
+    "42": 0.09,
+    "12": 0.04,
+    "8": 0.03,
+    "26": 0.04
+   }
+  },
+  {
+   "controle": "18303180000146-1-000038/2026",
+   "pergunta": "Q14",
+   "arquivo": "01 - Edital - Edital_PAL_0642026_PE_0202026_Folha_de_pagamento.pdf",
+   "pagina": 39,
+   "p_citada": 0.71,
+   "negativas": {
+    "46": 0.05,
+    "16": 0.04,
+    "44": 0.05,
+    "26": 0.57,
+    "7": 0.05
+   }
+  },
+  {
+   "controle": "07010511000133-1-000008/2026",
+   "pergunta": "Q2",
+   "arquivo": "01 - Edital - 07._INSTITUIO_FINANCEIRA._EDITAL_111.pdf",
+   "pagina": 2,
+   "p_citada": 0.86,
+   "negativas": {
+    "14": 0.06,
+    "39": 0.3,
+    "60": 0.04,
+    "34": 0.4,
+    "111": 0.06
+   }
+  },
+  {
+   "controle": "11055682000156-1-000480/2026",
+   "pergunta": "Q9",
+   "arquivo": "01 - Edital - EDITAL202685.pdf",
+   "pagina": 36,
+   "p_citada": 0.19,
+   "negativas": {
+    "29": 0.02,
+    "50": 0.03,
+    "4": 0.02,
+    "52": 0.03,
+    "54": 0.03
+   }
+  },
+  {
+   "controle": "04695284000139-1-000148/2026",
+   "pergunta": "Q7",
+   "arquivo": "02 - Edital - 86_EDITAL_P._E_FOLHA_DE_PAGAMENTO.PDF.pdf",
+   "pagina": 15,
+   "p_citada": 0.97,
+   "negativas": {
+    "37": 0.03,
+    "32": 0.7,
+    "53": 0.02,
+    "39": 0.04,
+    "45": 0.05
+   }
+  },
+  {
+   "controle": "13460266000169-1-000070/2026",
+   "pergunta": "Q10",
+   "arquivo": "02 - Termo de Referência - 02 TR (2).PDF.pdf",
+   "pagina": 3,
+   "p_citada": 0.7,
+   "negativas": {
+    "15": 0.03,
+    "14": 0.05,
+    "9": 0.03,
+    "11": 0.04,
+    "19": 0.02
+   }
+  },
+  {
+   "controle": "76205962000149-1-000111/2026",
+   "pergunta": "Q3",
+   "arquivo": "01 - Aviso de Contratação Direta - ADM - FOLHA DE PAGAMENTO.pdf",
+   "pagina": 96,
+   "p_citada": 0.98,
+   "negativas": {
+    "74": 0.08,
+    "73": 0.2,
+    "62": 0.04,
+    "79": 0.95,
+    "38": 0.04
+   }
+  },
+  {
+   "controle": "46177523000109-1-000249/2026",
+   "pergunta": "Q8",
+   "arquivo": "01 - Edital - EDITAL_PE_67_2026_FOLHA_DE_PAGAMENTO.pdf",
+   "pagina": 53,
+   "p_citada": 0.93,
+   "negativas": {
+    "44": 0.03,
+    "32": 0.04,
+    "49": 0.08,
+    "20": 0.02,
+    "60": 0.04
+   }
+  },
+  {
+   "controle": "32001836000105-1-000217/2026",
+   "pergunta": "Q5",
+   "arquivo": "01 - Edital - Edital_de_Prego_Eletrnico_n_302026_proc._114922026.pdf",
+   "pagina": 21,
+   "p_citada": 0.98,
+   "negativas": {
+    "13": 0.06,
+    "11": 0.03,
+    "47": 0.03,
+    "32": 0.03,
+    "34": 0.03
+   }
+  },
+  {
+   "controle": "75741330000137-1-000250/2026",
+   "pergunta": "Q1",
+   "arquivo": "01 - Edital - PE 99-2026 - Insituicao Fi -- Edital PE 99-2026 - Banco Folha Pagamento - ADM.pdf",
+   "pagina": 1,
+   "p_citada": 0.94,
+   "negativas": {
+    "10": 0.02,
+    "30": 0.02,
+    "8": 0.03,
+    "25": 0.03,
+    "15": 0.03
+   }
+  },
+  {
+   "controle": "75392019000120-1-000050/2026",
+   "pergunta": "Q9",
+   "arquivo": "01 - Edital - Edital Credenciamento 04-2026 da Folha de Pagamento.pdf",
+   "pagina": 7,
+   "p_citada": 0.98,
+   "negativas": {
+    "14": 0.03,
+    "23": 0.03,
+    "16": 0.03,
+    "25": 0.03,
+    "17": 0.55
+   }
+  },
+  {
+   "controle": "77001311000108-1-000558/2026",
+   "pergunta": "Q15",
+   "arquivo": "08 - Outros Documentos - ANEXO_2__TERMO_DE_REFERNCIA__133_2026.pdf",
+   "pagina": 4,
+   "p_citada": 0.08,
+   "negativas": {
+    "2": 0.03,
+    "8": 0.03,
+    "9": 0.02,
+    "7": 0.03,
+    "6": 0.12
+   }
+  },
+  {
+   "controle": "11055682000156-1-000480/2026",
+   "pergunta": "Q12",
+   "arquivo": "02 - Edital - 01_-_ETP_assinado.pdf",
+   "pagina": 2,
+   "p_citada": 0.1,
+   "negativas": {
+    "4": 0.49,
+    "12": 0.03,
+    "7": 0.03,
+    "8": 0.03,
+    "9": 0.09
+   }
+  }
+ ],
+ "resumo": {
+  "respostas": 140,
+  "paginas_negativas": 700,
+  "p_citada_media": 0.802,
+  "p_negativa_media": 0.115,
+  "citada_>=corte": 0.729,
+  "citada_<=0.25": 0.093,
+  "negativa_>=corte (alarme falso)": 0.057,
+  "auc_pareada": 0.973
+ },
+ "medicao": {
+  "modo": "prova",
+  "modelo": "jev-1.13.0",
+  "corte": 0.75,
+  "chamadas": 840,
+  "usd_anunciado": 0.04727,
+  "segundos": 155.5,
+  "em": "2026-09-24T03:56:39"
+ }
+}

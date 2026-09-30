@@ -1,0 +1,6 @@
+# O texto do host é comparado byte a byte com o OCR de outra máquina: se o git
+# trocasse \n por \r\n num checkout Windows, a "diferença" seria do git, não
+# do Tesseract. Binários ficam binários pelo mesmo motivo.
+*.host.txt -text
+*.png binary
+*.pdf binary

@@ -1,0 +1,38 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/gastos-ia",
+ "status": 200,
+ "corpo": {
+  "provedores": [
+   {
+    "provedor": "jev",
+    "rotulo": "Jev (TypeSafe)",
+    "usd": 17.8175,
+    "fonte": "painel",
+    "desde": "2026-09-21",
+    "lido_em": "2026-09-26T02:40:42.340282+00:00",
+    "medido_depois_usd": 0.0375
+   },
+   {
+    "provedor": "anthropic",
+    "rotulo": "Claude (Anthropic)",
+    "usd": 24.0632,
+    "fonte": "admin-api",
+    "desde": "2026-09-22",
+    "lido_em": "2026-09-26T07:40:42.340282+00:00"
+   },
+   {
+    "provedor": "openai",
+    "rotulo": "GPT (OpenAI)",
+    "usd": 5.9072,
+    "fonte": "admin-api",
+    "desde": "2026-09-22",
+    "lido_em": "2026-09-26T07:40:42.340282+00:00"
+   }
+  ],
+  "total_usd": 47.7879,
+  "total_brl": 243.72,
+  "usd_brl": 5.1,
+  "sem_leitura": []
+ }
+}

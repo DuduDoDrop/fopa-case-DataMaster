@@ -1,0 +1,13 @@
+{
+ "metodo": "PUT",
+ "caminho": "/api/admin/orcamento",
+ "status": 200,
+ "corpo": {
+  "id": 2,
+  "teto_brl_dia": 20.0,
+  "max_por_execucao": 5,
+  "auto_processar": true,
+  "alterado_por": "admin@exemplo.com",
+  "em": "2026-09-26T08:40:44.472876+00:00"
+ }
+}

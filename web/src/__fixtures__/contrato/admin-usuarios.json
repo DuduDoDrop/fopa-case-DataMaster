@@ -1,0 +1,37 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/admin/usuarios",
+ "status": 200,
+ "corpo": {
+  "itens": [
+   {
+    "email": "admin@exemplo.com",
+    "nome": "Admin",
+    "papel": "admin",
+    "ativo": true,
+    "supremo": true
+   },
+   {
+    "email": "inativo@teste.br",
+    "nome": "Inativo",
+    "papel": "operador",
+    "ativo": false,
+    "supremo": false
+   },
+   {
+    "email": "leitor@teste.br",
+    "nome": "Leitor",
+    "papel": "leitor",
+    "ativo": true,
+    "supremo": false
+   },
+   {
+    "email": "operador@teste.br",
+    "nome": "Operadora",
+    "papel": "operador",
+    "ativo": true,
+    "supremo": false
+   }
+  ]
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "metodo": "PUT",
+ "caminho": "/api/admin/usuarios",
+ "status": 403,
+ "corpo": {
+  "detail": "o admin supremo não se altera pelo site"
+ }
+}

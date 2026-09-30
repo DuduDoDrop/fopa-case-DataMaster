@@ -1,0 +1,248 @@
+{
+ "proposito": "Casos de escopo julgados por leitura humana do objeto. Serve de gabarito para a suíte do filtro e para a busca do invariante. Um filtro validado por ele mesmo não vale nada — este arquivo é a única fonte independente.",
+ "criterio": "DENTRO quando o objeto é operar a folha: o órgão recebe de quem paga os servidores. FORA quando é serviço em volta dela (consignado, margem, sistema), em que o órgão paga ou apenas cede acesso.",
+ "casos": [
+  {
+   "orgao": "UBERLANDIA CAMARA MUNICIPAL",
+   "uf": "MG",
+   "controle": "20720165000145-1-000042/2026",
+   "modalidade": "Credenciamento",
+   "objeto": "Credenciamento de instituições financeiras autorizadas pelo Banco Central do Brasil para a prestação de serviços de concessão de empréstimo pessoal consignado em folha de pagamento destinados aos servidores públicos e agentes políticos da Câmara Municipal de Uberlândia. O credenciamento permanecerá aberto no compras.gov.br para recebimento da documentação dos interessados no período de 25/06/26 a 03/07/26. Encerrado esse prazo inicial, o Chamamento Público permanecerá aberto no sítio eletrônico da Câmara Municipal de Uberlândia, possibilitando que novos interessados solicitem seu credenciamento a qualquer tempo. Nº COMPRASGOV 002/2026 - CONTRATANTE (UASG 925010).\r\n\r\n   Edital de Chamamento Público nº PL-22/2026",
+   "e_folha": false,
+   "motivo_humano": "credencia bancos para CONCEDER consignado, nao para operar a folha",
+   "julgado_em": "2026-09-23",
+   "corrigido_em": "2026-09-23",
+   "erro_anterior": "julgado DENTRO a partir do objeto truncado; o texto completo mostra consignado"
+  },
+  {
+   "orgao": "MUNICIPIO DE VARZEA PAULISTA",
+   "uf": "SP",
+   "controle": "45780087000103-1-000110/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "Gerenciamento da folha de pagamento dos servidores aposentados e pensionistas e realização de prova de vida   Edital nº 40/2026/2026",
+   "e_folha": true,
+   "motivo_humano": "gerenciamento da folha de aposentados e pensionistas",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE CARAPICUIBA",
+   "uf": "SP",
+   "controle": "44892693000140-1-000208/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": " - CONTRATAÇÃO DE EMPRESA ESPECIALIZADA, PARA PRESTAÇÃO DE SERVIÇO DE PAGAMENTO DE FOLHA DE SALÁRIO DOS SERVIDORES ATIVOS E APOSENTADOS DO MUNICÍPIO DE CARAPICUÍBA.   Edital nº 14/2026",
+   "e_folha": true,
+   "motivo_humano": "prestação de serviço de PAGAMENTO da folha de salário",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE BARRA DO TURVO",
+   "uf": "SP",
+   "controle": "46634317000180-1-000055/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "Contratação de instituição financeira autorizada pelo Banco Central do Brasil para prestação de serviços de processamento e gerenciamento dos créditos provenientes da folha de pagamento do Município de Barra do Turvo/SP, com oferta e gestão de conta-salár   Edital nº 031/2026",
+   "e_folha": true,
+   "motivo_humano": "contrata instituição financeira para a folha",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE MANGARATIBA",
+   "uf": "RJ",
+   "controle": "29138310000159-1-000203/2026",
+   "modalidade": "Credenciamento",
+   "objeto": "Chamamento Público para credenciamento de instituições financeiras autorizadas pelo Banco Central do Brasil, interessadas em operar empréstimos consignados por meio da plataforma eletrônica de gestão das consignações disponibilizada pelo Município.   Edital de Chamamento Público nº 2/2026",
+   "e_folha": false,
+   "motivo_humano": "credencia bancos para OPERAR consignado via plataforma do municipio",
+   "julgado_em": "2026-09-23",
+   "corrigido_em": "2026-09-23",
+   "erro_anterior": "julgado DENTRO a partir do objeto truncado; o texto completo mostra consignado"
+  },
+  {
+   "orgao": "CAMARA MUNICIPAL DE BARRA MANSA",
+   "uf": "RJ",
+   "controle": "29052875000119-1-000025/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, PÚBLICA OU PRIVADA, PARA PRESTAÇÃO DE SERVIÇOS DE CENTRALIZAÇÃO, PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS DA FOLHA DE PAGAMENTO DOS SERVIDORES ATIVOS E AGENTES POLÍTICOS DA CMBM   Edital nº 9/2026",
+   "e_folha": true,
+   "motivo_humano": "instituição financeira para centralização e processamento",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE DRACENA",
+   "uf": "SP",
+   "controle": "44880060000111-1-000166/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "FOLHA DE PAGAMENTO   Edital nº 87/2026",
+   "e_folha": true,
+   "motivo_humano": "objeto curto ('FOLHA DE PAGAMENTO') — passa para revisão",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE SALVADOR",
+   "uf": "BA",
+   "controle": "13927801000149-1-000219/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "Prestação de serviço de administração, gerenciamento e controle de margem consignável em folha de pagamento, no interesse de servidores ativos, inativos e empregados públicos no âmbito da Prefeitura Municipal de Salvador, por meio de sistema informatizado (SaaS), a título não oneroso, incluindo instalação, configuração, manutenção, treinamento e suporte técnico, conforme especificações constantes no Termo de Referência.   Edital nº 002/2026/2026",
+   "e_folha": false,
+   "motivo_humano": "margem consignável: serviço ao servidor, não a folha",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE CURITIBA",
+   "uf": "PR",
+   "controle": "76417005000186-1-000288/2026",
+   "modalidade": "Credenciamento",
+   "objeto": " Chamamento público para o credenciamento de consignatárias para a realização de consignações facultativas em folha de pagamento no âmbito do Poder Executivo Municipal.   Edital de Chamamento Público nº 4/2026",
+   "e_folha": false,
+   "motivo_humano": "credenciamento de consignatárias",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE PIMENTA BUENO",
+   "uf": "RO",
+   "controle": "04092680000171-1-000135/2026",
+   "modalidade": "Dispensa",
+   "objeto": "CONTRATAÇÃO EMERGENCIAL DE EMPRESA ESPECIALIZADA PARA GESTÃO DE CONSIGNAÇÕES EM FOLHA DE PAGAMENTO, INCLUINDO SISTEMA, INTEGRAÇÃO, SUPORTE TÉCNICO E OPERACIONAL   Ato que autoriza a Contratação Direta nº 3/2026",
+   "e_folha": false,
+   "motivo_humano": "gestão de consignações com sistema",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE ITAJAI",
+   "uf": "SC",
+   "controle": "83102277000152-1-000472/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "Contratação de empresa especializada para prestação de serviço de plataforma tecnológica centralizada de gestão eletrônica de consignações em folha de pagamento dos servidores públicos municipais ativos do Município de Itajaí/SC, operando como ponto único de integração (Hub Tecnológico) entre o sistema de folha de pagamento do Município e as instituições financeiras que venham a ser credenciadas, compreendendo a disponibilização de interface de interoperabilidade para integração e homologação de plataformas tecnológicas de averbação utilizadas por essas instituições, assegurando o controle centralizado da margem consignável   Edital nº PE 126/2026",
+   "e_folha": false,
+   "motivo_humano": "plataforma tecnológica de gestão de consignações",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE CANOINHAS",
+   "uf": "SC",
+   "controle": "83102384000180-1-000271/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "CONTRATAÇÃO DE EMPRESA ESPECIALIZADA PARA DISPONIBILIZAÇÃO DE SOLUÇÃO INFORMATIZADA INTEGRADA DESTINADA À GESTÃO, AO CONTROLE E À OPERACIONALIZAÇÃO DE EMPRÉSTIMOS CONSIGNADOS EM FOLHA DE PAGAMENTO.   Edital nº PCE 77/2026",
+   "e_folha": false,
+   "motivo_humano": "solução informatizada para consignações",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE PELOTAS",
+   "uf": "RS",
+   "controle": "87455531000157-1-000055/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "[Portal de Compras Públicas] - CONTRATAÇÃO, SEM ÔNUS PARA O MUNICÍPIO, DE EMPRESA ESPECIALIZADA NA IMPLANTAÇÃO, GESTÃO E OPERACIONALIZAÇÃO DE SOLUÇÃO COMPLETA RESPONSÁVEL PELO CONTROLE ELETRÔNICO DE MARGEM CONSIGNÁVEL E CARTÕES CORPORATIVOS DE CRÉDITO FORNECENDO MÓDULO INFORMATIZADO PARA GESTÃO AUTOMÁTICA DAS RESERVAS, AVERBAÇÕES E MANUTENÇÃO DE LANÇAMENTOS PARA O SISTEMA DE FOLHA DE PAGAMENTO DO MUNICÍPIO, COMPREENDENDO IMPLANTAÇÃO, MIGRAÇÃO DE DADOS, SUPORTE, TREINAMENTO E MANUTENÇÃO - SERH   Edital nº 014/2026",
+   "e_folha": false,
+   "motivo_humano": "implantação e gestão de consignações",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE JACAREI",
+   "uf": "SP",
+   "controle": "46694139000183-1-000775/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "CONTRATAÇÃO DE SERVIÇOS DE GESTÃO E OPERACIONALIZAÇÃO DE DESCONTOS FACULTATIVOS CONSIGNADOS EM FOLHA DE PAGAMENTO E MARGEM CONSIGNÁVEL   Edital nº 68/2026",
+   "e_folha": false,
+   "motivo_humano": "descontos facultativos consignados",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE SAO PEDRO DA ALDEIA",
+   "uf": "RJ",
+   "controle": "28909604000174-1-000029/2026",
+   "modalidade": "Pregão - Presencial",
+   "objeto": "Contratação de empresa especializada para prestação de serviços de gestão e controle da margem consignável, com lançamento em folha de pagamento. A contratação inclui a disponibilização de sistema informatizado, bem como sua manutenção corretiva, adaptativa e evolutiva. Também estão compreendidos no escopo os serviços de atendimento técnico, capacitação de usuários e assessoramento contínuo, visando atender as demandas da Secretaria interessada.   Edital nº 453/2026",
+   "e_folha": false,
+   "motivo_humano": "gestão e controle de margem consignável",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE LIBERATO SALZANO",
+   "uf": "RS",
+   "controle": "89030639000123-1-000050/2026",
+   "modalidade": "Dispensa",
+   "objeto": "Objetivo Contratação de Cessão de Software sem qualquer ônus para o  Município, de empresa especializada em sistema digital de consignação, implantação, gestão e operacionalização de solução completa responsável pelo controle eletrônico de margem consignável fornecendo módulo informatizado para geração automática das reservas, averbações e manutenção de lançamentos para o sistema de folha de pagamento do município dos servidores ativos e inativos, compreendendo implantação, migração de dados, suporte, treinamento e manutenção ao Órgão Público a ser regido pelas normas do Código Civil Brasileiro em conjunto com a Lei nº 9.609/98 (Proteção da Propriedade Intelectual do Software), Lei nº 9.610/98 (Proteção dos Direitos Autorais), Lei nº 13.709/18 (Lei Geral de Proteção de Dados Pessoais) e demais legislações aplicáveis à espécie.   Aviso de Contratação Direta nº PDE 11/2026",
+   "e_folha": false,
+   "motivo_humano": "cessão de software de consignação",
+   "julgado_em": "2026-09-23"
+  },
+  {
+   "orgao": "MUNICIPIO DE UBA",
+   "uf": "MG",
+   "controle": "18128207000101-1-000233/2026",
+   "modalidade": "Inexigibilidade",
+   "objeto": "Contratacao do Instituto Brasileiro de Tecnologia  Empreendedorismo e Gestao  CNPJ 15.555.941 0001 69  para prestacao de servicos tecnicos especializados para realizacao de Estudo de Viabilidade Economico Financeira  EVEF   incluindo fornecimento de subsidios para elaboracao da futura contratacao da instituicao financeira responsavel pela gestao da folha de pagamento  visando a adequada precificacao da folha dos servidores ativos  inativos e pensionistas  bem como dos servicos correlatos  incluindo credito consignado  arrecadacao de receitas e demais servicos financeiros da Administracao Direta do Poder Executivo do Municipio de Uba MG  conforme especificacoes e quantitativos estabelecidos neste documento.   Ato que autoriza a Contratação Direta nº 71 | Processo 239/2026",
+   "e_folha": false,
+   "motivo_humano": "estudo de viabilidade para a FUTURA contratacao do banco",
+   "julgado_em": "2026-09-23",
+   "origem": "auditoria dos 117 positivos"
+  },
+  {
+   "orgao": "MUNICIPIO DE SOBRADINHO",
+   "uf": "RS",
+   "controle": "87592861000194-1-000350/2026",
+   "modalidade": "Pregão - Eletrônico",
+   "objeto": "Contratação de empresa especializada para prestação de serviços continuados de contabilidade, incluindo escrituração contábil, processamento da folha de pagamento, SPED e demais obrigações contábeis, para atender às necessidades do Hospital São João Evangelista - Unidade II, de Sobradinho/RS.   Edital nº PCE 55/2026",
+   "e_folha": false,
+   "motivo_humano": "contabilidade terceirizada que inclui processar a folha",
+   "julgado_em": "2026-09-23",
+   "origem": "auditoria dos 117 positivos"
+  },
+  {
+   "orgao": "MUNICIPIO DE MAURITI",
+   "uf": "CE",
+   "controle": "07655269000155-1-000104/2026",
+   "modalidade": "Dispensa",
+   "objeto": "Contratação de empresa para serviços técnicos especializados a serem prestados na assessoria e suporte técnico na gestão da folha de pagamento, compreendendo a elaboração, processamento, conferência, acompanhamento e execução das rotinas relacionadas   Ato que autoriza a Contratação Direta nº 2026.06.1902/2026",
+   "e_folha": false,
+   "motivo_humano": "assessoria e suporte tecnico na gestao da folha",
+   "julgado_em": "2026-09-23",
+   "origem": "auditoria dos 117 positivos"
+  },
+  {
+   "orgao": "MONTES CLAROS CAMARA MUNICIPAL",
+   "uf": "MG",
+   "controle": "25218645000126-1-000046/2026",
+   "modalidade": "Inexigibilidade",
+   "objeto": "CONTRATACAO DE EMPRESA ESPECIALIZADA EM TREINAMENTO CAPACITACAO REFERENTE AOS CURSOS  E SOCIAL E EFD REINF COM FOCO NA DCTFWEB PARA ORGAOS PUBLICOS  E  COMPREENDENDO A ELABORACAO DA GESTAO DA FOLHA DE PAGAMENTO E REMUNERACAO NO SERVICO PUBLICO  A SEREM REALIZADOS  RESPECTIVAMENTE  DE 24 A 29 DE SETEMBRO DE 2026 E DE 13 A 16 DE OUTUBRO  NA MODALIDADE ONLINE  POR SERVIDORES DA COORDENADORIA DE RECURSOS HUMANOS  DA CAMARA MUNICIPAL DE MONTES CLAROS MG.   Ato que autoriza a Contratação Direta nº 9 | Processo 50/2026",
+   "e_folha": false,
+   "motivo_humano": "treinamento em eSocial e EFD REINF",
+   "julgado_em": "2026-09-23",
+   "origem": "auditoria dos 117 positivos"
+  },
+  {
+   "orgao": "TRIBUNAL DE CONTAS DO ESTADO DO ACRE",
+   "uf": "AC",
+   "controle": "04035135000143-1-000015/2026",
+   "modalidade": "Dispensa",
+   "objeto": "Contratação de instituição financeira oficial para a prestação de serviços financeiros e outras avenças, cujo objeto consiste na centralização e no processamento dos créditos provenientes da folha de pagamento Tribunal de Contas do Estado do Acre, com vistas a garantir o regular funcionamento das atividades administrativas e a efetivação tempestiva da remuneração de servidores, pensionistas e demais beneficiários.   Ato que autoriza a Contratação Direta nº 6/2026",
+   "e_folha": true,
+   "motivo_humano": "instituicao financeira para centralizar e processar creditos da folha",
+   "julgado_em": "2026-09-23",
+   "origem": "auditoria dos 117 positivos"
+  },
+  {
+   "orgao": "MUNICIPIO DE BOTUVERA",
+   "uf": "SC",
+   "controle": "83102350000196-1-000074/2026",
+   "modalidade": "Dispensa",
+   "objeto": "Contratação direta, por dispensa de licitação, da Cooperativa de Crédito e Investimento com Interação Solidária do Vale Europeu - CRESOL, inscrita no CNPJ nº 07.512.780/0001-70, instituição financeira autorizada a funcionar pelo Banco Central do Brasil, para a prestação dos serviços de centralização, processamento e gerenciamento de créditos provenientes de 100% da folha de pagamento dos servidores e empregados públicos da Administração Direta do Município de Botuverá/SC, abrangendo servidores efetivos, comissionados, agentes políticos, estagiários, conselheiros tutelares e admitidos em caráter temporário por excepcional interesse público, inclusive aqueles que vierem a ser admitidos durante a vigência contratual, em caráter de exclusividade quanto ao processamento da folha de pagamento, preservado o direito de portabilidade bancária dos beneficiários, mantidas integralmente as condições",
+   "e_folha": true,
+   "motivo_humano": "cooperativa de credito para centralizacao e gerenciamento de creditos",
+   "julgado_em": "2026-09-23",
+   "origem": "auditoria dos 117 positivos"
+  },
+  {
+   "orgao": "MUNICIPIO DE BONITO",
+   "uf": "MS",
+   "controle": "03073673000160-1-000056/2026",
+   "modalidade": "Dispensa",
+   "objeto": "Contratação de instituição financeira, pública ou privada, para a prestação de serviços bancários ao Município de Bonito - MS, com exclusividade no processamento dos créditos da folha de pagamento dos servidores ativos, inativos, aposentados, pensionistas, estagiários e demais vinculados, bem como na centralização dos pagamentos a fornecedores, cobrança bancária, movimentações financeiras e aplicação das disponibilidades de caixa. Inclui-se, sem caráter de exclusividade arrecadação de tributos, oferta de operações de crédito consignado, gestão de depósitos judiciais e aplicação dos recursos do Regime Próprio de Previdência Social (RPPS).   Ato que autoriza a Contratação Direta nº 19/2026",
+   "e_folha": true,
+   "motivo_humano": "instituicao financeira com exclusividade no processamento dos creditos",
+   "julgado_em": "2026-09-23",
+   "origem": "auditoria dos 117 positivos"
+  }
+ ],
+ "nota_de_metodo": "Dois casos foram julgados errado na primeira passada, por leitura do objeto TRUNCADO. Uberlandia e Mangaratiba nomeiam instituicao financeira, mas o que contratam e emprestimo consignado. Ficam registrados com a correcao a vista: sao a prova de que 'instituicao financeira' nao basta como sinal, e de que julgar por preview repete o erro que o projeto inteiro existe para evitar."
+}

@@ -1,0 +1,13 @@
+{
+ "metodo": "PUT",
+ "caminho": "/api/admin/termos",
+ "status": 200,
+ "corpo": {
+  "termo": "folha de pagamento teste",
+  "paginas": 10,
+  "ativo": false,
+  "prioridade": 0,
+  "densidade_pct": null,
+  "medido_em": null
+ }
+}

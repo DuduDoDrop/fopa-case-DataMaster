@@ -1,0 +1,42 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/execucoes/3",
+ "status": 200,
+ "corpo": {
+  "execucao": {
+   "id": 3,
+   "workflow": "W01",
+   "n8n_execution_id": "765",
+   "script_legado": null,
+   "gatilho": "site",
+   "iniciado_em": "2026-09-26T06:40:42.306869+00:00",
+   "duracao_s": null,
+   "argumentos": null,
+   "contadores": null,
+   "cego": false,
+   "status": "em_curso",
+   "erro": null,
+   "controle": null,
+   "custo_brl_gravado": 0.0,
+   "custo_brl": 0.0,
+   "chamadas": 0,
+   "sem_preco": 0
+  },
+  "buscas": [
+   {
+    "id": 3,
+    "termo": "folha de pagamento",
+    "paginas_lidas": 6,
+    "total_declarado": 1500,
+    "lidos": 300,
+    "cobertura_pct": 20.0,
+    "teto_atingido": null,
+    "falhou": false,
+    "pagina_falha": null,
+    "em": "2026-09-26T08:40:42.308539+00:00"
+   }
+  ],
+  "buscas_paginas": [],
+  "execucoes_modelo": []
+ }
+}

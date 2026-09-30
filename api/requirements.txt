@@ -1,0 +1,16 @@
+# FOPA v3 — dependências da pasta api/ (worker e API do site)
+# Soma-se ao requirements.txt da raiz (pymupdf, pytesseract, pillow, anthropic...):
+# a imagem instala os dois. Versões pinadas nas que o pip resolveu em 24/09/2026
+# (Python 3.12.10).
+
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+httpx==0.28.1            # /api/saude consulta o /health do worker; MockTransport nos testes
+psycopg[binary]==3.3.6   # Postgres 16 (papéis worker_rw / api_ro)
+authlib==1.8.0           # OAuth2 Google do site (F2)
+itsdangerous==2.2.0      # cookie de sessão assinado (F2)
+joserfc==1.7.5           # valida o id_token do Google (JWKS, iss/aud/exp/nonce); já vem com o authlib, pinado porque o site importa direto
+
+# Testes — `python -m pytest api/tests -q` roda com ANTHROPIC_API_KEY ausente.
+# Sem pytest-asyncio: o TestClient do FastAPI é síncrono.
+pytest==9.1.1

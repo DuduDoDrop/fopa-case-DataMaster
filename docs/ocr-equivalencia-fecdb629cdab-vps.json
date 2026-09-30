@@ -1,0 +1,66 @@
+{
+ "tesseract": "5.4.0",
+ "tesseract_binario": "/usr/local/bin/tesseract",
+ "tesseract_sha256": "ba3efa73c76262a3e5ebba329b93e2e4fd7d9d9d66624258b5462ddedcd1ba6a",
+ "tesseract_host": "5.4.0.20240606",
+ "tessdata_sha256": "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb",
+ "tessdata_sha256_host": "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb",
+ "configuracao_ocr": {
+  "lang": "por",
+  "psm": 3,
+  "oem": 3,
+  "dpi": 150
+ },
+ "paginas": [
+  {
+   "pagina": 1,
+   "identica": false,
+   "similaridade": 0.996536,
+   "chars_host": 2023,
+   "chars_aqui": 2019
+  },
+  {
+   "pagina": 2,
+   "identica": false,
+   "similaridade": 0.992223,
+   "chars_host": 1224,
+   "chars_aqui": 1219
+  },
+  {
+   "pagina": 3,
+   "identica": false,
+   "similaridade": 0.994752,
+   "chars_host": 1717,
+   "chars_aqui": 1713
+  },
+  {
+   "pagina": 4,
+   "identica": false,
+   "similaridade": 0.99722,
+   "chars_host": 2520,
+   "chars_aqui": 2516
+  },
+  {
+   "pagina": 5,
+   "identica": false,
+   "similaridade": 0.997599,
+   "chars_host": 2917,
+   "chars_aqui": 2913
+  },
+  {
+   "pagina": 6,
+   "identica": false,
+   "similaridade": 0.997645,
+   "chars_host": 2974,
+   "chars_aqui": 2970
+  }
+ ],
+ "identicas": 0,
+ "similaridade_min": 0.992223,
+ "plataforma": {
+  "sistema": "Linux-6.17.0-1017-aws-x86_64-with-glibc2.36",
+  "maquina": "x86_64",
+  "python": "3.12.14"
+ },
+ "medido_em": "2026-09-28T07:02:55+00:00"
+}

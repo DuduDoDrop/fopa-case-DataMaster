@@ -1,0 +1,57 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/admin/termos",
+ "status": 200,
+ "corpo": {
+  "itens": [
+   {
+    "termo": "cessão onerosa folha de pagamento",
+    "paginas": 10,
+    "ativo": true,
+    "prioridade": 1,
+    "densidade_pct": null,
+    "medido_em": null
+   },
+   {
+    "termo": "folha de pagamento servidores instituição financeira",
+    "paginas": 10,
+    "ativo": true,
+    "prioridade": 2,
+    "densidade_pct": null,
+    "medido_em": null
+   },
+   {
+    "termo": "folha de pagamento instituição bancária",
+    "paginas": 10,
+    "ativo": true,
+    "prioridade": 3,
+    "densidade_pct": null,
+    "medido_em": null
+   },
+   {
+    "termo": "créditos da folha de pagamento",
+    "paginas": 10,
+    "ativo": true,
+    "prioridade": 4,
+    "densidade_pct": null,
+    "medido_em": null
+   },
+   {
+    "termo": "créditos provenientes da folha de pagamento",
+    "paginas": 10,
+    "ativo": true,
+    "prioridade": 5,
+    "densidade_pct": null,
+    "medido_em": null
+   },
+   {
+    "termo": "folha salarial instituição financeira",
+    "paginas": 10,
+    "ativo": true,
+    "prioridade": 6,
+    "densidade_pct": null,
+    "medido_em": null
+   }
+  ]
+ }
+}

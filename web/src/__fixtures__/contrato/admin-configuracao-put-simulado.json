@@ -1,0 +1,12 @@
+{
+ "metodo": "PUT",
+ "caminho": "/api/admin/configuracao",
+ "status": 200,
+ "corpo": {
+  "chave": "provedor",
+  "valor": "simulado",
+  "descricao": "simulado | gravado | claude | openai — só claude/openai gastam",
+  "alterado_por": "admin@exemplo.com",
+  "em": "2026-09-26T08:40:44.410060+00:00"
+ }
+}

@@ -1,0 +1,73 @@
+# CI da FOPA v3 — camada (a) do plano 11.1: sem acervo, sem stack, sem rede paga.
+#
+# O mesmo executor do host (`python ci/rodar.py --camada a`, ou `make ci-a`):
+# guardas de texto, db/tests, migracao/tests, api/tests, docker/tests,
+# web (npm ci + vitest + build), 23_testa_escopo.py e test_fumaca.py com o
+# número REAL de asserções sem acervo.
+#
+# Sem segredos: nenhum `secrets.*` neste arquivo, e o rodar.py ainda tira
+# ANTHROPIC_*, OPENAI_* e JEV_API_KEY do ambiente de todo processo filho
+# (11.8: "a suíte inteira roda com a chave ausente").
+#
+# Postgres: o efêmero dos próprios testes (tests/pg_efemero.py sobe
+# postgres:16-alpine pelo docker do runner, porta sorteada em 127.0.0.1) — o
+# mesmo caminho do host, então não há serviço `postgres:` aqui.
+#
+# O runner não tem Tesseract 5.4.0 (o apt do Ubuntu traz 5.3.x, que muda
+# veredito — ADR-008): os testes que fazem OCR de verdade saem listados como
+# PULADOS com o motivo no resumo; o portão de OCR é o build da imagem do worker.
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  camada-a:
+    name: camada (a) — sem acervo, sem stack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      PYTHONIOENCODING: utf-8
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            api/requirements.txt
+            db/requirements.txt
+
+      # Node 22 = o da imagem (stage `web` do worker.Dockerfile): com ele o
+      # rodar.py usa o npm nativo; sem ele, cairia no container node:22-alpine.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Dependências (as mesmas da imagem do worker)
+        run: python -m pip install -r requirements.txt -r api/requirements.txt -r db/requirements.txt
+
+      - name: Docker e compose do runner
+        run: |
+          docker version --format 'docker {{.Server.Version}}'
+          docker compose version
+          docker pull -q postgres:16-alpine
+
+      - name: CI — camada (a)
+        run: python ci/rodar.py --camada a

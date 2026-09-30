@@ -1,0 +1,155 @@
+# FOPA v3 — PRODUÇÃO (F8). OVERRIDE do compose de dev: vale SEMPRE junto com ele.
+#
+#   cd docker
+#   docker compose -f compose.yml -f compose.prod.yml config --quiet   # valida sem imprimir segredo
+#   docker compose -f compose.yml -f compose.prod.yml up -d
+#
+# Na VPS, para não esquecer o `-f`, o docker/.env leva a variável COMPOSE_FILE
+# com o valor `compose.yml:compose.prod.yml` (docs/DEPLOY.md, passo 3).
+#
+# O que muda em relação ao dev (plano, seção 4 "Ao ir para a nuvem"; checklist F8):
+#   - fopa-caddy na frente, com TLS automático (Let's Encrypt) para o site e o
+#     n8n: é o ÚNICO serviço com porta pública (80/443). O `/` do n8n pede
+#     basic auth; só `/webhook/*` é público (docker/Caddyfile.exemplo);
+#   - FOPA_ENV=prod (cookie de sessão `Secure`, /api/saude enxuto sem sessão)
+#     e FOPA_AUTH_MODE=google fixos aqui, não por variável: produção nunca
+#     aceita o login local da demo;
+#   - SESSION_SECRET, domínios, Google e S3 obrigatórios (`:?`): o compose
+#     recusa subir sem eles, em vez de subir um site que falha no 1º clique;
+#   - URLs públicas DERIVADAS dos dois domínios (FOPA_DOMINIO_SITE e
+#     FOPA_DOMINIO_N8N): o redirect do OAuth, o WEBHOOK_URL do n8n e os links
+#     dos e-mails não têm como divergir do certificado que o Caddy emite;
+#   - STORAGE_BACKEND=s3 no worker e na api: o PDF vira 302 para URL assinada
+#     de 10 min (api/site.py) e o worker grava direto no bucket;
+#   - Postgres SEM porta publicada (backup e restauração usam `docker exec`);
+#   - worker continua sem porta; o n8n fala com ele por HTTPS dentro da rede
+#     do compose (https://fopa-worker-tls:8443, um site do Caddy que não é
+#     publicado) com o mesmo Bearer — o worker é quem confere o token;
+#   - imagem por tag de commit (FOPA_IMAGEM_TAG): rollback = voltar a tag.
+#
+# Ficam no LOOPBACK da VPS, de propósito (inalcançáveis de fora): n8n em
+# 127.0.0.1:5679 (n8n/bootstrap.py e n8n/importar.py rodam no host; editor e
+# MCP por túnel SSH) e api em 127.0.0.1:8080 (curl de diagnóstico).
+#
+# Continua valendo o do dev: nenhum serviço recebe ANTHROPIC_API_KEY (ela vive
+# só na Credential do n8n) e não há `env_file:` — cada variável vai por nome.
+name: fopa
+
+# Bloco S3 de quem lê/grava no bucket (worker e api). Âncora YAML: um lugar só.
+x-s3: &s3
+  STORAGE_BACKEND: s3
+  S3_ENDPOINT: ${S3_ENDPOINT:?S3_ENDPOINT ausente no docker/.env (https://<conta>.r2.cloudflarestorage.com)}
+  S3_BUCKET: ${S3_BUCKET:?S3_BUCKET ausente no docker/.env}
+  S3_KEY: ${S3_KEY:?S3_KEY ausente no docker/.env}
+  S3_SECRET: ${S3_SECRET:?S3_SECRET ausente no docker/.env}
+  S3_REGION: ${S3_REGION:-auto}
+
+services:
+  # ------------------------------------------------------------ Caddy (TLS)
+  fopa-caddy:
+    image: caddy:2.11.4-alpine
+    container_name: fopa-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"            # desafio HTTP-01 do ACME + redirect para https
+      - "443:443"
+      - "443:443/udp"      # HTTP/3
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL ausente no docker/.env (avisos do Let's Encrypt)}
+      FOPA_DOMINIO_SITE: ${FOPA_DOMINIO_SITE:?FOPA_DOMINIO_SITE ausente no docker/.env (só o host, sem https://)}
+      FOPA_DOMINIO_N8N: ${FOPA_DOMINIO_N8N:?FOPA_DOMINIO_N8N ausente no docker/.env (só o host, sem https://)}
+      CADDY_N8N_USUARIO: ${CADDY_N8N_USUARIO:?CADDY_N8N_USUARIO ausente no docker/.env (basic auth do n8n)}
+      # Hash bcrypt de `caddy hash-password`, entre ASPAS SIMPLES no .env (tem `$`).
+      CADDY_N8N_HASH: ${CADDY_N8N_HASH:?CADDY_N8N_HASH ausente no docker/.env (caddy hash-password)}
+    volumes:
+      # Arquivos que o operador cria na VPS: se faltarem, o `up` falha com o
+      # caminho, em vez de o Docker criar uma PASTA vazia no lugar.
+      - type: bind
+        source: ./Caddyfile
+        target: /etc/caddy/Caddyfile
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./interno
+        target: /etc/caddy/interno
+        read_only: true
+        bind:
+          create_host_path: false
+      - fopa_caddy_data:/data          # certificados e contas ACME: perder = reemitir (limite semanal do LE)
+      - fopa_caddy_config:/config
+    networks:
+      default:
+        # Nome do site HTTPS interno do worker (docker/Caddyfile.exemplo): só
+        # existe na rede do compose; a 8443 não é publicada.
+        aliases:
+          - fopa-worker-tls
+
+  # ------------------------------------------------------------ Postgres
+  fopa-postgres:
+    ports: !reset []
+
+  # ------------------------------------------------------------ n8n
+  fopa-n8n:
+    environment:
+      WEBHOOK_URL: https://${FOPA_DOMINIO_N8N:?FOPA_DOMINIO_N8N ausente no docker/.env}/
+      N8N_EDITOR_BASE_URL: https://${FOPA_DOMINIO_N8N}/
+      N8N_PROTOCOL: https
+      N8N_HOST: ${FOPA_DOMINIO_N8N}
+      N8N_SECURE_COOKIE: "true"
+      # Um proxy (o Caddy) na frente: o n8n confia em 1 salto de X-Forwarded-For.
+      N8N_PROXY_HOPS: 1
+      # Links dos e-mails para o site público.
+      FOPA_SITE_PUBLIC_URL: https://${FOPA_DOMINIO_SITE:?FOPA_DOMINIO_SITE ausente no docker/.env}
+      # HTTPS + Bearer até o worker sem sair da rede do compose. Plano B, se o
+      # certificado interno ainda não existir: http://fopa-worker:8000.
+      FOPA_WORKER_URL: ${FOPA_WORKER_URL_N8N:-https://fopa-worker-tls:8443}
+      # O certificado autoassinado do site interno do Caddy (só o .crt, público).
+      NODE_EXTRA_CA_CERTS: /etc/fopa/interno/worker.crt
+    volumes:
+      - type: bind
+        source: ./interno/worker.crt
+        target: /etc/fopa/interno/worker.crt
+        read_only: true
+        bind:
+          create_host_path: false
+
+  # ------------------------------------------------------------ worker
+  fopa-worker:
+    image: fopa/worker:${FOPA_IMAGEM_TAG:?FOPA_IMAGEM_TAG ausente no docker/.env (sha curto do commit da imagem)}
+    environment:
+      FOPA_ENV: prod
+      <<: *s3
+
+  # ------------------------------------------------------------ api do site
+  fopa-api:
+    image: fopa/worker:${FOPA_IMAGEM_TAG:?FOPA_IMAGEM_TAG ausente no docker/.env}
+    environment:
+      FOPA_ENV: prod
+      FOPA_AUTH_MODE: google
+      FOPA_SITE_URL: https://${FOPA_DOMINIO_SITE:?FOPA_DOMINIO_SITE ausente no docker/.env}
+      # A MESMA string cadastrada no Google Cloud (Authorized redirect URIs).
+      OAUTH_REDIRECT_URI: https://${FOPA_DOMINIO_SITE}/auth/google/callback
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID ausente no docker/.env}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?GOOGLE_CLIENT_SECRET ausente no docker/.env}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET ausente no docker/.env (obrigatório em produção)}
+      # O uvicorn só aceita X-Forwarded-* de quem estiver aqui. A api não tem
+      # porta pública (só o Caddy e o loopback a alcançam), então "*" é o Caddy.
+      FORWARDED_ALLOW_IPS: "*"
+      <<: *s3
+
+  # ------------------------------------------------------------ migração e importação
+  # Mesma imagem do worker (mesma tag). O importador do acervo grava no volume
+  # fopa_dados (backend fs); o que ele gravar vai ao bucket por rclone
+  # (docs/DEPLOY.md, caminho B).
+  fopa-migrate:
+    image: fopa/worker:${FOPA_IMAGEM_TAG:?FOPA_IMAGEM_TAG ausente no docker/.env}
+
+  fopa-importar:
+    image: fopa/worker:${FOPA_IMAGEM_TAG:?FOPA_IMAGEM_TAG ausente no docker/.env}
+
+volumes:
+  fopa_caddy_data:
+    name: fopa_caddy_data
+  fopa_caddy_config:
+    name: fopa_caddy_config

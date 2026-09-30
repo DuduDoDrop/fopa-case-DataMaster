@@ -1,0 +1,25 @@
+{
+  "types": {
+    "tipo": "text",
+    "status": "text",
+    "modulo": "text",
+    "atualizado": "date",
+    "fontes": "multitext",
+    "tags": "tags",
+    "aliases": "aliases",
+    "adr": "number",
+    "data": "date",
+    "decisao": "text",
+    "testado_em": "date",
+    "criticidade": "text",
+    "ordem": "number",
+    "fonte": "text",
+    "workflow": "text",
+    "gatilho": "text",
+    "nos": "number",
+    "rota": "text",
+    "papel_minimo": "text",
+    "familia": "text",
+    "fonte_codigo": "multitext"
+  }
+}

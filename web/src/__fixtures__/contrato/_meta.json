@@ -1,0 +1,320 @@
+{
+ "gerado_em": "2026-09-26T08:40:45+00:00",
+ "gerado_por": "web/scripts/gerar_fixtures.py",
+ "slugs": {
+  "c1": "12345678000101-1-000001-2026",
+  "c2": "12345678000102-1-000002-2026",
+  "c3": "12345678000103-1-000003-2026",
+  "c4": "12345678000104-1-000004-2026",
+  "c9": "12345678000109-1-000009-2026",
+  "c25": "12345678000125-1-000025-2025"
+ },
+ "mock": "só o n8n (o W11 ainda não existe): 202 {execucao_id} no verificar, como no plano §5",
+ "rotas": {
+  "saude": {
+   "metodo": "GET",
+   "caminho": "/api/saude",
+   "status": 200
+  },
+  "saude-503": {
+   "metodo": "GET",
+   "caminho": "/api/saude",
+   "status": 503
+  },
+  "erro-sem-sessao-401": {
+   "metodo": "GET",
+   "caminho": "/api/me",
+   "status": 401
+  },
+  "me": {
+   "metodo": "GET",
+   "caminho": "/api/me",
+   "status": 200
+  },
+  "resumo": {
+   "metodo": "GET",
+   "caminho": "/api/resumo",
+   "status": 200
+  },
+  "resumo-recorte-todos": {
+   "metodo": "GET",
+   "caminho": "/api/resumo?recorte=todos",
+   "status": 200
+  },
+  "licitacoes": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes",
+   "status": 200
+  },
+  "licitacoes-urgentes": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes?filtro=urgentes",
+   "status": 200
+  },
+  "licitacoes-encerradas": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes?filtro=encerradas",
+   "status": 200
+  },
+  "licitacoes-sem_extracao": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes?filtro=sem_extracao",
+   "status": 200
+  },
+  "licitacoes-revisao": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes?filtro=revisao",
+   "status": 200
+  },
+  "licitacoes-conflito": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes?filtro=conflito",
+   "status": 200
+  },
+  "licitacoes-alerta": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes?filtro=alerta",
+   "status": 200
+  },
+  "licitacoes-pagina2": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes?por_pagina=2&page=2",
+   "status": 200
+  },
+  "licitacoes-recorte-todos": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes?recorte=todos",
+   "status": 200
+  },
+  "licitacoes-busca-niteroi": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes?q=niteroi",
+   "status": 200
+  },
+  "erro-filtro-sem-extracao": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes?filtro=sem-extracao",
+   "status": 422
+  },
+  "licitacao-c1": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes/12345678000101-1-000001-2026",
+   "status": 200
+  },
+  "licitacao-c2": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes/12345678000102-1-000002-2026",
+   "status": 200
+  },
+  "licitacao-c3": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes/12345678000103-1-000003-2026",
+   "status": 200
+  },
+  "licitacao-c4": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes/12345678000104-1-000004-2026",
+   "status": 200
+  },
+  "erro-licitacao-404": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes/00000000000000-1-000001-2026",
+   "status": 404
+  },
+  "erro-relatorio-404": {
+   "metodo": "GET",
+   "caminho": "/api/licitacoes/12345678000102-1-000002-2026/relatorio",
+   "status": 404
+  },
+  "execucoes": {
+   "metodo": "GET",
+   "caminho": "/api/execucoes",
+   "status": 200
+  },
+  "execucao-cega": {
+   "metodo": "GET",
+   "caminho": "/api/execucoes/4",
+   "status": 200
+  },
+  "execucao-em-curso": {
+   "metodo": "GET",
+   "caminho": "/api/execucoes/3",
+   "status": 200
+  },
+  "execucao-concluida": {
+   "metodo": "GET",
+   "caminho": "/api/execucoes/2",
+   "status": 200
+  },
+  "custo": {
+   "metodo": "GET",
+   "caminho": "/api/custo",
+   "status": 200
+  },
+  "gastos-ia": {
+   "metodo": "GET",
+   "caminho": "/api/gastos-ia",
+   "status": 200
+  },
+  "modelos-ia": {
+   "metodo": "GET",
+   "caminho": "/api/modelos-ia",
+   "status": 200
+  },
+  "emails": {
+   "metodo": "GET",
+   "caminho": "/api/emails",
+   "status": 200
+  },
+  "questionario": {
+   "metodo": "GET",
+   "caminho": "/api/questionario",
+   "status": 200
+  },
+  "fila-revisao": {
+   "metodo": "GET",
+   "caminho": "/api/fila-revisao",
+   "status": 200
+  },
+  "fila-revisao-licitacoes": {
+   "metodo": "GET",
+   "caminho": "/api/fila-revisao/licitacoes",
+   "status": 200
+  },
+  "fila-revisao-licitacoes-busca": {
+   "metodo": "GET",
+   "caminho": "/api/fila-revisao/licitacoes?q=12345678000102",
+   "status": 200
+  },
+  "fila-revisao-controle": {
+   "metodo": "GET",
+   "caminho": "/api/fila-revisao?controle=12345678000102-1-000002/2026",
+   "status": 200
+  },
+  "revisao-post": {
+   "metodo": "POST",
+   "caminho": "/api/revisoes",
+   "status": 200
+  },
+  "erro-revisao-422": {
+   "metodo": "POST",
+   "caminho": "/api/revisoes",
+   "status": 422
+  },
+  "rotulos-escopo": {
+   "metodo": "GET",
+   "caminho": "/api/rotulos-escopo",
+   "status": 200
+  },
+  "rotulo-escopo-post": {
+   "metodo": "POST",
+   "caminho": "/api/rotulos-escopo",
+   "status": 201
+  },
+  "rotulos-escopo-depois": {
+   "metodo": "GET",
+   "caminho": "/api/rotulos-escopo",
+   "status": 200
+  },
+  "admin-configuracao": {
+   "metodo": "GET",
+   "caminho": "/api/admin/configuracao",
+   "status": 200
+  },
+  "admin-configuracao-put-409": {
+   "metodo": "PUT",
+   "caminho": "/api/admin/configuracao",
+   "status": 409
+  },
+  "admin-configuracao-put": {
+   "metodo": "PUT",
+   "caminho": "/api/admin/configuracao",
+   "status": 200
+  },
+  "admin-configuracao-put-simulado": {
+   "metodo": "PUT",
+   "caminho": "/api/admin/configuracao",
+   "status": 200
+  },
+  "admin-orcamento": {
+   "metodo": "GET",
+   "caminho": "/api/admin/orcamento",
+   "status": 200
+  },
+  "admin-orcamento-put": {
+   "metodo": "PUT",
+   "caminho": "/api/admin/orcamento",
+   "status": 200
+  },
+  "admin-orcamento-put-nulo": {
+   "metodo": "PUT",
+   "caminho": "/api/admin/orcamento",
+   "status": 200
+  },
+  "admin-termos": {
+   "metodo": "GET",
+   "caminho": "/api/admin/termos",
+   "status": 200
+  },
+  "admin-termos-post": {
+   "metodo": "POST",
+   "caminho": "/api/admin/termos",
+   "status": 201
+  },
+  "admin-termos-put": {
+   "metodo": "PUT",
+   "caminho": "/api/admin/termos",
+   "status": 200
+  },
+  "admin-usuarios": {
+   "metodo": "GET",
+   "caminho": "/api/admin/usuarios",
+   "status": 200
+  },
+  "admin-usuarios-post": {
+   "metodo": "POST",
+   "caminho": "/api/admin/usuarios",
+   "status": 201
+  },
+  "admin-usuarios-put": {
+   "metodo": "PUT",
+   "caminho": "/api/admin/usuarios",
+   "status": 200
+  },
+  "erro-usuarios-supremo-403": {
+   "metodo": "PUT",
+   "caminho": "/api/admin/usuarios",
+   "status": 403
+  },
+  "admin-reservar-demo": {
+   "metodo": "POST",
+   "caminho": "/api/admin/reservar-demo",
+   "status": 200
+  },
+  "acao-verificar": {
+   "metodo": "POST",
+   "caminho": "/api/acoes/verificar",
+   "status": 202
+  },
+  "acao-processar": {
+   "metodo": "POST",
+   "caminho": "/api/acoes/processar",
+   "status": 202
+  },
+  "acao-reverificar": {
+   "metodo": "POST",
+   "caminho": "/api/acoes/reverificar",
+   "status": 202
+  },
+  "me-leitor": {
+   "metodo": "GET",
+   "caminho": "/api/me",
+   "status": 200
+  },
+  "erro-leitor-processar-403": {
+   "metodo": "POST",
+   "caminho": "/api/acoes/processar",
+   "status": 403
+  }
+ }
+}

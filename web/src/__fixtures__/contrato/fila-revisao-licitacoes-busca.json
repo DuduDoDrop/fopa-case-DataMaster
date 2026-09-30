@@ -1,0 +1,23 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/fila-revisao/licitacoes?q=12345678000102",
+ "status": 200,
+ "corpo": {
+  "total_revisoes": 1,
+  "total_licitacoes": 1,
+  "encontradas": 1,
+  "itens": [
+   {
+    "controle": "12345678000102-1-000002/2026",
+    "slug": "12345678000102-1-000002-2026",
+    "orgao": "MUNICIPIO DE TESTE",
+    "uf": "SP",
+    "municipio": "Teste",
+    "modalidade": "Pregão - Eletrônico",
+    "fim_prazo": "2026-10-11T08:40:42.263729+00:00",
+    "abertas": 1,
+    "criticas": 1
+   }
+  ]
+ }
+}

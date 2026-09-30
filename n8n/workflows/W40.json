@@ -1,0 +1,628 @@
+{
+  "name": "W40 Alerta diário",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W40 Alerta diário — 07:00, todo dia\nO \"produto percebido\": um e-mail que a área comercial lê em dois minutos. Monta a partir do banco e só **enfileira** em `emails` (tipo `alerta_diario`); quem envia é o W50.\n\n- **As 6 prioridades, nesta ordem** — Fopa-v2/05-Arquitetura/8 Orquestrador.md:30-42 (P1 sessão ≤ 7 dias sem lance definido · P2 retificação · P3 novas · P4 resultados = \"não coletado\" · P5 revisão humana · P6 olho humano)\n- **Só o recorte de 2026** — db/018_recorte_2026.sql (`fn_no_recorte`, ADR-015); escopo da regra, ADR-003\n- **\"NADA VISTO\" ≠ \"NADA A FAZER\"** — scripts/20_monitor.py:408-435 e :495-505 (ADR-007): coleta cega ou ausente aparece em vermelho no topo\n- **Dia sem nada relevante = e-mail curto \"nada novo\"**, nunca silêncio — 8 Orquestrador.md:52-54\n- **Jev = sinal, não decisão** — candidatas do escopo sem rótulo humano (db/017_sinais_jev.sql; T25): só lista\n- **Linguagem visual do painel** — scripts/fopa/painel.py:26-70 e :370 (tokens, prazo ≤ 7 dias vermelho), web/design/README.md; HTML estático, tabelas, estilo inline, sem JS\n- Janela: desde o último alerta, nunca menos de 24 h nem mais de 7 dias (um dia perdido não some).",
+        "height": 460,
+        "width": 720
+      },
+      "id": "df6c4672-b9a9-5a56-96b6-51c46216bf6c",
+      "name": "Sobre o W40",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -72,
+        -884
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a3ea827d-a986-5d94-b2d1-f5e682570d19",
+      "name": "Todo dia 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "8f766490-1f19-51b5-89e7-83b250fe916c",
+      "name": "Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o alerta cobre desde o último alerta, nunca menos de 24 h nem mais de 7 dias: um dia sem alerta\n-- não some, o seguinte cobre os dois (Fopa-v2/05-Arquitetura/8 Orquestrador.md:30-42).\nWITH j AS (\n    SELECT GREATEST(now() - interval '7 days',\n                    LEAST(now() - interval '24 hours',\n                          COALESCE((SELECT max(em) FROM emails WHERE tipo = 'alerta_diario'),\n                                   now() - interval '24 hours'))) AS desde\n)\nSELECT now()::text AS agora,\n       j.desde::text AS desde,\n       to_char(j.desde AT TIME ZONE 'America/Sao_Paulo', 'DD/MM HH24\"h\"MI') AS desde_fmt,\n       (now() AT TIME ZONE 'America/Sao_Paulo')::date::text AS hoje,\n       to_char(now() AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY') AS hoje_fmt,\n       to_char((now() AT TIME ZONE 'America/Sao_Paulo')::date + 7, 'DD/MM') AS limite_fmt,\n       to_char(now() AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24\"h\"MI') AS agora_fmt,\n       fn_ano_minimo() AS ano_minimo\n  FROM j",
+        "options": {}
+      },
+      "id": "6156c564-0df9-59c5-93aa-9b30da9213a7",
+      "name": "Janela do alerta",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        288,
+        170
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — P1: sessão nos próximos 7 dias com lance ainda não definido (8 Orquestrador.md:32).\n-- \"Lance definido\" = valor mínimo (Q5, pergunta crítica) conferido pelo verificador; sem extração ou Q5\n-- fora de APROVADO = ainda não. Urgente = 0 a 7 dias até a sessão, como o painel (scripts/fopa/painel.py:488).\n-- Só o recorte de 2026 (ADR-015, fn_no_recorte) e só o que a regra de escopo aceitou (ADR-003).\nWITH x AS (\n    SELECT c.controle, c.slug, c.local, c.modalidade, c.estado::text AS estado, c.extraida,\n           c.revisao_pendente, c.injecao_suspeita, q5.veredito AS q5,\n           (c.fim_prazo AT TIME ZONE 'America/Sao_Paulo')::date - $2::date AS dias,\n           to_char(c.fim_prazo AT TIME ZONE 'America/Sao_Paulo',\n                   CASE WHEN c.fim_prazo_tem_hora THEN 'DD/MM HH24\"h\"MI' ELSE 'DD/MM' END) AS sessao,\n           c.fim_prazo\n      FROM v_card c\n      LEFT JOIN verificacao_respostas q5 ON q5.verificacao_id = c.verificacao_id AND q5.pergunta_id = 'Q5'\n     WHERE c.escopo_dentro\n       AND fn_no_recorte(c.fim_prazo, c.publicado_em)\n       AND c.estado NOT IN ('fora_escopo', 'fora_janela')\n       AND (c.fim_prazo AT TIME ZONE 'America/Sao_Paulo')::date BETWEEN $2::date AND $2::date + 7\n)\nSELECT count(*)::int AS n,\n       count(*) FILTER (WHERE x.q5 IS DISTINCT FROM 'APROVADO')::int AS sem_lance,\n       COALESCE(jsonb_agg(to_jsonb(x) - 'fim_prazo' ORDER BY x.fim_prazo, x.controle), '[]'::jsonb) AS itens\n  FROM x",
+        "options": {
+          "queryReplacement": "={{ [ $('Janela do alerta').first().json.desde, $('Janela do alerta').first().json.hoje ] }}"
+        }
+      },
+      "id": "36c4865c-0778-5162-86c5-64e1a8594b54",
+      "name": "P1 Sessão em até 7 dias",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        576,
+        170
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — P2: retificação detectada em licitação já analisada: a Q1 (data da sessão) pode ter mudado\n-- (8 Orquestrador.md:33). Fonte: licitacao_eventos para='retificada' — o W01 pelo carimbo do PNCP\n-- (db/020_registrar_vista.sql) e o W70 por documento novo (scripts/28_baixar_licitacao.py:798-803).\nWITH ev AS (\n    SELECT DISTINCT ON (e.controle) e.controle, e.de::text AS de, e.motivo, e.em\n      FROM licitacao_eventos e\n     WHERE e.para = 'retificada' AND e.em >= $1::timestamptz\n     ORDER BY e.controle, e.em DESC, e.id DESC\n), x AS (\n    SELECT c.controle, c.slug, c.local, c.modalidade, c.estado::text AS estado, ev.de, ev.motivo,\n           to_char(ev.em AT TIME ZONE 'America/Sao_Paulo', 'DD/MM HH24\"h\"MI') AS quando,\n           COALESCE(ev.de IN ('publicada', 'verificada'), false) AS ja_analisada,\n           (c.fim_prazo AT TIME ZONE 'America/Sao_Paulo')::date - $2::date AS dias,\n           to_char(c.fim_prazo AT TIME ZONE 'America/Sao_Paulo',\n                   CASE WHEN c.fim_prazo_tem_hora THEN 'DD/MM HH24\"h\"MI' ELSE 'DD/MM' END) AS sessao,\n           c.fim_prazo\n      FROM ev JOIN v_card c ON c.controle = ev.controle\n     WHERE fn_no_recorte(c.fim_prazo, c.publicado_em)\n)\nSELECT count(*)::int AS n,\n       count(*) FILTER (WHERE x.ja_analisada)::int AS ja_analisadas,\n       COALESCE(jsonb_agg(to_jsonb(x) - 'fim_prazo' ORDER BY x.fim_prazo NULLS LAST, x.controle),\n                '[]'::jsonb) AS itens\n  FROM x",
+        "options": {
+          "queryReplacement": "={{ [ $('Janela do alerta').first().json.desde, $('Janela do alerta').first().json.hoje ] }}"
+        }
+      },
+      "id": "5104be42-67c5-5b8f-b59d-e179bad5f98f",
+      "name": "P2 Retificações",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        170
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — P3: novas licitações classificadas como folha (8 Orquestrador.md:34) e o que o pipeline\n-- publicou na janela. A carga do acervo v2 (origem corpus/legado, eventos \"importa…\") não é novidade:\n-- o alerta conta o que o pipeline achou e fez, não o que foi importado (plano §9).\nWITH u AS (\n    SELECT l.controle, 'encontrada no PNCP' AS o_que\n      FROM licitacoes l\n     WHERE l.criado_em >= $1::timestamptz\n       AND COALESCE(l.origem, '') NOT IN ('corpus', 'legado')\n       AND l.escopo_dentro AND l.estado <> 'fora_janela'\n    UNION ALL\n    SELECT e.controle, 'extraída e publicada'\n      FROM licitacao_eventos e\n     WHERE e.para = 'publicada' AND e.de IS DISTINCT FROM 'publicada' AND e.em >= $1::timestamptz\n       AND COALESCE(e.motivo, '') NOT LIKE 'importa%'\n), g AS (\n    SELECT controle, string_agg(DISTINCT o_que, ' e ') AS o_que,\n           bool_or(o_que = 'encontrada no PNCP') AS nova,\n           bool_or(o_que <> 'encontrada no PNCP') AS publicada\n      FROM u GROUP BY controle\n), x AS (\n    SELECT c.controle, c.slug, c.local, c.modalidade, c.estado::text AS estado, g.o_que, g.nova, g.publicada,\n           left(c.objeto, 160) AS objeto, c.ancoradas, c.respondidas,\n           (c.fim_prazo AT TIME ZONE 'America/Sao_Paulo')::date - $2::date AS dias,\n           to_char(c.fim_prazo AT TIME ZONE 'America/Sao_Paulo',\n                   CASE WHEN c.fim_prazo_tem_hora THEN 'DD/MM HH24\"h\"MI' ELSE 'DD/MM' END) AS sessao,\n           c.fim_prazo\n      FROM g JOIN v_card c ON c.controle = g.controle\n     WHERE fn_no_recorte(c.fim_prazo, c.publicado_em)\n)\nSELECT count(*)::int AS n,\n       count(*) FILTER (WHERE x.nova)::int AS novas,\n       count(*) FILTER (WHERE x.publicada)::int AS publicadas,\n       COALESCE(jsonb_agg(to_jsonb(x) - 'fim_prazo' ORDER BY x.fim_prazo NULLS LAST, x.controle),\n                '[]'::jsonb) AS itens\n  FROM x",
+        "options": {
+          "queryReplacement": "={{ [ $('Janela do alerta').first().json.desde, $('Janela do alerta').first().json.hoje ] }}"
+        }
+      },
+      "id": "509d0c89-a3d4-5856-8e2d-56f48c264ecb",
+      "name": "P3 Novas desde ontem",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1152,
+        170
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "98fd3aef-b2e1-57b3-99f0-d90ece74b9aa",
+      "name": "P4 Resultados (não coletado)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        170
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — P5: a fila de REVISAR aguardando decisão humana (8 Orquestrador.md:36). revisoes_humanas é\n-- camada própria (T25, db/006): decidir no site tira a linha daqui no alerta seguinte (Checklist F6).\nWITH r AS (\n    SELECT h.controle, count(*)::int AS abertas,\n           count(*) FILTER (WHERE h.criado_em >= $1::timestamptz)::int AS novas,\n           string_agg(DISTINCT COALESCE(h.pergunta_id, 'geral'), ', ') AS perguntas,\n           left((array_agg(h.motivo ORDER BY h.criado_em DESC, h.id DESC))[1], 160) AS motivo,\n           to_char(min(h.criado_em) AT TIME ZONE 'America/Sao_Paulo', 'DD/MM') AS aberta_desde\n      FROM revisoes_humanas h\n     WHERE h.status = 'aberta'\n     GROUP BY h.controle\n), x AS (\n    SELECT c.controle, c.slug, c.local, c.modalidade, r.abertas, r.novas, r.perguntas, r.motivo, r.aberta_desde,\n           (c.fim_prazo AT TIME ZONE 'America/Sao_Paulo')::date - $2::date AS dias,\n           to_char(c.fim_prazo AT TIME ZONE 'America/Sao_Paulo',\n                   CASE WHEN c.fim_prazo_tem_hora THEN 'DD/MM HH24\"h\"MI' ELSE 'DD/MM' END) AS sessao,\n           c.fim_prazo\n      FROM r JOIN v_card c ON c.controle = r.controle\n     WHERE fn_no_recorte(c.fim_prazo, c.publicado_em)\n)\nSELECT count(*)::int AS n,\n       COALESCE(sum(x.abertas), 0)::int AS perguntas_abertas,\n       COALESCE(sum(x.novas), 0)::int AS novas,\n       COALESCE(jsonb_agg(to_jsonb(x) - 'fim_prazo' ORDER BY x.fim_prazo NULLS LAST, x.controle),\n                '[]'::jsonb) AS itens\n  FROM x",
+        "options": {
+          "queryReplacement": "={{ [ $('Janela do alerta').first().json.desde, $('Janela do alerta').first().json.hoje ] }}"
+        }
+      },
+      "id": "38f22b7d-23e5-5220-9956-307a1607deb5",
+      "name": "P5 Revisões abertas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1728,
+        170
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — P6: o que o verificador marcou e exige olho humano (8 Orquestrador.md:37), só com a sessão\n-- ainda aberta (depois dela não há lance a defender). Gravidade: injeção suspeita (a tag \"Prompt\n-- Injection - Conteúdo Suspeito\", T4/T5) > reprovada > conflito entre documentos > alerta de regra.\nWITH x AS (\n    SELECT c.controle, c.slug, c.local, c.modalidade, c.injecao_suspeita AS injecao, c.reprovadas::int AS reprovadas,\n           c.conflitos::int AS conflitos, c.degradada, cardinality(c.alertas_globais) AS alertas,\n           left(c.alertas_globais[1], 180) AS alerta1,\n           EXISTS (SELECT 1 FROM licitacao_eventos e\n                    WHERE e.controle = c.controle AND e.para = 'publicada' AND e.em >= $1::timestamptz\n                      AND COALESCE(e.motivo, '') NOT LIKE 'importa%') AS nova,\n           CASE WHEN c.injecao_suspeita THEN 0 WHEN c.reprovadas > 0 THEN 1\n                WHEN c.conflitos > 0 THEN 2 ELSE 3 END AS gravidade,\n           (c.fim_prazo AT TIME ZONE 'America/Sao_Paulo')::date - $2::date AS dias,\n           to_char(c.fim_prazo AT TIME ZONE 'America/Sao_Paulo',\n                   CASE WHEN c.fim_prazo_tem_hora THEN 'DD/MM HH24\"h\"MI' ELSE 'DD/MM' END) AS sessao,\n           c.fim_prazo\n      FROM v_card c\n     WHERE c.extraida\n       AND fn_no_recorte(c.fim_prazo, c.publicado_em)\n       AND (c.fim_prazo IS NULL OR (c.fim_prazo AT TIME ZONE 'America/Sao_Paulo')::date >= $2::date)\n       AND (c.injecao_suspeita OR c.reprovadas > 0 OR c.conflitos > 0 OR cardinality(c.alertas_globais) > 0)\n)\nSELECT count(*)::int AS n,\n       count(*) FILTER (WHERE x.injecao)::int AS injecao,\n       count(*) FILTER (WHERE x.reprovadas > 0)::int AS reprovadas,\n       count(*) FILTER (WHERE x.conflitos > 0)::int AS conflito,\n       count(*) FILTER (WHERE x.alertas > 0)::int AS alerta,\n       count(*) FILTER (WHERE x.nova)::int AS novas,\n       COALESCE(jsonb_agg(to_jsonb(x) - 'fim_prazo'\n                          ORDER BY x.gravidade, x.nova DESC, x.fim_prazo NULLS LAST, x.controle),\n                '[]'::jsonb) AS itens\n  FROM x",
+        "options": {
+          "queryReplacement": "={{ [ $('Janela do alerta').first().json.desde, $('Janela do alerta').first().json.hoje ] }}"
+        }
+      },
+      "id": "01fa5804-103c-5937-94f4-525fd68d0a2d",
+      "name": "P6 Extraídas que pedem olho humano",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2016,
+        170
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o segundo sinal do escopo (Fopa-v2/11-Produto-v3/Jev na v3.md; db/017_sinais_jev.sql):\n-- candidata = o Jev discordou da regra COM convicção (p ≤ 0,25 ou ≥ 0,75). É sinal, não decisão (T25):\n-- este nó só LÊ; lista o que ainda não tem rótulo humano em rotulos_escopo. Vale o sinal mais recente\n-- de cada licitação, o mesmo critério da aba escopo do site (api/consultas.py, rotulos_escopo).\nWITH s AS (\n    SELECT DISTINCT ON (s.controle) s.controle, s.regra, s.p_sim, s.candidata, s.em\n      FROM sinais_jev s\n     WHERE s.tipo = 'escopo' AND s.p_sim IS NOT NULL\n     ORDER BY s.controle, s.em DESC, s.id DESC\n), x AS (\n    SELECT c.controle, c.slug, c.local, c.modalidade, c.estado::text AS estado, s.regra,\n           round(s.p_sim, 2) AS p_sim, left(c.objeto, 160) AS objeto,\n           (s.em >= $1::timestamptz) AS nova,\n           (c.fim_prazo IS NULL\n            OR (c.fim_prazo AT TIME ZONE 'America/Sao_Paulo')::date >= $2::date) AS aberta,\n           (c.fim_prazo AT TIME ZONE 'America/Sao_Paulo')::date - $2::date AS dias,\n           to_char(c.fim_prazo AT TIME ZONE 'America/Sao_Paulo',\n                   CASE WHEN c.fim_prazo_tem_hora THEN 'DD/MM HH24\"h\"MI' ELSE 'DD/MM' END) AS sessao,\n           c.fim_prazo\n      FROM s JOIN v_card c ON c.controle = s.controle\n     WHERE s.candidata\n       AND NOT EXISTS (SELECT 1 FROM rotulos_escopo r WHERE r.controle = s.controle)\n       AND fn_no_recorte(c.fim_prazo, c.publicado_em)\n)\nSELECT count(*)::int AS n,\n       count(*) FILTER (WHERE x.nova)::int AS novas,\n       count(*) FILTER (WHERE x.aberta)::int AS abertas,\n       COALESCE(jsonb_agg(to_jsonb(x) - 'fim_prazo' ORDER BY x.aberta DESC, x.fim_prazo NULLS LAST, x.controle),\n                '[]'::jsonb) AS itens\n  FROM x",
+        "options": {
+          "queryReplacement": "={{ [ $('Janela do alerta').first().json.desde, $('Janela do alerta').first().json.hoje ] }}"
+        }
+      },
+      "id": "363caf46-551d-592f-b910-c81af91aa385",
+      "name": "Jev: o filtro pode ter errado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2304,
+        170
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — \"NADA VISTO\" ≠ \"NADA A FAZER\" (ADR-007; scripts/20_monitor.py:408-435 e :495-505): o alerta diz\n-- se a coleta viu o PNCP. O Orquestrador exige dizer quantas foram processadas e quantas falharam\n-- (8 Orquestrador.md:52-54). Custo vem por chamada (chamadas_modelo, db/010_views.sql): preço\n-- desconhecido nunca vira R$ 0,00 (ADR-012).\nWITH col AS (\n    SELECT w.id, COALESCE(w.workflow, w.script_legado) AS quem, w.script_legado, w.cego, w.status,\n           to_char(w.iniciado_em AT TIME ZONE 'America/Sao_Paulo', 'DD/MM HH24\"h\"MI') AS quando,\n           (w.iniciado_em >= $1::timestamptz) AS na_janela,\n           (SELECT round(avg(b.cobertura_pct), 1) FROM buscas b WHERE b.workflow_execucao_id = w.id) AS cobertura,\n           (SELECT count(*) FROM buscas b WHERE b.workflow_execucao_id = w.id AND b.falhou)::int AS termos_falhos,\n           (SELECT count(*) FROM buscas b WHERE b.workflow_execucao_id = w.id)::int AS termos\n      FROM execucoes_workflow w\n     WHERE (w.workflow = 'W01' OR w.script_legado = '20_monitor.py') AND w.gatilho IS DISTINCT FROM 'erro'\n       AND w.status IS DISTINCT FROM 'em_curso'   -- coleta que não terminou ainda não viu nada\n     ORDER BY w.iniciado_em DESC, w.id DESC\n     LIMIT 1\n), ret AS (\n    SELECT w.cego, w.status, w.contadores,\n           to_char(w.iniciado_em AT TIME ZONE 'America/Sao_Paulo', 'DD/MM HH24\"h\"MI') AS quando\n      FROM execucoes_workflow w\n     WHERE w.workflow = 'W70' AND w.gatilho IS DISTINCT FROM 'erro' AND w.status IS DISTINCT FROM 'em_curso'\n     ORDER BY w.iniciado_em DESC, w.id DESC\n     LIMIT 1\n)\nSELECT (SELECT to_jsonb(col) FROM col) AS coleta,\n       (SELECT to_jsonb(ret) FROM ret) AS w70,\n       (SELECT count(DISTINCT e.controle) FROM licitacao_eventos e JOIN licitacoes l ON l.controle = e.controle\n         WHERE e.para = 'publicada' AND e.de IS DISTINCT FROM 'publicada' AND e.em >= $1::timestamptz\n           AND COALESCE(e.motivo, '') NOT LIKE 'importa%'\n           AND fn_no_recorte(l.fim_prazo, l.publicado_em))::int AS processadas,\n       (SELECT count(DISTINCT e.controle) FROM licitacao_eventos e JOIN licitacoes l ON l.controle = e.controle\n         WHERE e.para IN ('falha_rede', 'erro_leitura', 'erro_extracao', 'erro_definitivo')\n           AND e.de IS NOT NULL AND COALESCE(e.motivo, '') NOT LIKE 'importa%'\n           AND e.em >= $1::timestamptz AND fn_no_recorte(l.fim_prazo, l.publicado_em))::int AS falharam,\n       (SELECT count(*) FROM execucoes_workflow w\n         WHERE w.status = 'erro' AND w.iniciado_em >= $1::timestamptz)::int AS erros_fluxo,\n       (SELECT count(*) FROM chamadas_modelo m WHERE m.em >= $1::timestamptz)::int AS chamadas,\n       (SELECT COALESCE(sum(m.brl), 0) FROM chamadas_modelo m WHERE m.em >= $1::timestamptz)::float8 AS custo_brl,\n       (SELECT count(*) FROM chamadas_modelo m\n         WHERE m.em >= $1::timestamptz AND NOT COALESCE(m.preco_conhecido, false))::int AS sem_preco,\n       (SELECT count(*) FROM emails m WHERE m.status = 'falhou' AND m.em >= $1::timestamptz)::int AS emails_falhos,\n       (SELECT valor #>> '{}' FROM configuracao WHERE chave = 'provedor') AS provedor",
+        "options": {
+          "queryReplacement": "={{ [ $('Janela do alerta').first().json.desde, $('Janela do alerta').first().json.hoje ] }}"
+        }
+      },
+      "id": "a0662a79-e46f-5b16-8d69-7970b7fd5414",
+      "name": "Rodapé: coleta, custo, falhas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2592,
+        170
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — o alerta é o produto percebido: lido em dois minutos, prioridades na ordem do\n//   Fopa-v2/05-Arquitetura/8 Orquestrador.md:30-42 (P1 … P6) e, por último, o sinal do Jev.\n// regra — \"NADA VISTO\" ≠ \"NADA A FAZER\": scripts/20_monitor.py:408-435 e :495-505 (ADR-007).\n// regra — a linguagem visual do painel (scripts/fopa/painel.py:26-70 e :370; web/design/README.md):\n//   tokens, tabela com cabeçalho --ink, vermelho só para defeito, números em mono. E-mail = HTML\n//   estático: tabelas simples, estilo inline, nenhum JS.\nconst J = $('Janela do alerta').first().json;\nconst P1 = $('P1 Sessão em até 7 dias').first().json;\nconst P2 = $('P2 Retificações').first().json;\nconst P3 = $('P3 Novas desde ontem').first().json;\nconst P5 = $('P5 Revisões abertas').first().json;\nconst P6 = $('P6 Extraídas que pedem olho humano').first().json;\nconst JEV = $('Jev: o filtro pode ter errado').first().json;\nconst R = $('Rodapé: coleta, custo, falhas').first().json;\n\nconst C = { ink: '#11243D', ink2: '#1B3454', paper: '#FFFFFF', surf2: '#F4F2EE', line: '#DCD7CC',\n  muted: '#55606E', red: '#B23A32', reds: '#F6E4E2', teal: '#1D6F63', teals: '#DDEAE7',\n  amber: '#8A6A18', ambers: '#F5EBD2' };\nconst SANS = \"'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif\";\nconst MONO = \"'IBM Plex Mono',ui-monospace,Consolas,monospace\";\nconst MAX = 15;   // linhas por seção; o resto fica no site (o alerta tem de caber em dois minutos)\n\nconst esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\nconst num = (n) => Number(n) || 0;\nconst milhar = (n) => String(Math.trunc(num(n))).replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');\nconst brl = (v) => { const [i, d] = num(v).toFixed(2).split('.'); return 'R$ ' + milhar(i) + ',' + d; };\nconst plural = (n, um, varios) => milhar(n) + ' ' + (num(n) === 1 ? um : varios);\nconst itens = (p) => (p && Array.isArray(p.itens)) ? p.itens : [];\n\n// URLs públicas, com ou sem barra no fim. Dentro do compose FOPA_SITE_URL é o hostname interno\n// (http://fopa-api:8080), que não abre fora do Docker: só vale se parecer público.\nconst semBarra = (u) => String(u || '').trim().replace(/\\/+$/, '');\nconst publica = (u) => {\n  const s = semBarra(u);\n  if (!/^https?:\\/\\/[^/]+/i.test(s)) return '';\n  const host = s.replace(/^https?:\\/\\//i, '').split(/[/:]/)[0];\n  return (host === 'localhost' || host.includes('.')) ? s : '';\n};\nconst siteEnv = publica($env.FOPA_SITE_PUBLIC_URL) || publica($env.FOPA_SITE_URL);\nconst SITE = siteEnv || 'http://localhost:8080';\nconst N8N = semBarra($env.N8N_EDITOR_BASE_URL || $env.WEBHOOK_URL);\nconst linkLic = (slug) => SITE + '/licitacao/' + encodeURIComponent(String(slug || ''));\n// A fila de revisão do site (web/src/paginas/Revisao.tsx): ?aba=escopo abre a aba do rótulo de escopo.\nconst linkRevisao = (aba) => SITE + '/revisao' + (aba ? '?aba=' + encodeURIComponent(aba) : '');\nconst link = (url, txt) => `<a href=\"${esc(url)}\" style=\"color:${C.ink2}\">${txt}</a>`;\nconst linkExec = N8N ? N8N + '/workflow/' + $workflow.id + '/executions/' + $execution.id : '';\n\n// ---- peças visuais: o painel em estilo inline\nconst P = (h) => `<p style=\"margin:0 0 8px\">${h}</p>`;\nconst marca = (txt, tom) => {\n  const [cor, fundo] = ({ ok: [C.teal, C.teals], rev: [C.amber, C.ambers], def: [C.red, C.reds] })[tom] || [C.muted, C.surf2];\n  return `<span style=\"display:inline-block;margin:0 4px 2px 0;font-family:${MONO};font-size:11px;line-height:1.5;`\n    + `padding:0 6px;border-radius:4px;border:1px solid ${cor};color:${cor};background:${fundo};white-space:nowrap\">${esc(txt)}</span>`;\n};\nconst th = (t) => `<th align=\"left\" style=\"background:${C.ink};color:${C.paper};text-align:left;font-size:11.5px;`\n  + `letter-spacing:.06em;text-transform:uppercase;padding:9px 14px;font-weight:600\">${t}</th>`;\nconst td = (h, largura) => `<td valign=\"top\" style=\"padding:9px 14px;border-top:1px solid ${C.line};vertical-align:top;`\n  + `font-size:13px${largura ? ';width:' + largura : ''}\">${h}</td>`;\nconst tabela = (cab, linhas) => `<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" `\n  + `style=\"width:100%;border-collapse:collapse;border:1px solid ${C.line}\"><tr>${cab.map(th).join('')}</tr>`\n  + linhas.map((l) => `<tr>${l}</tr>`).join('') + '</table>';\nconst licitacao = (x, extra) => `<a href=\"${esc(linkLic(x.slug))}\" style=\"color:${C.ink2};font-weight:600;text-decoration:none\">`\n  + `${esc(x.local || x.controle)}</a><br><span style=\"font-size:12px;color:${C.muted}\">`\n  + `${esc([x.modalidade, x.controle].filter(Boolean).join(' · '))}</span>${extra || ''}`;\nconst objeto = (x) => x.objeto ? `<br><span style=\"font-size:12.5px;color:${C.ink2}\">${esc(x.objeto)}`\n  + `${String(x.objeto).length >= 160 ? '…' : ''}</span>` : '';\n// Prazo como o painel (scripts/fopa/painel.py:370): até 7 dias vermelho, 8 a 20 âmbar, \"N dia(s)\" + data.\nconst prazo = (x) => {\n  if (x.dias === null || x.dias === undefined) {\n    return `<b style=\"font-family:${MONO}\">—</b><br><span style=\"font-size:12px;color:${C.muted}\">prazo não informado</span>`;\n  }\n  const d = num(x.dias);\n  if (d < 0) {\n    return `<b style=\"font-family:${MONO};font-size:15px\">encerrado</b><br>`\n      + `<span style=\"font-size:12px;color:${C.muted}\">há ${plural(-d, 'dia', 'dias')}</span>`;\n  }\n  const cor = d <= 7 ? C.red : d <= 20 ? C.amber : C.ink;\n  return `<b style=\"font-family:${MONO};font-size:15px;color:${cor};font-variant-numeric:tabular-nums;white-space:nowrap\">`\n    + `${milhar(d)} dia${d === 1 ? '' : 's'}</b><br>`\n    + `<span style=\"font-size:12px;color:${C.muted};white-space:nowrap\">${esc(x.sessao || '')}</span>`;\n};\nconst vazio = (h) => `<p style=\"margin:0;padding:11px 14px;border:1px solid ${C.line};border-radius:8px;`\n  + `color:${C.muted};font-size:13px\">${h}</p>`;\n// O resto fica no site: no painel, ou na fila de revisão quando é lá que se decide.\nconst mais = (total, mostrados, url, onde) => num(total) > mostrados\n  ? `<p style=\"margin:6px 0 0;font-size:12.5px;color:${C.muted}\">e mais ${milhar(num(total) - mostrados)} `\n    + (url ? 'na ' + link(url, onde) : 'no ' + link(SITE + '/', 'painel')) + '.</p>' : '';\nconst secao = (rotulo, titulo, sub, corpo) => '<tr><td style=\"padding:24px 0 0\">'\n  + `<p style=\"font-family:${MONO};font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${C.muted};margin:0 0 4px\">${rotulo}</p>`\n  + `<h2 style=\"font-size:18px;font-weight:600;margin:0 0 4px;line-height:1.3;color:${C.ink}\">${titulo}</h2>`\n  + (sub ? `<p style=\"color:${C.muted};margin:0 0 10px;font-size:13.5px\">${sub}</p>` : '')\n  + corpo + '</td></tr>';\nconst caixa = (h, cor, fundo) => `<div style=\"border:1px solid ${cor};border-left:4px solid ${cor};background:${fundo};`\n  + `border-radius:8px;padding:12px 16px;color:${cor};font-size:14px\">${h}</div>`;\nconst q5 = (x) => {\n  if (!x.extraida) return marca('sem extração', 'neutro');\n  if (x.q5 === 'APROVADO') return marca('conferido', 'ok');\n  if (x.q5 === 'REVISAR') return marca('revisar', 'rev');\n  if (x.q5 === 'REPROVADO') return marca('reprovado', 'def');\n  return marca('sem veredito', 'neutro');\n};\nconst desde = esc(J.desde_fmt);\n\n// ---- P1 · sessão em até 7 dias (lance ainda não definido = Q5 não conferida)\nconst l1 = itens(P1).slice(0, MAX).map((x) => td(prazo(x), '118px') + td(licitacao(x))\n  + td(q5(x) + (x.injecao_suspeita ? marca('injeção suspeita', 'def') : '')\n       + (x.revisao_pendente ? marca('revisão aberta', 'rev') : '')));\nconst s1 = secao('P1 · sessão em até 7 dias', 'Sessão nos próximos 7 dias',\n  num(P1.n) ? `${plural(P1.n, 'licitação', 'licitações')} com sessão até ${esc(J.limite_fmt)}; `\n    + `<b>${milhar(P1.sem_lance)}</b> ainda sem o valor mínimo (Q5) conferido — é o dado do lance.` : '',\n  num(P1.n) ? tabela(['Sessão', 'Licitação', 'Valor mínimo (Q5)'], l1) + mais(P1.n, l1.length)\n            : vazio('Nenhuma sessão nos próximos 7 dias.'));\n\n// ---- P2 · retificação\nconst l2 = itens(P2).slice(0, MAX).map((x) => td(prazo(x), '118px') + td(licitacao(x))\n  + td(esc(x.motivo || 'retificada') + `<br><span style=\"font-size:12px;color:${C.muted}\">${esc(x.quando)}</span>`)\n  + td(x.ja_analisada ? marca('já analisada: Q1 pode ter mudado', 'rev') : marca('ainda não analisada', 'neutro')));\nconst s2 = secao('P2 · retificação', 'Retificações detectadas',\n  num(P2.n) ? 'O PNCP mudou a licitação depois que a lemos: ela volta para a fila e é lida de novo. '\n    + 'Até lá, a data e o valor do relatório podem estar velhos.' : '',\n  num(P2.n) ? tabela(['Sessão', 'Licitação', 'O que mudou', 'Antes'], l2) + mais(P2.n, l2.length)\n            : vazio(`Nenhuma retificação desde ${desde}.`));\n\n// ---- P3 · novas\nconst l3 = itens(P3).slice(0, MAX).map((x) => td(prazo(x), '118px') + td(licitacao(x, objeto(x)))\n  + td(marca(x.o_que, x.publicada ? 'ok' : 'neutro')\n       + (x.publicada && num(x.respondidas) ? `<br><span style=\"font-family:${MONO};font-size:12px\">`\n          + `${milhar(x.ancoradas)}/${milhar(x.respondidas)} ancoradas</span>` : '')));\nconst s3 = secao('P3 · novas', 'Novas desde ' + desde,\n  num(P3.n) ? `${plural(P3.novas, 'licitação de folha encontrada', 'licitações de folha encontradas')} no PNCP · `\n    + `${plural(P3.publicadas, 'extraída e publicada', 'extraídas e publicadas')}.` : '',\n  num(P3.n) ? tabela(['Sessão', 'Licitação', 'O que aconteceu'], l3) + mais(P3.n, l3.length)\n            : vazio(`Nenhuma licitação nova de folha nem publicação desde ${desde}.`));\n\n// ---- P4 · resultados: não coletado (fixo, plano §5 W40)\nconst s4 = secao('P4 · resultados', 'Resultados publicados (vencedor e valor)', '',\n  vazio('<b>Não coletado.</b> O FOPA ainda não lê resultados no PNCP: esta seção fica vazia por construção, '\n    + 'não por falta de resultado.'));\n\n// ---- P5 · revisão humana\nconst l5 = itens(P5).slice(0, MAX).map((x) => td(prazo(x), '118px') + td(licitacao(x))\n  + td(`<b style=\"font-family:${MONO}\">${milhar(x.abertas)}</b> <span style=\"font-size:12px;color:${C.muted}\">`\n       + `aberta${num(x.abertas) === 1 ? '' : 's'} desde ${esc(x.aberta_desde)}</span><br>`\n       + `<span style=\"font-family:${MONO};font-size:12px\">${esc(x.perguntas)}</span>`)\n  + td(`<span style=\"font-size:12.5px\">${esc(x.motivo || '')}</span>`));\nconst s5 = secao('P5 · revisão humana', 'Aguardando decisão humana',\n  num(P5.n) ? `${plural(P5.perguntas_abertas, 'resposta marcada', 'respostas marcadas')} para revisar em `\n    + `${plural(P5.n, 'licitação', 'licitações')}` + (num(P5.novas) ? ` (${milhar(P5.novas)} desde ${desde})` : '')\n    + '. Decidir na ' + link(linkRevisao(), 'fila de revisão') + ' tira a linha daqui no alerta seguinte.' : '',\n  num(P5.n) ? tabela(['Sessão', 'Licitação', 'Abertas', 'Motivo'], l5)\n              + mais(P5.n, l5.length, linkRevisao(), 'fila de revisão')\n            : vazio('Nenhuma revisão aberta.'));\n\n// ---- P6 · olho humano (o que o verificador marcou, sessão ainda aberta)\nconst sinais6 = (x) => (x.injecao ? marca('injeção suspeita', 'def') : '')\n  + (num(x.reprovadas) ? marca(plural(x.reprovadas, 'reprovada', 'reprovadas'), 'def') : '')\n  + (num(x.conflitos) ? marca(plural(x.conflitos, 'conflito', 'conflitos'), 'rev') : '')\n  + (num(x.alertas) ? marca(plural(x.alertas, 'alerta de regra', 'alertas de regra'), 'rev') : '')\n  + (x.degradada ? marca('leitura degradada', 'rev') : '') + (x.nova ? marca('nova', 'neutro') : '')\n  + (x.alerta1 ? `<br><span style=\"font-size:12px;color:${C.muted}\">${esc(x.alerta1)}`\n     + `${String(x.alerta1).length >= 180 ? '…' : ''}</span>` : '');\nconst l6 = itens(P6).slice(0, 10).map((x) => td(prazo(x), '118px') + td(licitacao(x)) + td(sinais6(x)));\nconst s6 = secao('P6 · olho humano', 'Extraídas que pedem olho humano',\n  num(P6.n) ? `Sessão ainda aberta e o verificador marcou algo: ${milhar(P6.injecao)} com injeção suspeita · `\n    + `${milhar(P6.reprovadas)} com reprovada · ${milhar(P6.conflito)} com conflito entre documentos · `\n    + `${milhar(P6.alerta)} com alerta de regra. As mais graves primeiro.` : '',\n  num(P6.n) ? tabela(['Sessão', 'Licitação', 'O que o verificador marcou'], l6) + mais(P6.n, l6.length)\n            : vazio('Nenhuma extraída com sessão aberta tem injeção, reprovada, conflito ou alerta de regra.'));\n\n// ---- Jev · o filtro pode ter errado (sinal, não decisão — T25)\nconst lj = itens(JEV).slice(0, 10).map((x) => td(prazo(x), '118px') + td(licitacao(x, objeto(x)))\n  + td(marca(x.regra === 'dentro' ? 'regra: é folha' : 'regra: não é folha', 'neutro')\n       + `<br><span style=\"font-size:12px;color:${C.muted}\">Jev: P(folha) = </span>`\n       + `<b style=\"font-family:${MONO}\">${esc(String(x.p_sim).replace('.', ','))}</b>`));\nconst sj = secao('Sinal · Jev', 'O filtro pode ter errado aqui',\n  num(JEV.n) ? `<b>Sinal, não decisão.</b> O Jev (segundo sinal) discorda da regra de escopo com convicção em `\n    + `${plural(JEV.n, 'licitação', 'licitações')}`\n    + (num(JEV.abertas) < num(JEV.n) ? ` (${milhar(JEV.abertas)} com sessão aberta)` : '')\n    + '. A regra continua valendo: nada entra nem sai da fila sem um rótulo humano ('\n    + link(linkRevisao('escopo'), 'aba escopo da revisão') + ').' : '',\n  num(JEV.n) ? tabela(['Sessão', 'Licitação', 'Regra × Jev'], lj)\n               + mais(JEV.n, lj.length, linkRevisao('escopo'), 'aba escopo da revisão')\n             : vazio('Nenhuma candidata do Jev sem rótulo humano: o filtro de escopo não foi contestado.'));\n\n// ---- NADA VISTO × nada a fazer (a coleta viu o PNCP?)\nconst col = R.coleta || null;\nlet nadaVisto = null;\nif (!col) nadaVisto = 'nenhuma coleta do PNCP registrada até agora (o W01 ainda não rodou)';\nelse if (!col.na_janela) nadaVisto = `nenhuma coleta do PNCP desde ${J.desde_fmt} (a última foi em ${col.quando})`;\nelse if (col.cego === true) nadaVisto = `a coleta de ${col.quando} foi cega: nenhuma busca no PNCP funcionou`;\nconst quem = col ? (col.script_legado ? col.script_legado + ', v2' : col.quem) : '';\nconst linhaColeta = nadaVisto\n  ? `<b style=\"color:${C.red}\">NADA VISTO</b> — ${esc(nadaVisto)}.`\n  : `última coleta do PNCP em ${esc(col.quando)} (${esc(quem)})`\n    + (col.cobertura !== null && col.cobertura !== undefined ? `, cobertura média ${esc(String(col.cobertura).replace('.', ','))}%` : '')\n    + '.' + (num(col.termos_falhos) ? ` ${milhar(col.termos_falhos)} de ${milhar(col.termos)} termos falharam: `\n      + 'o que vem acima é piso, não total.' : '');\nconst caixaVisto = nadaVisto ? '<tr><td style=\"padding:18px 0 0\">' + caixa(`<b>NADA VISTO</b> — ${esc(nadaVisto)}. `\n  + 'Isto <b>não</b> é “nada a fazer”: é “não consegui olhar”. A falta de licitação nova neste e-mail '\n  + 'não quer dizer que não houve.', C.red, C.reds) + '</td></tr>' : '';\nconst w70 = R.w70 || null;\nconst cw = (w70 && w70.contadores) || {};\nconst linhaW70 = !w70 ? 'o W70 (semanal) ainda não rodou.'\n  : `última conferência do W70 em ${esc(w70.quando)}: ${milhar(cw.conferidas)} conferidas, `\n    + `${milhar(cw.retificadas)} retificadas, ${milhar(cw.nao_conferidas)} sem resposta do PNCP`\n    + (num(cw.fora_do_limite) ? `, ${milhar(cw.fora_do_limite)} ficaram fora do limite da rodada` : '')\n    + (w70.cego ? ` — <b style=\"color:${C.red}\">CEGA</b>` : '') + '.';\nconst custo = num(R.chamadas) === 0 ? 'nenhuma chamada de modelo (R$ 0,00)'\n  : brl(R.custo_brl) + (num(R.sem_preco) ? ` + ${plural(R.sem_preco, 'chamada', 'chamadas')} com preço não configurado` : '');\n\n// ---- cabeçalho, números e rodapé\nconst cabecalho = '<tr><td style=\"padding:0\">'\n  + `<p style=\"font-family:${MONO};font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${C.red};margin:0 0 8px\">Folha de pagamento · setor público</p>`\n  + `<h1 style=\"font-size:26px;font-weight:600;margin:0 0 6px;line-height:1.2;color:${C.ink}\">Alerta diário · ${esc(J.hoje_fmt)}</h1>`\n  + `<p style=\"color:${C.muted};margin:0;font-size:14.5px\">Ordenado por <b>urgência</b>: o que fecha primeiro vem antes. `\n  + `Cobre desde ${desde}. Cada licitação abre no site com as 17 respostas e a página de cada evidência.</p></td></tr>`;\nconst tile = (n, rotulo, al) => '<td valign=\"top\" style=\"width:33%;padding:0 8px 8px 0\">'\n  + `<div style=\"border:1px solid ${C.line};border-radius:10px;padding:12px 14px\">`\n  + `<b style=\"display:block;font-family:${MONO};font-size:22px;font-variant-numeric:tabular-nums;color:${al ? C.red : C.ink}\">${milhar(n)}</b>`\n  + `<span style=\"font-size:12.5px;color:${C.muted}\">${rotulo}</span></div></td>`;\nconst tiles = '<tr><td style=\"padding:18px 0 0\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" '\n  + 'style=\"width:100%;border-collapse:collapse\">'\n  + `<tr>${tile(P1.n, 'sessões em até 7 dias', num(P1.n) > 0)}${tile(P2.n, 'retificadas', false)}${tile(P3.novas, 'novas de folha', false)}</tr>`\n  + `<tr>${tile(P5.perguntas_abertas, 'respostas para revisar', num(P5.perguntas_abertas) > 0)}`\n  + `${tile(P6.n, 'extraídas pedem olho humano', num(P6.injecao) + num(P6.reprovadas) > 0)}`\n  + `${tile(JEV.n, 'filtro contestado (Jev)', false)}</tr></table></td></tr>`;\nconst execucao = linkExec ? `<a href=\"${esc(linkExec)}\" style=\"color:${C.ink2}\">execução ${esc($execution.id)}</a>`\n  : `execução ${esc($execution.id)}`;\nconst rodape = '<tr><td style=\"padding:26px 0 0\">'\n  + `<div style=\"border-top:1px solid ${C.line};padding-top:14px;color:${C.muted};font-size:12.5px\">`\n  + P(`Desde ${desde}: <b style=\"color:${C.ink}\">${milhar(R.processadas)}</b> processada${num(R.processadas) === 1 ? '' : 's'} · `\n    + `<b style=\"color:${num(R.falharam) ? C.red : C.ink}\">${milhar(R.falharam)}</b> ${num(R.falharam) === 1 ? 'falhou' : 'falharam'} `\n    + `(entraram em estado de erro) · ${plural(R.erros_fluxo, 'erro de fluxo', 'erros de fluxo')} (W90) · `\n    + `${plural(R.emails_falhos, 'e-mail falhou', 'e-mails falharam')} · custo ${esc(custo)} · `\n    + `provedor vigente: <b style=\"color:${C.ink}\">${esc(R.provedor || '—')}</b>.`)\n  + P(`Coleta: ${linhaColeta} Retificações: ${linhaW70}`)\n  + P(`Gerado em ${esc(J.agora_fmt)} pelo W40 · ${execucao} · só licitações de ${esc(J.ano_minimo)} em diante (ADR-015) · `\n    + 'Fonte: PNCP — dados abertos, Lei 14.133/2021 art. 54 · Nenhum dado pessoal é armazenado.')\n  + (siteEnv ? '' : P(`Links do site pela URL local padrão (${esc(SITE)}): defina FOPA_SITE_PUBLIC_URL no fopa-n8n.`))\n  + '</div></td></tr>';\n\n// ---- dia sem nada relevante: e-mail curto, nunca silêncio\nconst relevante = [P1.n, P2.n, P3.n, P5.n, P6.n, JEV.n].some((n) => num(n) > 0);\nconst linhaP4 = '<tr><td style=\"padding:12px 0 0\">'\n  + vazio('<b>P4 · resultados:</b> não coletado — o FOPA ainda não lê vencedor e valor no PNCP.') + '</td></tr>';\nconst curto = (nadaVisto\n  ? caixaVisto + '<tr><td style=\"padding:12px 0 0\">' + vazio('Nas licitações que já conhecemos não há nada pendente: '\n    + 'nenhuma sessão em até 7 dias, retificação, revisão aberta, alerta do verificador ou contestação do Jev.') + '</td></tr>'\n  : '<tr><td style=\"padding:18px 0 0\">' + caixa(`<b>NADA A FAZER</b> — desde ${desde}: nenhuma sessão nos próximos `\n    + '7 dias, nada novo, retificado, para revisar, com alerta do verificador ou contestado pelo Jev. '\n    + 'A coleta do PNCP rodou e viu o mercado.', C.teal, C.teals) + '</td></tr>') + linhaP4;\n\n// ---- assunto: o que importa primeiro, curto\nconst partes = [];\nif (num(P1.n)) partes.push(plural(P1.n, 'sessão', 'sessões') + ' em até 7 dias');\nif (num(P2.n)) partes.push(plural(P2.n, 'retificada', 'retificadas'));\nif (num(P3.novas)) partes.push(plural(P3.novas, 'nova', 'novas'));\nif (num(P5.perguntas_abertas)) partes.push(milhar(P5.perguntas_abertas) + ' para revisar');\nif (num(P6.injecao)) partes.push(milhar(P6.injecao) + ' com injeção suspeita');\nif (num(JEV.n)) partes.push(milhar(JEV.n) + ' para rotular (Jev)');\nif (!partes.length && num(P6.n)) partes.push(plural(P6.n, 'extraída pede olho', 'extraídas pedem olho'));\nconst assunto = '[FOPA] Alerta ' + String(J.hoje_fmt || '').slice(0, 5) + (nadaVisto ? ' · NADA VISTO' : '')\n  + (relevante ? ' · ' + partes.slice(0, 4).join(' · ') : ' · nada novo');\n\nconst corpo = relevante ? cabecalho + caixaVisto + tiles + s1 + s2 + s3 + s4 + s5 + s6 + sj + rodape\n                        : cabecalho + curto + rodape;\nconst html = '<!doctype html><html lang=\"pt-BR\"><head><meta charset=\"utf-8\">'\n  + '<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"color-scheme\" content=\"light\">'\n  + `<title>${esc(assunto)}</title></head>`\n  + `<body style=\"margin:0;padding:0;background:${C.paper};color:${C.ink};font-family:${SANS};font-size:15px;line-height:1.55\">`\n  + `<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;border-collapse:collapse;background:${C.paper}\">`\n  + '<tr><td style=\"padding:28px 16px 40px\">'\n  + '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;max-width:760px;margin:0 auto;border-collapse:collapse\">'\n  + corpo + '</table></td></tr></table></body></html>';\n\nreturn [{ json: { assunto, corpo_html: html, contadores: {\n  janela_desde: J.desde, p1: num(P1.n), p1_sem_valor_minimo: num(P1.sem_lance), p2: num(P2.n),\n  p3_novas: num(P3.novas), p3_publicadas: num(P3.publicadas), p4: 'não coletado',\n  p5_licitacoes: num(P5.n), p5_respostas: num(P5.perguntas_abertas), p6: num(P6.n), p6_injecao: num(P6.injecao),\n  jev_candidatas: num(JEV.n), nada_novo: !relevante, nada_visto: nadaVisto, site: SITE,\n} } }];\n"
+      },
+      "id": "72817864-a751-5114-9e1f-766a04d00bcc",
+      "name": "Montar e-mail",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        170
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — e-mail DESLIGADO (o produto manda só DOIS e-mails — licitação nova, pelo W01,\n-- e a extração pedida no botão do site, pelo W24; db/038-039). O fluxo segue igual; este nó não enfileira.\n-- O alerta diário por e-mail saiu do produto: a rodada das 07:00 só registra os números de cada prioridade em\n-- execucoes_workflow (W40), que a página /execucoes mostra.\nINSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status, duracao_s, contadores)\nVALUES ('W40', $1, $2, 'ok', round(extract(epoch FROM now() - $3::timestamptz)::numeric, 3), $4::jsonb)\nRETURNING NULL::bigint AS email_id, id AS execucao_workflow_id",
+        "options": {
+          "queryReplacement": "={{ [ $execution.id, $execution.mode, $('Janela do alerta').first().json.agora, JSON.stringify($json.contadores) ] }}"
+        }
+      },
+      "id": "344f0b72-c9df-5159-b52f-ffe464e87442",
+      "name": "Enfileirar alerta",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        170
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Todo dia 07:00**\n\nGatilho agendado: todo dia às 07:00, depois da descoberta e das primeiras rodadas da fila, antes do expediente.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7d1aa963-c6bd-599e-a9bc-5bd7739f5880",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Manual**\n\nGatilho manual, para montar o alerta pelo editor.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7da2b659-e2fe-5b64-a38b-f86140d83514",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        490
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · Janela do alerta**\n\nCalcula o período do alerta: desde o último, nunca menos de 24 horas nem mais de 7 dias. Um dia perdido não some.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "b5088a9d-ac1b-51f6-bda6-a99ff09b6044",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · P1 Sessão em até 7 dias**\n\nPrioridade 1: licitações no escopo com sessão nos próximos 7 dias, com a situação do lance e das revisões.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "cbb62659-5e23-5922-b525-abbeb3cbc087",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · P2 Retificações**\n\nPrioridade 2: licitações retificadas no período, indicando se já tinham sido analisadas.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "cd1c7b63-5177-574d-9a7e-a3a8794e3e9b",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · P3 Novas desde ontem**\n\nPrioridade 3: licitações novas e as publicadas no período.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4938100f-3cf8-5626-b59c-f5fefce222f8",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · P4 Resultados (não coletado)**\n\nPrioridade 4: marca o lugar dos resultados, que esta rodada não coleta.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f9843cce-e909-5af3-9a02-0ad415d1d29d",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · P5 Revisões abertas**\n\nPrioridade 5: revisões humanas abertas por licitação, com as perguntas e o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "576624b9-502b-52e4-8ca7-f94df6d1c2d2",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · P6 Extraídas que pedem olho humano**\n\nPrioridade 6: extraídas com sessão aberta e sinal de atenção (injeção suspeita, reprovada, conflito ou alerta de regra), da mais grave para a menos grave.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "40c83607-67ce-5770-9b7a-1efb8ba4fa7e",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Jev: o filtro pode ter errado**\n\nLista as licitações em que o Jev discorda da regra com convicção e ainda sem rótulo humano. Só lista; não decide.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "8dff14b7-b9e0-53cf-bd80-f748cd785e6c",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · Rodapé: coleta, custo, falhas**\n\nReúne o rodapé: a última coleta (e se foi cega), processadas, falhas, custo com IA e o provedor configurado.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "785ec13d-59b5-5068-a5b7-e5701bfc426d",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Montar e-mail**\n\nMonta o alerta na linguagem visual do painel, com até 15 linhas por prioridade e links para o site.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "1bf476d0-4b65-5bd5-a8a9-053568d279d5",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Enfileirar alerta**\n\nNão envia e-mail: grava a rodada com os contadores de cada prioridade, visível na página Execuções.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "bb629ad7-ea87-5233-a8ff-dba315cddd5c",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        320
+      ]
+    }
+  ],
+  "connections": {
+    "Todo dia 07:00": {
+      "main": [
+        [
+          {
+            "node": "Janela do alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual": {
+      "main": [
+        [
+          {
+            "node": "Janela do alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Janela do alerta": {
+      "main": [
+        [
+          {
+            "node": "P1 Sessão em até 7 dias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "P1 Sessão em até 7 dias": {
+      "main": [
+        [
+          {
+            "node": "P2 Retificações",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "P2 Retificações": {
+      "main": [
+        [
+          {
+            "node": "P3 Novas desde ontem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "P3 Novas desde ontem": {
+      "main": [
+        [
+          {
+            "node": "P4 Resultados (não coletado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "P4 Resultados (não coletado)": {
+      "main": [
+        [
+          {
+            "node": "P5 Revisões abertas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "P5 Revisões abertas": {
+      "main": [
+        [
+          {
+            "node": "P6 Extraídas que pedem olho humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "P6 Extraídas que pedem olho humano": {
+      "main": [
+        [
+          {
+            "node": "Jev: o filtro pode ter errado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jev: o filtro pode ter errado": {
+      "main": [
+        [
+          {
+            "node": "Rodapé: coleta, custo, falhas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rodapé: coleta, custo, falhas": {
+      "main": [
+        [
+          {
+            "node": "Montar e-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar e-mail": {
+      "main": [
+        [
+          {
+            "node": "Enfileirar alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "errorWorkflow": "{{WF:W90}}",
+    "saveManualExecutions": true
+  }
+}

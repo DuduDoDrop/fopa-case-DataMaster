@@ -1,0 +1,7143 @@
+{
+ "medido_em": "2026-09-24T06:10:45-0300",
+ "script": "scripts/69_recall_candidatos.py",
+ "fonte": "Postgres v3 (api_ro): verificacoes vigentes, verificacao_respostas APROVADO, respostas, paginas da leitura da verificação",
+ "parametros": {
+  "k": 6,
+  "sempre_incluir": [
+   "retifica",
+   "suspens",
+   "comunicado",
+   "redesign",
+   "errata",
+   "aviso"
+  ],
+  "entorno_chars": 200,
+  "raio_hora_chars": 120,
+  "camadas": {
+   "Q1": [
+    "verificador",
+    "+extenso",
+    "+grafia"
+   ],
+   "Q5": [
+    "verificador",
+    "+grafia"
+   ]
+  }
+ },
+ "custo_usd": 0.0,
+ "resumo": {
+  "Q1": {
+   "aprovadas": 86,
+   "sem_leitura_congelada": 8,
+   "sem_pagina_citada": 4,
+   "sem_valor_alvo": 4,
+   "com_valor_alvo": 70,
+   "cobertura_pagina_citada": {
+    "verificador": {
+     "cobre": 50,
+     "pct": 71.4
+    },
+    "+extenso": {
+     "cobre": 66,
+     "pct": 94.3
+    },
+    "+grafia": {
+     "cobre": 70,
+     "pct": 100.0
+    }
+   },
+   "candidatos_pagina_citada": {
+    "ocorrencias": {
+     "n": 70,
+     "media": 3.3,
+     "mediana": 3.0,
+     "p90": 5,
+     "max": 8
+    },
+    "distintos": {
+     "n": 70,
+     "media": 2.2,
+     "mediana": 2.0,
+     "p90": 4,
+     "max": 6
+    },
+    "acerto_por_sorteio_pct": 60.4
+   },
+   "escopos": {
+    "citada": {
+     "cobre": 70,
+     "pct": 100.0,
+     "paginas": {
+      "n": 70,
+      "media": 1,
+      "mediana": 1.0,
+      "p90": 1,
+      "max": 1
+     },
+     "distintos": {
+      "n": 70,
+      "media": 2.2,
+      "mediana": 2.0,
+      "p90": 4,
+      "max": 6
+     },
+     "ocorrencias": {
+      "n": 70,
+      "media": 3.3,
+      "mediana": 3.0,
+      "p90": 5,
+      "max": 8
+     },
+     "chars_estado": {
+      "n": 70,
+      "media": 711.3,
+      "mediana": 641.5,
+      "p90": 1085,
+      "max": 1368
+     },
+     "ocorrencias_total": 234,
+     "acima_do_teto_de_estado": 0,
+     "chars_estado_total": 49792
+    },
+    "top-k": {
+     "cobre": 54,
+     "pct": 77.1,
+     "paginas": {
+      "n": 70,
+      "media": 7.1,
+      "mediana": 6.0,
+      "p90": 6,
+      "max": 59
+     },
+     "distintos": {
+      "n": 70,
+      "media": 2.7,
+      "mediana": 2.0,
+      "p90": 5,
+      "max": 16
+     },
+     "ocorrencias": {
+      "n": 70,
+      "media": 4.8,
+      "mediana": 4.0,
+      "p90": 9,
+      "max": 31
+     },
+     "chars_estado": {
+      "n": 70,
+      "media": 1165.6,
+      "mediana": 981.0,
+      "p90": 2169,
+      "max": 11362
+     },
+     "ocorrencias_total": 333,
+     "acima_do_teto_de_estado": 0,
+     "chars_estado_total": 81592
+    },
+    "leitura": {
+     "cobre": 70,
+     "pct": 100.0,
+     "paginas": {
+      "n": 70,
+      "media": 76.8,
+      "mediana": 66.5,
+      "p90": 129,
+      "max": 323
+     },
+     "distintos": {
+      "n": 70,
+      "media": 13.4,
+      "mediana": 12.0,
+      "p90": 23,
+      "max": 33
+     },
+     "ocorrencias": {
+      "n": 70,
+      "media": 30.6,
+      "mediana": 22.5,
+      "p90": 54,
+      "max": 219
+     },
+     "chars_estado": {
+      "n": 70,
+      "media": 9285.4,
+      "mediana": 6985.0,
+      "p90": 18044,
+      "max": 35184
+     },
+     "ocorrencias_total": 2142,
+     "acima_do_teto_de_estado": 0,
+     "chars_estado_total": 649980
+    },
+    "leitura·poda": {
+     "cobre": 70,
+     "pct": 100.0,
+     "paginas": {
+      "n": 70,
+      "media": 76.8,
+      "mediana": 66.5,
+      "p90": 129,
+      "max": 323
+     },
+     "distintos": {
+      "n": 70,
+      "media": 4.7,
+      "mediana": 4.0,
+      "p90": 8,
+      "max": 13
+     },
+     "ocorrencias": {
+      "n": 70,
+      "media": 13.9,
+      "mediana": 7.5,
+      "p90": 24,
+      "max": 206
+     },
+     "chars_estado": {
+      "n": 70,
+      "media": 3547.8,
+      "mediana": 2097.0,
+      "p90": 6208,
+      "max": 31258
+     },
+     "ocorrencias_total": 973,
+     "acima_do_teto_de_estado": 0,
+     "chars_estado_total": 248345
+    }
+   },
+   "falhas": {
+    "regex de partida (camada verificador)": {
+     "data por extenso": 16,
+     "espaço no separador (29 / 09 /2026)": 1,
+     "dígitos espaçados pelo OCR (1 7 / 0 9 / 2 0 2 6)": 1,
+     "separador ponto ou hífen (16.09.2026)": 2
+    },
+    "top-k do BM25 da pergunta": {
+     "a página com o valor fica fora do top-6 (é a pág. 1, a capa)": 15,
+     "a página com o valor fica fora do top-6": 1
+    }
+   },
+   "hora": {
+    "respostas_com_hora_e_data_coberta": 69,
+    "hora_certa_no_entorno": 69,
+    "data_certa_com_mais_de_uma_hora_por_perto": 46
+   }
+  },
+  "Q5": {
+   "aprovadas": 77,
+   "sem_leitura_congelada": 6,
+   "sem_pagina_citada": 2,
+   "sem_valor_alvo": 6,
+   "com_valor_alvo": 63,
+   "cobertura_pagina_citada": {
+    "verificador": {
+     "cobre": 63,
+     "pct": 100.0
+    },
+    "+grafia": {
+     "cobre": 63,
+     "pct": 100.0
+    }
+   },
+   "candidatos_pagina_citada": {
+    "ocorrencias": {
+     "n": 63,
+     "media": 2.0,
+     "mediana": 1,
+     "p90": 4,
+     "max": 13
+    },
+    "distintos": {
+     "n": 63,
+     "media": 1.8,
+     "mediana": 1,
+     "p90": 4,
+     "max": 11
+    },
+    "acerto_por_sorteio_pct": 83.1
+   },
+   "escopos": {
+    "citada": {
+     "cobre": 63,
+     "pct": 100.0,
+     "paginas": {
+      "n": 63,
+      "media": 1,
+      "mediana": 1,
+      "p90": 1,
+      "max": 1
+     },
+     "distintos": {
+      "n": 63,
+      "media": 1.8,
+      "mediana": 1,
+      "p90": 4,
+      "max": 11
+     },
+     "ocorrencias": {
+      "n": 63,
+      "media": 2.0,
+      "mediana": 1,
+      "p90": 4,
+      "max": 13
+     },
+     "chars_estado": {
+      "n": 63,
+      "media": 555.2,
+      "mediana": 412,
+      "p90": 943,
+      "max": 1533
+     },
+     "ocorrencias_total": 129,
+     "acima_do_teto_de_estado": 0,
+     "chars_estado_total": 34978
+    },
+    "top-k": {
+     "cobre": 57,
+     "pct": 90.5,
+     "paginas": {
+      "n": 63,
+      "media": 9.3,
+      "mediana": 6,
+      "p90": 7,
+      "max": 101
+     },
+     "distintos": {
+      "n": 63,
+      "media": 8.3,
+      "mediana": 4,
+      "p90": 24,
+      "max": 43
+     },
+     "ocorrencias": {
+      "n": 63,
+      "media": 15.6,
+      "mediana": 9,
+      "p90": 43,
+      "max": 78
+     },
+     "chars_estado": {
+      "n": 63,
+      "media": 2602.7,
+      "mediana": 1937,
+      "p90": 4519,
+      "max": 17742
+     },
+     "ocorrencias_total": 985,
+     "acima_do_teto_de_estado": 0,
+     "chars_estado_total": 163967
+    },
+    "leitura": {
+     "cobre": 63,
+     "pct": 100.0,
+     "paginas": {
+      "n": 63,
+      "media": 92.6,
+      "mediana": 67,
+      "p90": 146,
+      "max": 762
+     },
+     "distintos": {
+      "n": 63,
+      "media": 48.3,
+      "mediana": 23,
+      "p90": 93,
+      "max": 610
+     },
+     "ocorrencias": {
+      "n": 63,
+      "media": 110.5,
+      "mediana": 52,
+      "p90": 190,
+      "max": 996
+     },
+     "chars_estado": {
+      "n": 63,
+      "media": 11099.3,
+      "mediana": 6016,
+      "p90": 14998,
+      "max": 106530
+     },
+     "ocorrencias_total": 6963,
+     "acima_do_teto_de_estado": 3,
+     "chars_estado_total": 699254
+    },
+    "leitura·poda": {
+     "cobre": 62,
+     "pct": 98.4,
+     "paginas": {
+      "n": 63,
+      "media": 92.6,
+      "mediana": 67,
+      "p90": 146,
+      "max": 762
+     },
+     "distintos": {
+      "n": 63,
+      "media": 30.4,
+      "mediana": 13,
+      "p90": 67,
+      "max": 539
+     },
+     "ocorrencias": {
+      "n": 63,
+      "media": 70.4,
+      "mediana": 30,
+      "p90": 120,
+      "max": 643
+     },
+     "chars_estado": {
+      "n": 63,
+      "media": 8834.1,
+      "mediana": 4795,
+      "p90": 12051,
+      "max": 87542
+     },
+     "ocorrencias_total": 4437,
+     "acima_do_teto_de_estado": 2,
+     "chars_estado_total": 556547
+    }
+   },
+   "falhas": {
+    "top-k do BM25 da pergunta": {
+     "a página com o valor fica fora do top-6": 4,
+     "a página com o valor fica fora do top-6 (é a pág. 1, a capa)": 2
+    },
+    "poda por código": {
+     "valor sem R$ colado antes (tabela)": 1
+    }
+   }
+  }
+ },
+ "casos": {
+  "Q1": [
+   {
+    "controle": "01138122000101-1-000084/2026",
+    "arquivo": "01 - Edital - Edital_e_Contrato_Administrativo.pdf",
+    "pagina": 1,
+    "valor": "16/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 889
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 889
+     },
+     "leitura": {
+      "paginas": 78,
+      "cobre": true,
+      "distintos": 14,
+      "ocorrencias": 18,
+      "chars_estado": 5520
+     },
+     "leitura·poda": {
+      "paginas": 78,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 7,
+      "chars_estado": 1972
+     }
+    },
+    "candidatos_citada": [
+     "16/09/2026",
+     "25/08/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "01611007000102-1-000017/2026",
+    "arquivo": "01 - Edital - Edital_Folha_de_pagamento_.pdf",
+    "pagina": 1,
+    "valor": "01/10/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 925
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 925
+     },
+     "leitura": {
+      "paginas": 50,
+      "cobre": true,
+      "distintos": 10,
+      "ocorrencias": 16,
+      "chars_estado": 5586
+     },
+     "leitura·poda": {
+      "paginas": 50,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 5,
+      "chars_estado": 1478
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "01/10/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "08:00",
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "DATA DE ABERTURA DA SESSÃO PÚBLICA: 01 de outubro de 2026. HORÁRIO: 09:00H00M00 seg, horário de Brasília"
+   },
+   {
+    "controle": "01612444000140-1-000095/2026",
+    "arquivo": "05 - Edital - 011- EDITAL PREGAO 31 PNCP.pdf",
+    "pagina": 1,
+    "valor": "21/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1008
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 11,
+      "chars_estado": 2284
+     },
+     "leitura": {
+      "paginas": 129,
+      "cobre": true,
+      "distintos": 23,
+      "ocorrencias": 44,
+      "chars_estado": 14321
+     },
+     "leitura·poda": {
+      "paginas": 129,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 18,
+      "chars_estado": 4083
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "21/09/2026",
+     "27/08/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "08:30",
+     "08:31",
+     "08:59",
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "01613076000155-1-000033/2026",
+    "arquivo": "01 - Edital - EDITAL_DE_LICITA__O_PE_004-2026_GERENCIAMENTO_FOLHA.pdf",
+    "pagina": 1,
+    "valor": "30/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 493
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 1640
+     },
+     "leitura": {
+      "paginas": 122,
+      "cobre": true,
+      "distintos": 12,
+      "ocorrencias": 58,
+      "chars_estado": 21910
+     },
+     "leitura·poda": {
+      "paginas": 122,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 14,
+      "chars_estado": 3906
+     }
+    },
+    "candidatos_citada": [
+     "30/09/2026"
+    ],
+    "hora": "09:01",
+    "horas_no_entorno": [
+     "09:00",
+     "09:01"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 30,
+      "melhor_posicao_com_o_valor": 9
+     }
+    ],
+    "trecho": "30/09/2026 às 09h01min (horário de Brasília/DF) VIII. Apresentação dos documentos de HABILITAÇÃO pelo licitante com a melhor proposta"
+   },
+   {
+    "controle": "01614599000116-1-000011/2026",
+    "arquivo": "01 - Edital - EDITAL.pdf",
+    "pagina": 1,
+    "valor": "01/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 820
+     },
+     "leitura": {
+      "paginas": 92,
+      "cobre": true,
+      "distintos": 14,
+      "ocorrencias": 44,
+      "chars_estado": 14456
+     },
+     "leitura·poda": {
+      "paginas": 92,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 8,
+      "chars_estado": 2548
+     }
+    },
+    "candidatos_citada": [
+     "01/10/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "01614862000177-1-000068/2026",
+    "arquivo": "01 - Edital - 199713_editais_1787937573 -- PL 071-2026.pdf",
+    "pagina": 1,
+    "valor": "21/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 644
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 7,
+      "chars_estado": 1607
+     },
+     "leitura": {
+      "paginas": 44,
+      "cobre": true,
+      "distintos": 13,
+      "ocorrencias": 18,
+      "chars_estado": 5958
+     },
+     "leitura·poda": {
+      "paginas": 44,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 7,
+      "chars_estado": 1858
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "21/09/2026"
+    ],
+    "hora": "12:30",
+    "horas_no_entorno": [
+     "12:29",
+     "12:30"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "ABERTURA DA SESSÃO DO PREGÃO ELETRÔNICO PARA DISPUTA DE LANCES: Dia 21 de setembro de 2026 às 12h30min"
+   },
+   {
+    "controle": "01616271000139-1-000054/2026",
+    "arquivo": "01 - Edital - EDITAL_CESSAO_FOLHA_PAGAMENTO.pdf",
+    "pagina": 1,
+    "valor": "03/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 727
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 727
+     },
+     "leitura": {
+      "paginas": 36,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 6,
+      "chars_estado": 1676
+     },
+     "leitura·poda": {
+      "paginas": 36,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 5,
+      "chars_estado": 1403
+     }
+    },
+    "candidatos_citada": [
+     "03/09/2026",
+     "22/03/2023"
+    ],
+    "hora": "08:00",
+    "horas_no_entorno": [
+     "07:59",
+     "08:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "01787506000155-1-000182/2026",
+    "arquivo": "02 - Edital - edital.pdf",
+    "pagina": 2,
+    "valor": "07/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 574
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 8,
+      "chars_estado": 1023
+     },
+     "leitura": {
+      "paginas": 41,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 15,
+      "chars_estado": 3717
+     },
+     "leitura·poda": {
+      "paginas": 41,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 12,
+      "chars_estado": 2478
+     }
+    },
+    "candidatos_citada": [
+     "07/10/2026",
+     "22/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "08:00",
+     "08:30",
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "03184041000173-1-000099/2026",
+    "arquivo": "03 - Edital - EDITAL.PDF.pdf",
+    "pagina": 1,
+    "valor": "29/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 323,
+      "cobre": true,
+      "distintos": 25,
+      "ocorrencias": 69,
+      "chars_estado": 24353
+     },
+     "leitura·poda": {
+      "paginas": 323,
+      "cobre": true,
+      "distintos": 12,
+      "ocorrencias": 31,
+      "chars_estado": 10929
+     }
+    },
+    "candidatos_citada": [
+     "29/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 23,
+      "melhor_posicao_com_o_valor": 13
+     }
+    ],
+    "trecho": "DATA DE ABERTURA: 29/09/2026 HORÁRIO: 09:00 – Oficial de Brasília (DF)"
+   },
+   {
+    "controle": "04213779000184-1-000303/2026",
+    "arquivo": "01 - Edital - 6392499317341193742446_EDITAL CCE 05 2026.pdf",
+    "pagina": 1,
+    "valor": "08/10/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 581
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 8,
+      "chars_estado": 2568
+     },
+     "leitura": {
+      "paginas": 82,
+      "cobre": true,
+      "distintos": 13,
+      "ocorrencias": 60,
+      "chars_estado": 20000
+     },
+     "leitura·poda": {
+      "paginas": 82,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 48,
+      "chars_estado": 15654
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "08/10/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "A sessão virtual da concorrência eletrônica será realizada no seguinte endereço: Wwww.pregaobanrisul.com.br, no dia 08 de outubro de 2026, às 09:00h, podendo as propostas e os documentos serem enviados até às 08:h e 30 min, sendo que todas "
+   },
+   {
+    "controle": "06116743000108-1-000039/2026",
+    "arquivo": "01 - Edital - 017.pdf",
+    "pagina": 1,
+    "valor": "04/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 49,
+      "cobre": true,
+      "distintos": 15,
+      "ocorrencias": 15,
+      "chars_estado": 5401
+     },
+     "leitura·poda": {
+      "paginas": 49,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 4,
+      "chars_estado": 1280
+     }
+    },
+    "candidatos_citada": [
+     "04/09/2026"
+    ],
+    "hora": "08:00",
+    "horas_no_entorno": [
+     "08:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 9,
+      "melhor_posicao_com_o_valor": 9
+     }
+    ],
+    "trecho": "Data da sessão: 04/09/2026 Horário: 08:00(oito horas) Horário de Brasília"
+   },
+   {
+    "controle": "06554000000110-1-000030/2026",
+    "arquivo": "01 - Edital - 201255_editais_1789179827 -- EDITAL PREGÃO ELETRÔNICO  012.2026 Prestação de Serviços Bancários.pdf",
+    "pagina": 1,
+    "valor": "02/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 588
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 588
+     },
+     "leitura": {
+      "paginas": 37,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 4,
+      "chars_estado": 1256
+     },
+     "leitura·poda": {
+      "paginas": 37,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 3,
+      "chars_estado": 846
+     }
+    },
+    "candidatos_citada": [
+     "02/10/2026",
+     "14/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "07010511000133-1-000008/2026",
+    "arquivo": "01 - Edital - 07._INSTITUIO_FINANCEIRA._EDITAL_111.pdf",
+    "pagina": 1,
+    "valor": "01/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 8,
+      "chars_estado": 965
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 8,
+      "chars_estado": 965
+     },
+     "leitura": {
+      "paginas": 123,
+      "cobre": true,
+      "distintos": 17,
+      "ocorrencias": 31,
+      "chars_estado": 7794
+     },
+     "leitura·poda": {
+      "paginas": 123,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 8,
+      "chars_estado": 2240
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "01/10/2026",
+     "03/08/2026",
+     "04/10/2024",
+     "11/09/1990",
+     "14/12/2006"
+    ],
+    "hora": "10:00",
+    "horas_no_entorno": [
+     "09:30",
+     "10:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "07598618000144-1-000096/2026",
+    "arquivo": "02 - Edital - A02 - AVISO DE LICITACAO PE N 0827.01-2026.pdf",
+    "pagina": 1,
+    "valor": "28/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 1003
+     },
+     "top-k": {
+      "paginas": 10,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 10,
+      "chars_estado": 2826
+     },
+     "leitura": {
+      "paginas": 144,
+      "cobre": true,
+      "distintos": 16,
+      "ocorrencias": 46,
+      "chars_estado": 17538
+     },
+     "leitura·poda": {
+      "paginas": 144,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 16,
+      "chars_estado": 5284
+     }
+    },
+    "candidatos_citada": [
+     "01/09/2026",
+     "03/09/2026",
+     "28/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "do tipo maior lance por item que realizará às 09:00 horas do dia 28 de setembro de 2026, estará recebendo propostas através da Plataforma licitamaisbrasil.com.br"
+   },
+   {
+    "controle": "07847379000119-1-000076/2026",
+    "arquivo": "02 - Edital - EDITAL.pdf",
+    "pagina": 1,
+    "valor": "15/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 841
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1260
+     },
+     "leitura": {
+      "paginas": 50,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 17,
+      "chars_estado": 5333
+     },
+     "leitura·poda": {
+      "paginas": 50,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1123
+     }
+    },
+    "candidatos_citada": [
+     "15/09/2026",
+     "28/08/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00",
+     "09:05",
+     "17:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "07963259000187-1-000107/2026",
+    "arquivo": "01 - Edital - EDITAL_PREGO_ELETRNICO_N_007.2026PE.pdf",
+    "pagina": 1,
+    "valor": "31/08/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 1368
+     },
+     "top-k": {
+      "paginas": 8,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1516
+     },
+     "leitura": {
+      "paginas": 67,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 16,
+      "chars_estado": 5549
+     },
+     "leitura·poda": {
+      "paginas": 67,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 9,
+      "chars_estado": 2976
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "31/08/2026"
+    ],
+    "hora": "10:00",
+    "horas_no_entorno": [
+     "10:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "torna público para conhecimento de todos os interessados que será realizado no dia 31 de agosto de 2026 às 10h00min (horário de Brasília)"
+   },
+   {
+    "controle": "08145153000139-1-000049/2026",
+    "arquivo": "01 - Edital - EDITAL_DO_PE_N__011-2026_-_VENDA_DA_FOLHA.pdf",
+    "pagina": 1,
+    "valor": "28/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 767
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 6,
+      "chars_estado": 1022
+     },
+     "leitura": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 10,
+      "ocorrencias": 14,
+      "chars_estado": 4199
+     },
+     "leitura·poda": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 7,
+      "chars_estado": 1313
+     }
+    },
+    "candidatos_citada": [
+     "04/09/2026",
+     "23/09/2026",
+     "28/09/2026"
+    ],
+    "hora": "10:01",
+    "horas_no_entorno": [
+     "10:00",
+     "10:01",
+     "23:59"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "08145153000139-1-000052/2026",
+    "arquivo": "01 - Edital - EDITAL+DO+PE+N%c2%ba+011-2026+-+VENDA+DA+FOLHA.pdf",
+    "pagina": 1,
+    "valor": "28/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 767
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 6,
+      "chars_estado": 1022
+     },
+     "leitura": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 10,
+      "ocorrencias": 14,
+      "chars_estado": 4199
+     },
+     "leitura·poda": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 7,
+      "chars_estado": 1313
+     }
+    },
+    "candidatos_citada": [
+     "04/09/2026",
+     "23/09/2026",
+     "28/09/2026"
+    ],
+    "hora": "10:01",
+    "horas_no_entorno": [
+     "10:00",
+     "10:01",
+     "23:59"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "08358053000190-1-000156/2026",
+    "arquivo": "01 - Edital - 12._EDITAL_E_ANEXOS_-_PE_019_2026_ASS.PDF.pdf",
+    "pagina": 2,
+    "valor": "08/10/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 621
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 6,
+      "chars_estado": 1242
+     },
+     "leitura": {
+      "paginas": 124,
+      "cobre": true,
+      "distintos": 15,
+      "ocorrencias": 48,
+      "chars_estado": 16956
+     },
+     "leitura·poda": {
+      "paginas": 124,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 10,
+      "chars_estado": 2650
+     }
+    },
+    "candidatos_citada": [
+     "05/10/2026",
+     "08/10/2026"
+    ],
+    "hora": "08:00",
+    "horas_no_entorno": [
+     "07:59",
+     "08:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "DATA / HORA DA ABERTURA DA SESSÃO AMOSTRA / DEMONSTRAÇÃO? NÃO 08 de outubro de 2026 às 08h00min"
+   },
+   {
+    "controle": "10150050000109-1-000026/2025",
+    "arquivo": "01 - Edital - Documento_24_2025.pdf",
+    "pagina": 1,
+    "valor": "05/06/2025",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 383
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 9,
+      "chars_estado": 2169
+     },
+     "leitura": {
+      "paginas": 101,
+      "cobre": true,
+      "distintos": 23,
+      "ocorrencias": 41,
+      "chars_estado": 13357
+     },
+     "leitura·poda": {
+      "paginas": 101,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 12,
+      "chars_estado": 2897
+     }
+    },
+    "candidatos_citada": [
+     "05/06/2025"
+    ],
+    "hora": "10:30",
+    "horas_no_entorno": [
+     "10:30"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "11055682000156-1-000480/2026",
+    "arquivo": "01 - Edital - EDITAL202685.pdf",
+    "pagina": 1,
+    "valor": "08/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "leitura": {
+      "paginas": 66,
+      "cobre": true,
+      "distintos": 14,
+      "ocorrencias": 15,
+      "chars_estado": 5329
+     },
+     "leitura·poda": {
+      "paginas": 66,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 1456
+     }
+    },
+    "candidatos_citada": [
+     "08/10/2026"
+    ],
+    "hora": "10:05",
+    "horas_no_entorno": [
+     "10:05"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "11348570000193-1-000061/2026",
+    "arquivo": "02 - Edital - 200845_editais_1789999390 -- EDITAL PREGÃO BANCOS.pdf",
+    "pagina": 1,
+    "valor": "30/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 8,
+      "chars_estado": 1306
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 8,
+      "chars_estado": 1306
+     },
+     "leitura": {
+      "paginas": 33,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 10,
+      "chars_estado": 1970
+     },
+     "leitura·poda": {
+      "paginas": 33,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 6,
+      "chars_estado": 1149
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "03/01/2025",
+     "07/08/2014",
+     "10/09/2026",
+     "14/12/2006",
+     "30/09/2026"
+    ],
+    "hora": "09:40",
+    "horas_no_entorno": [
+     "08:00",
+     "09:30",
+     "09:40"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "Data da abertura da sessão pública: 30 de setembro de 2026. Horário de abertura do recebimento das propostas: a partir das 08h00min do dia 10 de setembro de 2026. Horário de encerramento do recebimento das propostas: às 09h30mim do dia 30 d"
+   },
+   {
+    "controle": "13460266000169-1-000070/2026",
+    "arquivo": "05 - Edital - 01 EDITAL NOVO.PDF.pdf",
+    "pagina": 1,
+    "valor": "30/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 1412
+     },
+     "leitura": {
+      "paginas": 148,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 24,
+      "chars_estado": 9094
+     },
+     "leitura·poda": {
+      "paginas": 148,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 8,
+      "chars_estado": 2462
+     }
+    },
+    "candidatos_citada": [
+     "30/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "13824248000119-1-000018/2026",
+    "arquivo": "01 - Edital - EDITAL_BANCO_TEODORO_SAMPAIO_BA.pdf",
+    "pagina": 1,
+    "valor": "15/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 985
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 985
+     },
+     "leitura": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 11,
+      "ocorrencias": 16,
+      "chars_estado": 4451
+     },
+     "leitura·poda": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 7,
+      "chars_estado": 1577
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "15/09/2026",
+     "31/03/2023"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:30",
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "ABERTURA E ANÁLISE DA(S) PROPOSTA(S): Ás 08:30 horas. Do dia 15 de setembro de 2026. INÍCIO DA SESSÃO DE DISPUTA DE PREÇOS: Ás 09:00 horas. Do dia 15 de setembro de 2026."
+   },
+   {
+    "controle": "14109763000180-1-000252/2026",
+    "arquivo": "01 - Edital - 201966_editais_1789733158 -- PE01712026.pdf",
+    "pagina": 1,
+    "valor": "14/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "leitura": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 12,
+      "ocorrencias": 18,
+      "chars_estado": 4980
+     },
+     "leitura·poda": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 3,
+      "chars_estado": 1078
+     }
+    },
+    "candidatos_citada": [
+     "14/10/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "15023922000191-1-000096/2026",
+    "arquivo": "01 - Edital - EDITAL -- 018. Banco - BR CONETCADO - 07-10-26.pdf",
+    "pagina": 2,
+    "valor": "07/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "leitura": {
+      "paginas": 84,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 10,
+      "chars_estado": 3274
+     },
+     "leitura·poda": {
+      "paginas": 84,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 7,
+      "chars_estado": 2454
+     }
+    },
+    "candidatos_citada": [
+     "07/10/2026"
+    ],
+    "hora": "13:00",
+    "horas_no_entorno": [
+     "13:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "16416125000137-1-000026/2026",
+    "arquivo": "01 - Edital - 0172026.pdf",
+    "pagina": 1,
+    "valor": "09/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 6,
+      "chars_estado": 1151
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 7,
+      "chars_estado": 1428
+     },
+     "leitura": {
+      "paginas": 54,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 14,
+      "chars_estado": 3281
+     },
+     "leitura·poda": {
+      "paginas": 54,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 868
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "09/09/2026",
+     "26/08/2026"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:30",
+     "09:00",
+     "12:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "18194076000160-1-000068/2026",
+    "arquivo": "01 - Edital - EDITAL_E_ANEXOS_-_GERENCIAMENTO_DA_FOLHA.pdf",
+    "pagina": 1,
+    "valor": "21/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 482
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 87,
+      "cobre": true,
+      "distintos": 24,
+      "ocorrencias": 219,
+      "chars_estado": 35184
+     },
+     "leitura·poda": {
+      "paginas": 87,
+      "cobre": true,
+      "distintos": 13,
+      "ocorrencias": 206,
+      "chars_estado": 31258
+     }
+    },
+    "candidatos_citada": [
+     "21/09/2026"
+    ],
+    "hora": "09:01",
+    "horas_no_entorno": [
+     "09:00",
+     "09:01"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 14,
+      "melhor_posicao_com_o_valor": 8
+     }
+    ],
+    "trecho": "Data e horário da sessão:21/09/2026 às 09:01 horas. Data e horário final para envio de Proposta: 21/09/2026 às 09:00 horas."
+   },
+   {
+    "controle": "18243287000146-1-000130/2026",
+    "arquivo": "06 - Edital - EDITAL - PREGAO ELETRONICO 33-2026 - FOLHA DE PAGAMENTO.PDF.pdf",
+    "pagina": 1,
+    "valor": "29/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 313
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 146,
+      "cobre": true,
+      "distintos": 18,
+      "ocorrencias": 54,
+      "chars_estado": 18044
+     },
+     "leitura·poda": {
+      "paginas": 146,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 14,
+      "chars_estado": 4354
+     }
+    },
+    "candidatos_citada": [
+     "29/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 21,
+      "melhor_posicao_com_o_valor": 11
+     }
+    ],
+    "trecho": "DATA DA SESSÃO PÚBLICA Dia 29/09/2026 às 09 horas. (horário de Brasília)"
+   },
+   {
+    "controle": "18303180000146-1-000038/2026",
+    "arquivo": "01 - Edital - Edital_PAL_0642026_PE_0202026_Folha_de_pagamento.pdf",
+    "pagina": 1,
+    "valor": "13/10/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 518
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 903
+     },
+     "leitura": {
+      "paginas": 46,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 11,
+      "chars_estado": 3511
+     },
+     "leitura·poda": {
+      "paginas": 46,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 772
+     }
+    },
+    "candidatos_citada": [
+     "13/10/2026",
+     "17/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "ABERTURA DAS PROPOSTAS: AS 09:00 DO DIA 13 DE OUTUBRO DE 2026"
+   },
+   {
+    "controle": "18307496000106-1-000041/2026",
+    "arquivo": "01 - Edital - EDITAL_DE_LICITACAO_2.pdf",
+    "pagina": 1,
+    "valor": "14/07/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 443
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 4,
+      "ocorrencias": 4,
+      "chars_estado": 977
+     },
+     "leitura": {
+      "paginas": 48,
+      "cobre": true,
+      "distintos": 19,
+      "ocorrencias": 23,
+      "chars_estado": 7561
+     },
+     "leitura·poda": {
+      "paginas": 48,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 10,
+      "chars_estado": 2870
+     }
+    },
+    "candidatos_citada": [
+     "14/07/2026",
+     "14/07/2027"
+    ],
+    "hora": null,
+    "horas_no_entorno": [],
+    "hora_no_entorno": null,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 11,
+      "melhor_posicao_com_o_valor": 11
+     }
+    ],
+    "trecho": "O Período de Recebimento dos Documentos de credenciamento será iniciado a partir do dia 14/07/2026, se encerrando no dia 14/07/2027, através da Plataforma LICITAR DIGITAL, no sítio https://licitar.digital."
+   },
+   {
+    "controle": "18308726000151-1-000076/2026",
+    "arquivo": "01 - Edital - Edital.pdf",
+    "pagina": 2,
+    "valor": "25/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 752
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 446
+     },
+     "leitura": {
+      "paginas": 164,
+      "cobre": true,
+      "distintos": 13,
+      "ocorrencias": 34,
+      "chars_estado": 10438
+     },
+     "leitura·poda": {
+      "paginas": 164,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 12,
+      "chars_estado": 2548
+     }
+    },
+    "candidatos_citada": [
+     "02/09/2026",
+     "14/12/2006",
+     "25/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "08:00",
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "23444680000138-1-000020/2026",
+    "arquivo": "01 - Edital - EDITAL_E_SEUS_ANEXOS.pdf",
+    "pagina": 1,
+    "valor": "09/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 831
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 81,
+      "cobre": true,
+      "distintos": 12,
+      "ocorrencias": 19,
+      "chars_estado": 6568
+     },
+     "leitura·poda": {
+      "paginas": 81,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 5,
+      "chars_estado": 1509
+     }
+    },
+    "candidatos_citada": [
+     "09/10/2026",
+     "18/09/2026"
+    ],
+    "hora": "08:00",
+    "horas_no_entorno": [
+     "08:00",
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 33,
+      "melhor_posicao_com_o_valor": 33
+     }
+    ],
+    "trecho": "DATADA | HORADA | HORADA | qm CRITÉRIO DE MODO DE ABERTURA: | ABERTURA | DISPUTA JULGAMENTO: DISPUTA MAIOR 09/10/2026 | 08:00H 09:00H | OFERTA GLOBAL ELETRÔNICO"
+   },
+   {
+    "controle": "27792373000107-1-000006/2026",
+    "arquivo": "06 - Edital - 169177_editais_1776437888 -- NOVO_EDITAL_VENDA_DA_FOLHA_1836.25_17.04_-_20.05_assinado.pdf",
+    "pagina": 1,
+    "valor": "20/05/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 752
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 231,
+      "cobre": true,
+      "distintos": 28,
+      "ocorrencias": 79,
+      "chars_estado": 28004
+     },
+     "leitura·poda": {
+      "paginas": 231,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 7,
+      "chars_estado": 2554
+     }
+    },
+    "candidatos_citada": [
+     "03/02/2025",
+     "20/05/2026"
+    ],
+    "hora": "10:00",
+    "horas_no_entorno": [
+     "10:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 54,
+      "melhor_posicao_com_o_valor": 53
+     }
+    ],
+    "trecho": "Data de Abertura: 20/05/2026 Horário: 10h00min (horário de Brasília) Plataforma eletrônica: www.licitanet.com.br"
+   },
+   {
+    "controle": "28645786000113-1-000087/2026",
+    "arquivo": "_aninhado -- 39 -2026 - VENDA DA FOLHA D -- EDITAL assinado.pdf",
+    "pagina": 1,
+    "valor": "14/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 3,
+      "chars_estado": 587
+     },
+     "leitura": {
+      "paginas": 57,
+      "cobre": true,
+      "distintos": 12,
+      "ocorrencias": 16,
+      "chars_estado": 5656
+     },
+     "leitura·poda": {
+      "paginas": 57,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 6,
+      "chars_estado": 2259
+     }
+    },
+    "candidatos_citada": [
+     "14/10/2026"
+    ],
+    "hora": "09:30",
+    "horas_no_entorno": [
+     "09:30"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "29138328000150-1-000078/2026",
+    "arquivo": "01 - Edital - EDITAL PORTAL.pdf",
+    "pagina": 4,
+    "valor": "09/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 829
+     },
+     "leitura": {
+      "paginas": 68,
+      "cobre": true,
+      "distintos": 17,
+      "ocorrencias": 44,
+      "chars_estado": 16043
+     },
+     "leitura·poda": {
+      "paginas": 68,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 33,
+      "chars_estado": 11573
+     }
+    },
+    "candidatos_citada": [
+     "09/09/2026"
+    ],
+    "hora": "09:30",
+    "horas_no_entorno": [
+     "09:30"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "O presente certame ocorrerá no seguinte local: Na sede da Prefeitura Municipal de Duque de Caxias, Alameda Esmeralda nº 206 (Auditório), no dia 09 de setembro de 2026, com início às 9h30min."
+   },
+   {
+    "controle": "32001836000105-1-000217/2026",
+    "arquivo": "01 - Edital - Edital_de_Prego_Eletrnico_n_302026_proc._114922026.pdf",
+    "pagina": 1,
+    "valor": "06/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 583
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 7,
+      "chars_estado": 1543
+     },
+     "leitura": {
+      "paginas": 51,
+      "cobre": true,
+      "distintos": 18,
+      "ocorrencias": 32,
+      "chars_estado": 9475
+     },
+     "leitura·poda": {
+      "paginas": 51,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 10,
+      "chars_estado": 2708
+     }
+    },
+    "candidatos_citada": [
+     "06/10/2026",
+     "18/09/2026"
+    ],
+    "hora": "09:30",
+    "horas_no_entorno": [
+     "09:30",
+     "10:00",
+     "15:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "44892693000140-1-000208/2026",
+    "arquivo": "01 - Edital - P.E. 14-2026 - Contratacao de empresa para Gerenciar Folha de pagamento - TRI-REPUBLICADO.pdf",
+    "pagina": 1,
+    "valor": "29/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": false,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 906
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 112,
+      "cobre": true,
+      "distintos": 12,
+      "ocorrencias": 52,
+      "chars_estado": 12940
+     },
+     "leitura·poda": {
+      "paginas": 112,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 18,
+      "chars_estado": 2946
+     }
+    },
+    "candidatos_citada": [
+     "04/09/2026",
+     "19/08/2025",
+     "29/09/2026"
+    ],
+    "hora": "10:00",
+    "horas_no_entorno": [
+     "00:00",
+     "08:00",
+     "10:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "espaço no separador (29 / 09 /2026)"
+     },
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 14,
+      "melhor_posicao_com_o_valor": 13
+     }
+    ],
+    "trecho": "RECEBIMENTO DAS PROPOSTAS DE 04 / 09 /2026 às 00h. ATÉ 29 / 09 /2026 às 08:00h. INÍCIO DA SESSÃO DE DISPUTA DE PREÇOS: 29 / 09 /2026 às 10:00h."
+   },
+   {
+    "controle": "45162328000142-1-000047/2026",
+    "arquivo": "01 - Edital - Edital_Pregao_Eletronico_232026_Pontes_Gestal_Timbrado.pdf",
+    "pagina": 1,
+    "valor": "04/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 976
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 32,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 12,
+      "chars_estado": 3526
+     },
+     "leitura·poda": {
+      "paginas": 32,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1233
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "04/09/2026",
+     "19/08/2026"
+    ],
+    "hora": "14:00",
+    "horas_no_entorno": [
+     "13:30",
+     "14:00",
+     "17:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 7,
+      "melhor_posicao_com_o_valor": 7
+     }
+    ],
+    "trecho": "Encerramento das propostas eletrônicas: 13h30 do dia 04/09/2026 (horário de Brasília) Início da disputa: 14h00 do dia 04/09/2026 (horário de Brasília)"
+   },
+   {
+    "controle": "45176153000122-1-000159/2026",
+    "arquivo": "04 - Edital - PE-62_26---Folha-de-pagamento.pdf",
+    "pagina": 2,
+    "valor": "22/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 5,
+      "chars_estado": 1057
+     },
+     "leitura": {
+      "paginas": 69,
+      "cobre": true,
+      "distintos": 10,
+      "ocorrencias": 25,
+      "chars_estado": 6706
+     },
+     "leitura·poda": {
+      "paginas": 69,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 21,
+      "chars_estado": 5736
+     }
+    },
+    "candidatos_citada": [
+     "22/09/2026"
+    ],
+    "hora": "09:05",
+    "horas_no_entorno": [
+     "09:00",
+     "09:05"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "1.1.6. Abertura e avaliação das propostas: 9h05 de 22 de setembro de 2026."
+   },
+   {
+    "controle": "45735479000142-1-000017/2026",
+    "arquivo": "01 - Edital - PE_FOLHA_DE_PAGAMENTO_212026.pdf",
+    "pagina": 1,
+    "valor": "31/08/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 1088
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 1088
+     },
+     "leitura": {
+      "paginas": 58,
+      "cobre": true,
+      "distintos": 11,
+      "ocorrencias": 24,
+      "chars_estado": 8599
+     },
+     "leitura·poda": {
+      "paginas": 58,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 8,
+      "chars_estado": 2193
+     }
+    },
+    "candidatos_citada": [
+     "04/01/2024",
+     "17/08/2026",
+     "31/08/2026"
+    ],
+    "hora": "10:00",
+    "horas_no_entorno": [
+     "08:00",
+     "09:00",
+     "10:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "45780087000103-1-000110/2026",
+    "arquivo": "01 - Edital - Edital_TR_e_apendice_PE_4026.pdf",
+    "pagina": 4,
+    "valor": "21/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 237
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1232
+     },
+     "leitura": {
+      "paginas": 70,
+      "cobre": true,
+      "distintos": 11,
+      "ocorrencias": 14,
+      "chars_estado": 4696
+     },
+     "leitura·poda": {
+      "paginas": 70,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 7,
+      "chars_estado": 1899
+     }
+    },
+    "candidatos_citada": [
+     "21/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "A sessão pública será realizada no site www.bbmnet.com.br às 09:00 horas do dia 21 de setembro de 2026, horário de Brasília - DF."
+   },
+   {
+    "controle": "46177523000109-1-000249/2026",
+    "arquivo": "01 - Edital - EDITAL_PE_67_2026_FOLHA_DE_PAGAMENTO.pdf",
+    "pagina": 1,
+    "valor": "17/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": false,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 592
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1002
+     },
+     "leitura": {
+      "paginas": 78,
+      "cobre": true,
+      "distintos": 20,
+      "ocorrencias": 28,
+      "chars_estado": 8987
+     },
+     "leitura·poda": {
+      "paginas": 78,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 10,
+      "chars_estado": 2464
+     }
+    },
+    "candidatos_citada": [
+     "01/09/2026",
+     "17/09/2026"
+    ],
+    "hora": "09:45",
+    "horas_no_entorno": [
+     "09:00",
+     "09:45",
+     "10:00",
+     "17:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "dígitos espaçados pelo OCR (1 7 / 0 9 / 2 0 2 6)"
+     }
+    ],
+    "trecho": "ABERTURA E ANÁLISE DE PROPOSTAS: 1 7 / 0 9 / 2 0 2 6 à s 0 9 h 4 5 . INÍCIO DA ETAPA DE LANCES: 1 7 / 0 9 / 2 0 2 6 a p a r t i r d a s 1 0 h ."
+   },
+   {
+    "controle": "46422408000152-1-000455/2026",
+    "arquivo": "01 - Edital - Edital de Pregao Eletronico.pdf",
+    "pagina": 1,
+    "valor": "08/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 3,
+      "chars_estado": 946
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 3,
+      "chars_estado": 946
+     },
+     "leitura": {
+      "paginas": 91,
+      "cobre": true,
+      "distintos": 15,
+      "ocorrencias": 16,
+      "chars_estado": 5471
+     },
+     "leitura·poda": {
+      "paginas": 91,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 672
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "08/09/2026",
+     "21/12/2023"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "46446696000185-1-000297/2026",
+    "arquivo": "01 - Edital - EDITAL.pdf",
+    "pagina": 1,
+    "valor": "02/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 5,
+      "chars_estado": 1331
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 8,
+      "chars_estado": 2076
+     },
+     "leitura": {
+      "paginas": 70,
+      "cobre": true,
+      "distintos": 17,
+      "ocorrencias": 36,
+      "chars_estado": 9298
+     },
+     "leitura·poda": {
+      "paginas": 70,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 15,
+      "chars_estado": 4573
+     }
+    },
+    "candidatos_citada": [
+     "02/10/2026",
+     "04/05/2026",
+     "17/09/2026",
+     "28/02/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "46631248000151-1-000103/2026",
+    "arquivo": "01 - Edital - 11_-_EDITAL_RETIFICADO_-_P.E._48-2026_-_FOLHA_DE_P.pdf",
+    "pagina": 1,
+    "valor": "16/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": false,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 485
+     },
+     "top-k": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 16,
+      "ocorrencias": 31,
+      "chars_estado": 11362
+     },
+     "leitura": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 16,
+      "ocorrencias": 31,
+      "chars_estado": 11362
+     },
+     "leitura·poda": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 1023
+     }
+    },
+    "candidatos_citada": [
+     "16/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "08:59",
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "separador ponto ou hífen (16.09.2026)"
+     }
+    ],
+    "trecho": "DATA / HORÁRIO DA SESSÃO: 16.09.2026 ÀS 09h00min (HORÁRIO DE BRASÍLIA)"
+   },
+   {
+    "controle": "46634317000180-1-000055/2026",
+    "arquivo": "01 - Edital - Edital_03126.pdf",
+    "pagina": 1,
+    "valor": "07/08/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 789
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 1,
+      "ocorrencias": 6,
+      "chars_estado": 2376
+     },
+     "leitura": {
+      "paginas": 45,
+      "cobre": true,
+      "distintos": 16,
+      "ocorrencias": 68,
+      "chars_estado": 23614
+     },
+     "leitura·poda": {
+      "paginas": 45,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 51,
+      "chars_estado": 18522
+     }
+    },
+    "candidatos_citada": [
+     "07/08/2026",
+     "28/07/2026",
+     "29/07/2026"
+    ],
+    "hora": "09:30",
+    "horas_no_entorno": [
+     "08:00",
+     "08:01",
+     "09:30"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 24,
+      "melhor_posicao_com_o_valor": 24
+     }
+    ],
+    "trecho": "ABERTURA DAS PROPOSTAS Dia 07/08/2026, às 08h01 (Horário de Brasília) INÍCIO DA DISPUTA DE LANCES Dia 07/08/2026, às 09h30 (Horário de Brasília)"
+   },
+   {
+    "controle": "46634531000137-1-000233/2026",
+    "arquivo": "01 - Edital - EDITAL__FOLHA_DE_PAGAMENTO.pdf",
+    "pagina": 3,
+    "valor": "01/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 591
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 6,
+      "chars_estado": 1050
+     },
+     "leitura": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 10,
+      "ocorrencias": 19,
+      "chars_estado": 5788
+     },
+     "leitura·poda": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 9,
+      "chars_estado": 2012
+     }
+    },
+    "candidatos_citada": [
+     "01/09/2026",
+     "11/08/2026"
+    ],
+    "hora": "08:20",
+    "horas_no_entorno": [
+     "08:10",
+     "08:15",
+     "08:20",
+     "08:25"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "46643466000106-1-000704/2026",
+    "arquivo": "01 - Edital - pe169s.pdf",
+    "pagina": 1,
+    "valor": "03/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1057
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 6,
+      "chars_estado": 1467
+     },
+     "leitura": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 17,
+      "ocorrencias": 26,
+      "chars_estado": 7601
+     },
+     "leitura·poda": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 13,
+      "chars_estado": 3773
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "03/09/2026",
+     "30/09/2022"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:29",
+     "08:30",
+     "08:40"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "46643466000106-1-000967/2026",
+    "arquivo": "01 - Edital - PE169R.PDF.pdf",
+    "pagina": 1,
+    "valor": "02/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1057
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 10,
+      "chars_estado": 2114
+     },
+     "leitura": {
+      "paginas": 138,
+      "cobre": true,
+      "distintos": 17,
+      "ocorrencias": 50,
+      "chars_estado": 14762
+     },
+     "leitura·poda": {
+      "paginas": 138,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 24,
+      "chars_estado": 6852
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "02/10/2026",
+     "30/09/2022"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:29",
+     "08:30",
+     "08:40"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "56401177000154-1-000115/2026",
+    "arquivo": "01 - Edital - 2026000238 -- edital.pdf",
+    "pagina": 3,
+    "valor": "17/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 5,
+      "chars_estado": 877
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 4,
+      "chars_estado": 1222
+     },
+     "leitura": {
+      "paginas": 54,
+      "cobre": true,
+      "distintos": 14,
+      "ocorrencias": 22,
+      "chars_estado": 6503
+     },
+     "leitura·poda": {
+      "paginas": 54,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 8,
+      "chars_estado": 1988
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "07/08/2026",
+     "16/09/2026",
+     "17/09/2026",
+     "23/03/2023"
+    ],
+    "hora": "08:45",
+    "horas_no_entorno": [
+     "08:45",
+     "16:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "58197948000169-1-000025/2026",
+    "arquivo": "03 - Edital - EDITAL_014_2026_LEILO_INSTITUIO_FINANCEIRA_FOLHA_DE_PAGTO__A.pdf",
+    "pagina": 1,
+    "valor": "02/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 7,
+      "chars_estado": 1197
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 8,
+      "chars_estado": 1449
+     },
+     "leitura": {
+      "paginas": 47,
+      "cobre": true,
+      "distintos": 18,
+      "ocorrencias": 35,
+      "chars_estado": 9176
+     },
+     "leitura·poda": {
+      "paginas": 47,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 7,
+      "chars_estado": 1413
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "02/10/2026",
+     "10/09/2026",
+     "11/09/2026",
+     "20/10/2023"
+    ],
+    "hora": "09:01",
+    "horas_no_entorno": [
+     "09:00",
+     "09:01",
+     "10:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "58987629000157-1-000219/2026",
+    "arquivo": "01 - Edital - edital.pdf",
+    "pagina": 1,
+    "valor": "10/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 475
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 608
+     },
+     "leitura": {
+      "paginas": 34,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 10,
+      "chars_estado": 3571
+     },
+     "leitura·poda": {
+      "paginas": 34,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 1083
+     }
+    },
+    "candidatos_citada": [
+     "10/09/2026"
+    ],
+    "hora": "09:30",
+    "horas_no_entorno": [
+     "09:30"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "66229717000118-1-000062/2026",
+    "arquivo": "01 - Edital - PROCESSO_FOLHA_DE_PAGAMENTO.pdf",
+    "pagina": 1,
+    "valor": "16/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 445
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 29,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 929
+     },
+     "leitura·poda": {
+      "paginas": 29,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 929
+     }
+    },
+    "candidatos_citada": [
+     "16/09/2026"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:20",
+     "08:30"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 14,
+      "melhor_posicao_com_o_valor": 14
+     }
+    ],
+    "trecho": "Recebimento de Propostas: Fim: 16/09/2026 às 08h20min Realização: 16/09/2026 Horário: 08h30min, horário de Brasília"
+   },
+   {
+    "controle": "66234360000166-1-000024/2026",
+    "arquivo": "01 - Edital - EDITAL_FOLHA_PE_202026.pdf",
+    "pagina": 1,
+    "valor": "23/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 54,
+      "cobre": true,
+      "distintos": 11,
+      "ocorrencias": 29,
+      "chars_estado": 10028
+     },
+     "leitura·poda": {
+      "paginas": 54,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 684
+     }
+    },
+    "candidatos_citada": [
+     "23/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     },
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 15,
+      "melhor_posicao_com_o_valor": 15
+     }
+    ],
+    "trecho": "A abertura da sessão será ÀS 09:00 HORAS DO DIA 23 DE SETEMBRO DE 2026 (HORÁRIO DE BRASÍLIA-DF)."
+   },
+   {
+    "controle": "75381178000129-1-000069/2026",
+    "arquivo": "02 - Edital - EDITAL-PREGAO-36.2026.pdf",
+    "pagina": 1,
+    "valor": "03/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 526
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 806
+     },
+     "leitura": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 13,
+      "chars_estado": 3546
+     },
+     "leitura·poda": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 12,
+      "chars_estado": 3136
+     }
+    },
+    "candidatos_citada": [
+     "03/09/2026",
+     "20/08/2026"
+    ],
+    "hora": "09:30",
+    "horas_no_entorno": [
+     "09:30",
+     "09:31"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "Abertura da Sessão Pública Às 09h:30min do dia 03 de setembro de 2026 Início da Sessão de Lances Às 09h:31min do dia 03 de setembro de 2026"
+   },
+   {
+    "controle": "75392019000120-1-000050/2026",
+    "arquivo": "02 - Outros Documentos - Aviso_da_02_Chamada_Inex._262026_Credenc._042026_Folha_de_Pagamento.pdf",
+    "pagina": 1,
+    "valor": "28/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 5,
+      "chars_estado": 921
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 9,
+      "chars_estado": 1560
+     },
+     "leitura": {
+      "paginas": 26,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 14,
+      "chars_estado": 3508
+     },
+     "leitura·poda": {
+      "paginas": 26,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 10,
+      "chars_estado": 1842
+     }
+    },
+    "candidatos_citada": [
+     "11/09/2026",
+     "28/09/2026"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:00",
+     "08:30",
+     "17:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "75392019000120-1-000052/2026",
+    "arquivo": "01 - Aviso de Contratação Direta - Edital_Credenciamento_042026_da_Folha_de_Pagamento.pdf",
+    "pagina": 1,
+    "valor": "08/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 639
+     },
+     "top-k": {
+      "paginas": 25,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 9,
+      "chars_estado": 2587
+     },
+     "leitura": {
+      "paginas": 25,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 9,
+      "chars_estado": 2587
+     },
+     "leitura·poda": {
+      "paginas": 25,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 5,
+      "chars_estado": 921
+     }
+    },
+    "candidatos_citada": [
+     "08/09/2026",
+     "19/08/2026"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:00",
+     "08:30",
+     "17:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "75741330000137-1-000250/2026",
+    "arquivo": "01 - Edital - PE 99-2026 - Insituicao Fi -- Edital PE 99-2026 - Banco Folha Pagamento - ADM.pdf",
+    "pagina": 1,
+    "valor": "28/08/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 7,
+      "chars_estado": 1073
+     },
+     "top-k": {
+      "paginas": 7,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 17,
+      "chars_estado": 3960
+     },
+     "leitura": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 28,
+      "ocorrencias": 50,
+      "chars_estado": 16492
+     },
+     "leitura·poda": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 8,
+      "chars_estado": 2182
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "07/08/2014",
+     "14/12/2006",
+     "28/08/2026"
+    ],
+    "hora": "14:00",
+    "horas_no_entorno": [
+     "13:30",
+     "14:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "76105519000104-1-000225/2026",
+    "arquivo": "01 - Edital - EDITAL PREGAO 049-2026.pdf",
+    "pagina": 1,
+    "valor": "19/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 8,
+      "chars_estado": 1085
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 8,
+      "chars_estado": 1085
+     },
+     "leitura": {
+      "paginas": 62,
+      "cobre": true,
+      "distintos": 19,
+      "ocorrencias": 24,
+      "chars_estado": 7428
+     },
+     "leitura·poda": {
+      "paginas": 62,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 10,
+      "chars_estado": 2629
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "17/09/2026",
+     "18/12/2023",
+     "19/10/2026",
+     "22/01/2024"
+    ],
+    "hora": "09:01",
+    "horas_no_entorno": [
+     "08:00",
+     "08:30",
+     "08:31",
+     "09:00",
+     "09:01"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "76208834000159-1-000344/2026",
+    "arquivo": "01 - Edital - EDITAL P.E. 088 2026.PDF.pdf",
+    "pagina": 3,
+    "valor": "24/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": false,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 6,
+      "chars_estado": 1274
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 118,
+      "cobre": true,
+      "distintos": 22,
+      "ocorrencias": 90,
+      "chars_estado": 26808
+     },
+     "leitura·poda": {
+      "paginas": 118,
+      "cobre": true,
+      "distintos": 13,
+      "ocorrencias": 62,
+      "chars_estado": 17372
+     }
+    },
+    "candidatos_citada": [
+     "01/04/2021",
+     "08/01/2026",
+     "11/12/2023",
+     "24/09/2026",
+     "30/07/2025"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:15",
+     "08:30"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "separador ponto ou hífen (16.09.2026)"
+     },
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6",
+      "posicao_bm25_pagina_citada": 9,
+      "melhor_posicao_com_o_valor": 9
+     }
+    ],
+    "trecho": "Início da sessão de Disputa de Preços: 08:30h do dia 24.09.2026."
+   },
+   {
+    "controle": "77001311000108-1-000557/2026",
+    "arquivo": "01 - Edital - Relatorio - Edital - WCO621102-2129-TRDRYRWPGXIFW-8.pdf",
+    "pagina": 1,
+    "valor": "16/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 897
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 404
+     },
+     "leitura": {
+      "paginas": 28,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 5,
+      "chars_estado": 1301
+     },
+     "leitura·poda": {
+      "paginas": 28,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 5,
+      "chars_estado": 1301
+     }
+    },
+    "candidatos_citada": [
+     "16/10/2026",
+     "17/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "08:30",
+     "09:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 8,
+      "melhor_posicao_com_o_valor": 8
+     }
+    ],
+    "trecho": "Início da sessão e disputa de lances: 09h00min do dia 16/10/2026"
+   },
+   {
+    "controle": "77001311000108-1-000558/2026",
+    "arquivo": "01 - Edital - PE_n_133_2026__Gerenciamento_da_folha_de_pagamento__SMG_.pdf",
+    "pagina": 1,
+    "valor": "16/10/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 897
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 6,
+      "chars_estado": 1362
+     },
+     "leitura": {
+      "paginas": 57,
+      "cobre": true,
+      "distintos": 12,
+      "ocorrencias": 27,
+      "chars_estado": 7457
+     },
+     "leitura·poda": {
+      "paginas": 57,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 24,
+      "chars_estado": 6208
+     }
+    },
+    "candidatos_citada": [
+     "16/10/2026",
+     "17/09/2026"
+    ],
+    "hora": "09:00",
+    "horas_no_entorno": [
+     "08:30",
+     "09:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "82777319000192-1-000103/2026",
+    "arquivo": "01 - Outros Documentos - outros.pdf",
+    "pagina": 1,
+    "valor": "10/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 458
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 458
+     },
+     "leitura": {
+      "paginas": 47,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 10,
+      "chars_estado": 2616
+     },
+     "leitura·poda": {
+      "paginas": 47,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 5,
+      "chars_estado": 1335
+     }
+    },
+    "candidatos_citada": [
+     "10/09/2026"
+    ],
+    "hora": "10:00",
+    "horas_no_entorno": [
+     "09:30",
+     "10:00"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "82804212000196-1-000264/2026",
+    "arquivo": "01 - Edital - EDITAL_233.2026_-_PE_233_-_FOLHA_DE_PAGAMENTO_MAIOR_LANCE.pdf",
+    "pagina": 1,
+    "valor": "08/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 496
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 496
+     },
+     "leitura": {
+      "paginas": 73,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 19,
+      "chars_estado": 6791
+     },
+     "leitura·poda": {
+      "paginas": 73,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1405
+     }
+    },
+    "candidatos_citada": [
+     "08/09/2026"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:25",
+     "08:30"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "82804212000196-1-000266/2026",
+    "arquivo": "01 - Edital - EDITAL 2332026  PE 233  FOLHA DE PAGAMENTO MAIO.pdf",
+    "pagina": 1,
+    "valor": "08/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 496
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 496
+     },
+     "leitura": {
+      "paginas": 104,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 27,
+      "chars_estado": 9733
+     },
+     "leitura·poda": {
+      "paginas": 104,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 7,
+      "chars_estado": 1965
+     }
+    },
+    "candidatos_citada": [
+     "08/09/2026"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:25",
+     "08:30"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "82940776000156-1-000721/2026",
+    "arquivo": "01 - Edital - EDITAL GERENCIAMENTO FOLHA.pdf",
+    "pagina": 2,
+    "valor": "28/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 657
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 657
+     },
+     "leitura": {
+      "paginas": 109,
+      "cobre": true,
+      "distintos": 33,
+      "ocorrencias": 47,
+      "chars_estado": 13683
+     },
+     "leitura·poda": {
+      "paginas": 109,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 6,
+      "chars_estado": 1477
+     }
+    },
+    "candidatos_citada": [
+     "04/09/2026",
+     "28/09/2026"
+    ],
+    "hora": "08:00",
+    "horas_no_entorno": [
+     "08:00",
+     "08:01"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "82940776000156-1-000724/2026",
+    "arquivo": "01 - Edital - EDITAL202627.pdf",
+    "pagina": 2,
+    "valor": "28/09/2026",
+    "por_camada": {
+     "verificador": true,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 657
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 657
+     },
+     "leitura": {
+      "paginas": 109,
+      "cobre": true,
+      "distintos": 33,
+      "ocorrencias": 47,
+      "chars_estado": 13683
+     },
+     "leitura·poda": {
+      "paginas": 109,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 6,
+      "chars_estado": 1477
+     }
+    },
+    "candidatos_citada": [
+     "04/09/2026",
+     "28/09/2026"
+    ],
+    "hora": "08:00",
+    "horas_no_entorno": [
+     "08:00",
+     "08:01"
+    ],
+    "hora_no_entorno": true
+   },
+   {
+    "controle": "88814181000130-1-000414/2026",
+    "arquivo": "01 - Edital - Edital642026 1.pdf",
+    "pagina": 1,
+    "valor": "14/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 439
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 23,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 5,
+      "chars_estado": 1669
+     },
+     "leitura·poda": {
+      "paginas": 23,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 849
+     }
+    },
+    "candidatos_citada": [
+     "14/09/2026"
+    ],
+    "hora": "10:00",
+    "horas_no_entorno": [
+     "09:00",
+     "10:00"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     },
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 14,
+      "melhor_posicao_com_o_valor": 14
+     }
+    ],
+    "trecho": "Cadastro das propostas no sítio Até às 09 horas do dia 14 de setembro de 2026 Início da disputa 14 de setembro de 2026 às 10 horas"
+   },
+   {
+    "controle": "95993085000162-1-000050/2026",
+    "arquivo": "01 - Edital - Processo_82.2026_PE_36.2026__Instituicao_Banc_assinado_2.pdf",
+    "pagina": 1,
+    "valor": "23/09/2026",
+    "por_camada": {
+     "verificador": false,
+     "+extenso": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 458
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 6,
+      "chars_estado": 1276
+     },
+     "leitura": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 22,
+      "chars_estado": 7179
+     },
+     "leitura·poda": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 10,
+      "chars_estado": 2571
+     }
+    },
+    "candidatos_citada": [
+     "23/09/2026"
+    ],
+    "hora": "08:30",
+    "horas_no_entorno": [
+     "08:15",
+     "08:30"
+    ],
+    "hora_no_entorno": true,
+    "falhas": [
+     {
+      "onde": "regex de partida (camada verificador)",
+      "tipo": "data por extenso"
+     }
+    ],
+    "trecho": "PROPOSTAS: até dia 23 de setembro de 2026, às 08h15min ABERTURA DA SESSÃO: Dia 23 de setembro de 2026, às 08h30min MODO DE DISPUTA: ABERTO"
+   }
+  ],
+  "Q5": [
+   {
+    "controle": "01138122000101-1-000084/2026",
+    "arquivo": "01 - Edital - Edital_e_Contrato_Administrativo.pdf",
+    "pagina": 7,
+    "valor": "4.700.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 822
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 24,
+      "ocorrencias": 27,
+      "chars_estado": 3862
+     },
+     "leitura": {
+      "paginas": 78,
+      "cobre": true,
+      "distintos": 56,
+      "ocorrencias": 103,
+      "chars_estado": 11520
+     },
+     "leitura·poda": {
+      "paginas": 78,
+      "cobre": true,
+      "distintos": 25,
+      "ocorrencias": 40,
+      "chars_estado": 8609
+     }
+    },
+    "candidatos_citada": [
+     "100.000,00",
+     "4.700.000,00"
+    ]
+   },
+   {
+    "controle": "01611007000102-1-000017/2026",
+    "arquivo": "01 - Edital - Edital_Folha_de_pagamento_.pdf",
+    "pagina": 27,
+    "valor": "110.006,59",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 4,
+      "chars_estado": 1275
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 4,
+      "chars_estado": 1275
+     },
+     "leitura": {
+      "paginas": 50,
+      "cobre": true,
+      "distintos": 22,
+      "ocorrencias": 22,
+      "chars_estado": 1952
+     },
+     "leitura·poda": {
+      "paginas": 50,
+      "cobre": true,
+      "distintos": 21,
+      "ocorrencias": 21,
+      "chars_estado": 1952
+     }
+    },
+    "candidatos_citada": [
+     "110.006,59",
+     "550.032,95",
+     "740.743,64",
+     "6.600.395,40"
+    ]
+   },
+   {
+    "controle": "01612444000140-1-000095/2026",
+    "arquivo": "05 - Edital - 011- EDITAL PREGAO 31 PNCP.pdf",
+    "pagina": 1,
+    "valor": "64.910,49",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 409
+     },
+     "top-k": {
+      "paginas": 7,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 10,
+      "chars_estado": 1655
+     },
+     "leitura": {
+      "paginas": 129,
+      "cobre": true,
+      "distintos": 38,
+      "ocorrencias": 85,
+      "chars_estado": 10110
+     },
+     "leitura·poda": {
+      "paginas": 129,
+      "cobre": true,
+      "distintos": 27,
+      "ocorrencias": 45,
+      "chars_estado": 7066
+     }
+    },
+    "candidatos_citada": [
+     "64.910,49"
+    ]
+   },
+   {
+    "controle": "01612509000158-1-000157/2026",
+    "arquivo": "05 - Edital - 197812_editais_1788265727 -- EDITAL RETIFICADO.pdf",
+    "pagina": 38,
+    "valor": "2.983.847,27",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 11,
+      "ocorrencias": 13,
+      "chars_estado": 1073
+     },
+     "top-k": {
+      "paginas": 46,
+      "cobre": true,
+      "distintos": 42,
+      "ocorrencias": 61,
+      "chars_estado": 4519
+     },
+     "leitura": {
+      "paginas": 86,
+      "cobre": true,
+      "distintos": 42,
+      "ocorrencias": 92,
+      "chars_estado": 5671
+     },
+     "leitura·poda": {
+      "paginas": 86,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 10,
+      "chars_estado": 2988
+     }
+    },
+    "candidatos_citada": [
+     "785,55",
+     "1.167,23",
+     "1.436,61",
+     "1.614,28",
+     "1.722,93",
+     "1.893,08",
+     "1.000.000,00",
+     "2.983.847,27",
+     "5.500.000,00",
+     "7.720.000,00",
+     "8.830.000,00",
+     "10.693.000,00"
+    ]
+   },
+   {
+    "controle": "01614599000116-1-000011/2026",
+    "arquivo": "01 - Edital - EDITAL.pdf",
+    "pagina": 18,
+    "valor": "60.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 210
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 420
+     },
+     "leitura": {
+      "paginas": 92,
+      "cobre": true,
+      "distintos": 23,
+      "ocorrencias": 90,
+      "chars_estado": 4128
+     },
+     "leitura·poda": {
+      "paginas": 92,
+      "cobre": true,
+      "distintos": 23,
+      "ocorrencias": 88,
+      "chars_estado": 4128
+     }
+    },
+    "candidatos_citada": [
+     "60.000,00"
+    ]
+   },
+   {
+    "controle": "01614862000177-1-000068/2026",
+    "arquivo": "01 - Edital - 199713_editais_1787937573 -- PL 071-2026.pdf",
+    "pagina": 29,
+    "valor": "166.017,92",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 354
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 13,
+      "chars_estado": 1914
+     },
+     "leitura": {
+      "paginas": 44,
+      "cobre": true,
+      "distintos": 64,
+      "ocorrencias": 74,
+      "chars_estado": 3789
+     },
+     "leitura·poda": {
+      "paginas": 44,
+      "cobre": true,
+      "distintos": 56,
+      "ocorrencias": 66,
+      "chars_estado": 3148
+     }
+    },
+    "candidatos_citada": [
+     "166.017,92"
+    ]
+   },
+   {
+    "controle": "01616271000139-1-000054/2026",
+    "arquivo": "01 - Edital - EDITAL_CESSAO_FOLHA_PAGAMENTO.pdf",
+    "pagina": 1,
+    "valor": "134.407,24",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 17,
+      "chars_estado": 4060
+     },
+     "leitura": {
+      "paginas": 36,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 21,
+      "chars_estado": 5696
+     },
+     "leitura·poda": {
+      "paginas": 36,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 21,
+      "chars_estado": 5696
+     }
+    },
+    "candidatos_citada": [
+     "134.407,24"
+    ]
+   },
+   {
+    "controle": "03155934000190-1-000057/2026",
+    "arquivo": "19 - Edital - 3º EDITAL PR 023.2026 PROC 073.2026 - CONTRATACAO DE EMPRESA.pdf",
+    "pagina": 2,
+    "valor": "6.500.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 412
+     },
+     "top-k": {
+      "paginas": 16,
+      "cobre": true,
+      "distintos": 21,
+      "ocorrencias": 56,
+      "chars_estado": 17742
+     },
+     "leitura": {
+      "paginas": 762,
+      "cobre": true,
+      "distintos": 192,
+      "ocorrencias": 702,
+      "chars_estado": 106530
+     },
+     "leitura·poda": {
+      "paginas": 762,
+      "cobre": true,
+      "distintos": 117,
+      "ocorrencias": 414,
+      "chars_estado": 87542
+     }
+    },
+    "candidatos_citada": [
+     "6.500.000,00"
+    ]
+   },
+   {
+    "controle": "03184041000173-1-000099/2026",
+    "arquivo": "04 - Termo de Referência - TERMO-DE-REFERENCIA.PDF.pdf",
+    "pagina": 21,
+    "valor": "10.400.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 8,
+      "chars_estado": 1161
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 10,
+      "ocorrencias": 24,
+      "chars_estado": 4192
+     },
+     "leitura": {
+      "paginas": 323,
+      "cobre": true,
+      "distintos": 260,
+      "ocorrencias": 996,
+      "chars_estado": 84743
+     },
+     "leitura·poda": {
+      "paginas": 323,
+      "cobre": true,
+      "distintos": 137,
+      "ocorrencias": 464,
+      "chars_estado": 59170
+     }
+    },
+    "candidatos_citada": [
+     "10.400.000,00",
+     "11.398.569,51",
+     "11.556.936,60",
+     "12.548.335,14",
+     "14.689.499,30",
+     "37.645.005,41"
+    ]
+   },
+   {
+    "controle": "04213779000184-1-000303/2026",
+    "arquivo": "01 - Edital - 6392499317341193742446_EDITAL CCE 05 2026.pdf",
+    "pagina": 20,
+    "valor": "346.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 1630
+     },
+     "leitura": {
+      "paginas": 82,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 18,
+      "chars_estado": 6884
+     },
+     "leitura·poda": {
+      "paginas": 82,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 12,
+      "chars_estado": 4624
+     }
+    },
+    "candidatos_citada": [
+     "346.000,00"
+    ]
+   },
+   {
+    "controle": "04695284000139-1-000148/2026",
+    "arquivo": "02 - Edital - 86_EDITAL_P._E_FOLHA_DE_PAGAMENTO.PDF.pdf",
+    "pagina": 6,
+    "valor": "987.618,60",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 357
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 3,
+      "ocorrencias": 10,
+      "chars_estado": 3502
+     },
+     "leitura": {
+      "paginas": 412,
+      "cobre": true,
+      "distintos": 43,
+      "ocorrencias": 510,
+      "chars_estado": 74228
+     },
+     "leitura·poda": {
+      "paginas": 412,
+      "cobre": true,
+      "distintos": 43,
+      "ocorrencias": 510,
+      "chars_estado": 74228
+     }
+    },
+    "candidatos_citada": [
+     "987.618,60"
+    ],
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6",
+      "posicao_bm25_pagina_citada": 147,
+      "melhor_posicao_com_o_valor": 9
+     }
+    ],
+    "trecho": "Será considerada vencedora a licitante que apresentar a MAIOR OFERTA GLOBAL DE OUTORGA, desde que atendidas integralmente as especificações e demais condições estabelecidas neste Edital e seus anexos, observado como valor mínimo da outorga "
+   },
+   {
+    "controle": "06116743000108-1-000039/2026",
+    "arquivo": "01 - Edital - 017.pdf",
+    "pagina": 22,
+    "valor": "941.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 3,
+      "chars_estado": 1230
+     },
+     "leitura": {
+      "paginas": 49,
+      "cobre": true,
+      "distintos": 10,
+      "ocorrencias": 13,
+      "chars_estado": 2813
+     },
+     "leitura·poda": {
+      "paginas": 49,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 10,
+      "chars_estado": 2813
+     }
+    },
+    "candidatos_citada": [
+     "941.000,00"
+    ]
+   },
+   {
+    "controle": "07010511000133-1-000008/2026",
+    "arquivo": "01 - Edital - 07._INSTITUIO_FINANCEIRA._EDITAL_111.pdf",
+    "pagina": 4,
+    "valor": "2.857.544,77",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 595
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 379
+     },
+     "leitura": {
+      "paginas": 123,
+      "cobre": true,
+      "distintos": 30,
+      "ocorrencias": 49,
+      "chars_estado": 6377
+     },
+     "leitura·poda": {
+      "paginas": 123,
+      "cobre": true,
+      "distintos": 22,
+      "ocorrencias": 31,
+      "chars_estado": 5386
+     }
+    },
+    "candidatos_citada": [
+     "2.857.544,77"
+    ]
+   },
+   {
+    "controle": "07598618000144-1-000096/2026",
+    "arquivo": "01 - Edital - A01 - EDITAL E ANEXOS PE N 0827.01-2026.pdf",
+    "pagina": 1,
+    "valor": "598.911,81",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 10,
+      "cobre": true,
+      "distintos": 11,
+      "ocorrencias": 24,
+      "chars_estado": 3048
+     },
+     "leitura": {
+      "paginas": 144,
+      "cobre": true,
+      "distintos": 15,
+      "ocorrencias": 52,
+      "chars_estado": 10928
+     },
+     "leitura·poda": {
+      "paginas": 144,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 26,
+      "chars_estado": 6984
+     }
+    },
+    "candidatos_citada": [
+     "598.911,81"
+    ]
+   },
+   {
+    "controle": "07963259000187-1-000107/2026",
+    "arquivo": "04 - Outros Documentos - ANEXO_I__TERMO_DE_REFERENCIA.pdf",
+    "pagina": 5,
+    "valor": "5.004.502,88",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 10,
+      "chars_estado": 1533
+     },
+     "top-k": {
+      "paginas": 8,
+      "cobre": true,
+      "distintos": 10,
+      "ocorrencias": 14,
+      "chars_estado": 3022
+     },
+     "leitura": {
+      "paginas": 67,
+      "cobre": true,
+      "distintos": 35,
+      "ocorrencias": 42,
+      "chars_estado": 5641
+     },
+     "leitura·poda": {
+      "paginas": 67,
+      "cobre": true,
+      "distintos": 21,
+      "ocorrencias": 27,
+      "chars_estado": 4570
+     }
+    },
+    "candidatos_citada": [
+     "5,46",
+     "678,25",
+     "768,43",
+     "916,24",
+     "130.203,00",
+     "1.109.620,00",
+     "2.751.000,00",
+     "4.390.439,00",
+     "5.004.502,88",
+     "22.193.727,49"
+    ]
+   },
+   {
+    "controle": "08145153000139-1-000049/2026",
+    "arquivo": "01 - Edital - EDITAL_DO_PE_N__011-2026_-_VENDA_DA_FOLHA.pdf",
+    "pagina": 23,
+    "valor": "126.390,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 820
+     },
+     "leitura": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 1226
+     },
+     "leitura·poda": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 1226
+     }
+    },
+    "candidatos_citada": [
+     "126.390,00"
+    ]
+   },
+   {
+    "controle": "08145153000139-1-000052/2026",
+    "arquivo": "01 - Edital - EDITAL+DO+PE+N%c2%ba+011-2026+-+VENDA+DA+FOLHA.pdf",
+    "pagina": 23,
+    "valor": "126.390,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 820
+     },
+     "leitura": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 1226
+     },
+     "leitura·poda": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 1226
+     }
+    },
+    "candidatos_citada": [
+     "126.390,00"
+    ]
+   },
+   {
+    "controle": "08358053000190-1-000156/2026",
+    "arquivo": "01 - Edital - 12._EDITAL_E_ANEXOS_-_PE_019_2026_ASS.PDF.pdf",
+    "pagina": 5,
+    "valor": "58.506,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 409
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 818
+     },
+     "leitura": {
+      "paginas": 124,
+      "cobre": true,
+      "distintos": 16,
+      "ocorrencias": 78,
+      "chars_estado": 10504
+     },
+     "leitura·poda": {
+      "paginas": 124,
+      "cobre": true,
+      "distintos": 10,
+      "ocorrencias": 56,
+      "chars_estado": 7878
+     }
+    },
+    "candidatos_citada": [
+     "58.506,00"
+    ]
+   },
+   {
+    "controle": "09074592000160-1-000032/2026",
+    "arquivo": "01 - Edital - 201640_editais_1789562401 -- 00 - EDITAL - PREGÃO ELETRÔNICO 00018-2026 assinado.pdf",
+    "pagina": 20,
+    "valor": "60.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 421
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 406
+     },
+     "leitura": {
+      "paginas": 38,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1409
+     },
+     "leitura·poda": {
+      "paginas": 38,
+      "cobre": false,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 818
+     }
+    },
+    "candidatos_citada": [
+     "60.000,00"
+    ],
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6",
+      "posicao_bm25_pagina_citada": 24,
+      "melhor_posicao_com_o_valor": 16
+     },
+     {
+      "onde": "poda por código",
+      "tipo": "valor sem R$ colado antes (tabela)"
+     }
+    ],
+    "trecho": "2.5 As caracteristicas e especificagdes do objeto ora licitado são: UND . 60.000,00 | 60.000,00"
+   },
+   {
+    "controle": "10150050000109-1-000026/2025",
+    "arquivo": "01 - Edital - Documento_24_2025.pdf",
+    "pagina": 1,
+    "valor": "741.600,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 811
+     },
+     "leitura": {
+      "paginas": 101,
+      "cobre": true,
+      "distintos": 78,
+      "ocorrencias": 146,
+      "chars_estado": 10428
+     },
+     "leitura·poda": {
+      "paginas": 101,
+      "cobre": true,
+      "distintos": 20,
+      "ocorrencias": 82,
+      "chars_estado": 5341
+     }
+    },
+    "candidatos_citada": [
+     "741.600,00"
+    ],
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 20,
+      "melhor_posicao_com_o_valor": 20
+     }
+    ],
+    "trecho": "VALOR TOTAL DA CONTRATAÇÃO R$ 741.600,00 (Setecentos e quarenta e um mil e seiscentos reais)."
+   },
+   {
+    "controle": "11055682000156-1-000480/2026",
+    "arquivo": "01 - Edital - EDITAL202685.pdf",
+    "pagina": 6,
+    "valor": "4.922.030,75",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 412
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 18,
+      "ocorrencias": 24,
+      "chars_estado": 2948
+     },
+     "leitura": {
+      "paginas": 66,
+      "cobre": true,
+      "distintos": 30,
+      "ocorrencias": 42,
+      "chars_estado": 5308
+     },
+     "leitura·poda": {
+      "paginas": 66,
+      "cobre": true,
+      "distintos": 29,
+      "ocorrencias": 41,
+      "chars_estado": 4944
+     }
+    },
+    "candidatos_citada": [
+     "4.922.030,75"
+    ]
+   },
+   {
+    "controle": "11348570000193-1-000061/2026",
+    "arquivo": "02 - Edital - 200845_editais_1789999390 -- EDITAL PREGÃO BANCOS.pdf",
+    "pagina": 1,
+    "valor": "159.333,33",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 3,
+      "chars_estado": 1226
+     },
+     "leitura": {
+      "paginas": 33,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 21,
+      "chars_estado": 2211
+     },
+     "leitura·poda": {
+      "paginas": 33,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 1638
+     }
+    },
+    "candidatos_citada": [
+     "159.333,33"
+    ]
+   },
+   {
+    "controle": "13460266000169-1-000070/2026",
+    "arquivo": "03 - Estudo Técnico Preliminar - 03 ETP (5).PDF.pdf",
+    "pagina": 11,
+    "valor": "45.770,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 4,
+      "chars_estado": 830
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 8,
+      "chars_estado": 1660
+     },
+     "leitura": {
+      "paginas": 148,
+      "cobre": true,
+      "distintos": 16,
+      "ocorrencias": 68,
+      "chars_estado": 7938
+     },
+     "leitura·poda": {
+      "paginas": 148,
+      "cobre": true,
+      "distintos": 12,
+      "ocorrencias": 30,
+      "chars_estado": 6854
+     }
+    },
+    "candidatos_citada": [
+     "41.540,00",
+     "45.770,00",
+     "50.000,00",
+     "1.077.992,59"
+    ]
+   },
+   {
+    "controle": "13824248000119-1-000018/2026",
+    "arquivo": "01 - Edital - EDITAL_BANCO_TEODORO_SAMPAIO_BA.pdf",
+    "pagina": 2,
+    "valor": "75.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 409
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 6,
+      "chars_estado": 1140
+     },
+     "leitura": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 10,
+      "chars_estado": 2658
+     },
+     "leitura·poda": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 7,
+      "chars_estado": 1444
+     }
+    },
+    "candidatos_citada": [
+     "75.000,00"
+    ]
+   },
+   {
+    "controle": "14109763000180-1-000252/2026",
+    "arquivo": "01 - Edital - 201966_editais_1789733158 -- PE01712026.pdf",
+    "pagina": 50,
+    "valor": "30.000.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 815
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 4,
+      "chars_estado": 1266
+     },
+     "leitura": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 610,
+      "ocorrencias": 738,
+      "chars_estado": 20410
+     },
+     "leitura·poda": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 539,
+      "ocorrencias": 643,
+      "chars_estado": 17827
+     }
+    },
+    "candidatos_citada": [
+     "28,00",
+     "30.000.000,00"
+    ]
+   },
+   {
+    "controle": "15023922000191-1-000096/2026",
+    "arquivo": "01 - Edital - EDITAL -- 018. Banco - BR CONETCADO - 07-10-26.pdf",
+    "pagina": 27,
+    "valor": "2.375.998,33",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 903
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 12,
+      "chars_estado": 2561
+     },
+     "leitura": {
+      "paginas": 84,
+      "cobre": true,
+      "distintos": 27,
+      "ocorrencias": 43,
+      "chars_estado": 5514
+     },
+     "leitura·poda": {
+      "paginas": 84,
+      "cobre": true,
+      "distintos": 22,
+      "ocorrencias": 35,
+      "chars_estado": 5301
+     }
+    },
+    "candidatos_citada": [
+     "30,43",
+     "2.375.998,33",
+     "7.808.541,70"
+    ]
+   },
+   {
+    "controle": "16416125000137-1-000026/2026",
+    "arquivo": "01 - Edital - 0172026.pdf",
+    "pagina": 15,
+    "valor": "167.332,01",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 6,
+      "chars_estado": 2051
+     },
+     "leitura": {
+      "paginas": 54,
+      "cobre": true,
+      "distintos": 15,
+      "ocorrencias": 18,
+      "chars_estado": 3161
+     },
+     "leitura·poda": {
+      "paginas": 54,
+      "cobre": true,
+      "distintos": 14,
+      "ocorrencias": 17,
+      "chars_estado": 2879
+     }
+    },
+    "candidatos_citada": [
+     "167.332,01"
+    ]
+   },
+   {
+    "controle": "18194076000160-1-000068/2026",
+    "arquivo": "01 - Edital - EDITAL_E_ANEXOS_-_GERENCIAMENTO_DA_FOLHA.pdf",
+    "pagina": 66,
+    "valor": "10.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 1377
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 13,
+      "chars_estado": 4220
+     },
+     "leitura": {
+      "paginas": 87,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 38,
+      "chars_estado": 12514
+     },
+     "leitura·poda": {
+      "paginas": 87,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 30,
+      "chars_estado": 10036
+     }
+    },
+    "candidatos_citada": [
+     "10.000,00",
+     "70.348,86"
+    ]
+   },
+   {
+    "controle": "18243287000146-1-000130/2026",
+    "arquivo": "06 - Edital - EDITAL - PREGAO ELETRONICO 33-2026 - FOLHA DE PAGAMENTO.PDF.pdf",
+    "pagina": 1,
+    "valor": "795.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 18,
+      "ocorrencias": 68,
+      "chars_estado": 4552
+     },
+     "leitura": {
+      "paginas": 146,
+      "cobre": true,
+      "distintos": 71,
+      "ocorrencias": 190,
+      "chars_estado": 14424
+     },
+     "leitura·poda": {
+      "paginas": 146,
+      "cobre": true,
+      "distintos": 70,
+      "ocorrencias": 166,
+      "chars_estado": 13256
+     }
+    },
+    "candidatos_citada": [
+     "795.000,00"
+    ]
+   },
+   {
+    "controle": "18298174000148-1-000063/2025",
+    "arquivo": "01 - Termo de Referência - 166746_editai -- Edital Credenciamento Bancos - Folha de Pagamento .pdf",
+    "pagina": 22,
+    "valor": "0,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 404
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 6,
+      "chars_estado": 2440
+     },
+     "leitura": {
+      "paginas": 47,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 8,
+      "chars_estado": 3248
+     },
+     "leitura·poda": {
+      "paginas": 47,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 8,
+      "chars_estado": 3248
+     }
+    },
+    "candidatos_citada": [
+     "0,00"
+    ]
+   },
+   {
+    "controle": "18308726000151-1-000076/2026",
+    "arquivo": "01 - Edital - Edital.pdf",
+    "pagina": 3,
+    "valor": "300.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 18,
+      "chars_estado": 3286
+     },
+     "leitura": {
+      "paginas": 164,
+      "cobre": true,
+      "distintos": 18,
+      "ocorrencias": 62,
+      "chars_estado": 12340
+     },
+     "leitura·poda": {
+      "paginas": 164,
+      "cobre": true,
+      "distintos": 17,
+      "ocorrencias": 60,
+      "chars_estado": 11530
+     }
+    },
+    "candidatos_citada": [
+     "300.000,00"
+    ]
+   },
+   {
+    "controle": "18428854000139-1-000080/2026",
+    "arquivo": "01 - Edital - 199586_editais_1787919357 -- Edital Pregão Eletrônico 50.2026.pdf",
+    "pagina": 1,
+    "valor": "1.183.336,67",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 412
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 10,
+      "ocorrencias": 12,
+      "chars_estado": 2169
+     },
+     "leitura": {
+      "paginas": 69,
+      "cobre": true,
+      "distintos": 27,
+      "ocorrencias": 34,
+      "chars_estado": 4396
+     },
+     "leitura·poda": {
+      "paginas": 69,
+      "cobre": true,
+      "distintos": 27,
+      "ocorrencias": 34,
+      "chars_estado": 4396
+     }
+    },
+    "candidatos_citada": [
+     "1.183.336,67"
+    ],
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6 (é a pág. 1, a capa)",
+      "posicao_bm25_pagina_citada": 17,
+      "melhor_posicao_com_o_valor": 17
+     }
+    ],
+    "trecho": "VALOR INICIAL DA CONTRATAÇÃO R$ 1.183.336,67 (um milhão, cento e oitenta e três mil, trezentos e trinta e seis reais e sessenta e sete centavos)"
+   },
+   {
+    "controle": "27792373000107-1-000006/2026",
+    "arquivo": "06 - Edital - 169177_editais_1776437888 -- NOVO_EDITAL_VENDA_DA_FOLHA_1836.25_17.04_-_20.05_assinado.pdf",
+    "pagina": 1,
+    "valor": "15.787.911,86",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 413
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 826
+     },
+     "leitura": {
+      "paginas": 231,
+      "cobre": true,
+      "distintos": 153,
+      "ocorrencias": 640,
+      "chars_estado": 44060
+     },
+     "leitura·poda": {
+      "paginas": 231,
+      "cobre": true,
+      "distintos": 101,
+      "ocorrencias": 380,
+      "chars_estado": 37406
+     }
+    },
+    "candidatos_citada": [
+     "15.787.911,86"
+    ]
+   },
+   {
+    "controle": "29138328000150-1-000078/2026",
+    "arquivo": "01 - Edital - EDITAL PORTAL.pdf",
+    "pagina": 5,
+    "valor": "50.005.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 413
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 43,
+      "ocorrencias": 78,
+      "chars_estado": 5529
+     },
+     "leitura": {
+      "paginas": 68,
+      "cobre": true,
+      "distintos": 61,
+      "ocorrencias": 128,
+      "chars_estado": 8834
+     },
+     "leitura·poda": {
+      "paginas": 68,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 11,
+      "chars_estado": 3594
+     }
+    },
+    "candidatos_citada": [
+     "50.005.000,00"
+    ]
+   },
+   {
+    "controle": "32001836000105-1-000217/2026",
+    "arquivo": "01 - Edital - Edital_de_Prego_Eletrnico_n_302026_proc._114922026.pdf",
+    "pagina": 21,
+    "valor": "1.284.450,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 568
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1796
+     },
+     "leitura": {
+      "paginas": 51,
+      "cobre": true,
+      "distintos": 128,
+      "ocorrencias": 146,
+      "chars_estado": 11290
+     },
+     "leitura·poda": {
+      "paginas": 51,
+      "cobre": true,
+      "distintos": 24,
+      "ocorrencias": 26,
+      "chars_estado": 8058
+     }
+    },
+    "candidatos_citada": [
+     "741.978,06",
+     "1.284.450,00"
+    ]
+   },
+   {
+    "controle": "44880060000111-1-000166/2026",
+    "arquivo": "02 - Edital - 016_-_Edital_Alterado_Assinado.pdf.pdf",
+    "pagina": 7,
+    "valor": "2.623.441,48",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 365
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 13,
+      "chars_estado": 2337
+     },
+     "leitura": {
+      "paginas": 120,
+      "cobre": true,
+      "distintos": 23,
+      "ocorrencias": 92,
+      "chars_estado": 9799
+     },
+     "leitura·poda": {
+      "paginas": 120,
+      "cobre": true,
+      "distintos": 23,
+      "ocorrencias": 92,
+      "chars_estado": 9799
+     }
+    },
+    "candidatos_citada": [
+     "2.623.441,48"
+    ]
+   },
+   {
+    "controle": "45162328000142-1-000047/2026",
+    "arquivo": "01 - Edital - Edital_Pregao_Eletronico_232026_Pontes_Gestal_Timbrado.pdf",
+    "pagina": 6,
+    "valor": "50.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 708
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 8,
+      "chars_estado": 1954
+     },
+     "leitura": {
+      "paginas": 32,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 10,
+      "chars_estado": 2768
+     },
+     "leitura·poda": {
+      "paginas": 32,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 9,
+      "chars_estado": 2363
+     }
+    },
+    "candidatos_citada": [
+     "1.000,00",
+     "50.000,00"
+    ]
+   },
+   {
+    "controle": "45176153000122-1-000159/2026",
+    "arquivo": "04 - Edital - PE-62_26---Folha-de-pagamento.pdf",
+    "pagina": 1,
+    "valor": "2.285.917,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 292
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 5,
+      "chars_estado": 1154
+     },
+     "leitura": {
+      "paginas": 69,
+      "cobre": true,
+      "distintos": 70,
+      "ocorrencias": 134,
+      "chars_estado": 9720
+     },
+     "leitura·poda": {
+      "paginas": 69,
+      "cobre": true,
+      "distintos": 67,
+      "ocorrencias": 105,
+      "chars_estado": 8156
+     }
+    },
+    "candidatos_citada": [
+     "2.285.917,00"
+    ]
+   },
+   {
+    "controle": "45735479000142-1-000017/2026",
+    "arquivo": "01 - Edital - PE_FOLHA_DE_PAGAMENTO_212026.pdf",
+    "pagina": 1,
+    "valor": "894.855,36",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 8,
+      "ocorrencias": 10,
+      "chars_estado": 1984
+     },
+     "leitura": {
+      "paginas": 58,
+      "cobre": true,
+      "distintos": 33,
+      "ocorrencias": 58,
+      "chars_estado": 6905
+     },
+     "leitura·poda": {
+      "paginas": 58,
+      "cobre": true,
+      "distintos": 15,
+      "ocorrencias": 30,
+      "chars_estado": 5080
+     }
+    },
+    "candidatos_citada": [
+     "894.855,36"
+    ]
+   },
+   {
+    "controle": "45780087000103-1-000110/2026",
+    "arquivo": "01 - Edital - Edital_TR_e_apendice_PE_4026.pdf",
+    "pagina": 14,
+    "valor": "5.540.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 3,
+      "chars_estado": 850
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 9,
+      "chars_estado": 1937
+     },
+     "leitura": {
+      "paginas": 70,
+      "cobre": true,
+      "distintos": 63,
+      "ocorrencias": 75,
+      "chars_estado": 4363
+     },
+     "leitura·poda": {
+      "paginas": 70,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 13,
+      "chars_estado": 2040
+     }
+    },
+    "candidatos_citada": [
+     "3,00",
+     "4,16",
+     "5.540.000,00"
+    ]
+   },
+   {
+    "controle": "46446696000185-1-000297/2026",
+    "arquivo": "01 - Edital - EDITAL.pdf",
+    "pagina": 2,
+    "valor": "7.219.559,08",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 412
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 31,
+      "ocorrencias": 51,
+      "chars_estado": 3537
+     },
+     "leitura": {
+      "paginas": 70,
+      "cobre": true,
+      "distintos": 32,
+      "ocorrencias": 133,
+      "chars_estado": 9077
+     },
+     "leitura·poda": {
+      "paginas": 70,
+      "cobre": true,
+      "distintos": 28,
+      "ocorrencias": 120,
+      "chars_estado": 7549
+     }
+    },
+    "candidatos_citada": [
+     "7.219.559,08"
+    ]
+   },
+   {
+    "controle": "46631248000151-1-000103/2026",
+    "arquivo": "01 - Edital - 11_-_EDITAL_RETIFICADO_-_P.E._48-2026_-_FOLHA_DE_P.pdf",
+    "pagina": 56,
+    "valor": "309.028,46",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 42,
+      "ocorrencias": 43,
+      "chars_estado": 2333
+     },
+     "leitura": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 42,
+      "ocorrencias": 43,
+      "chars_estado": 2333
+     },
+     "leitura·poda": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 14,
+      "ocorrencias": 15,
+      "chars_estado": 1787
+     }
+    },
+    "candidatos_citada": [
+     "309.028,46"
+    ]
+   },
+   {
+    "controle": "46634317000180-1-000055/2026",
+    "arquivo": "01 - Edital - Edital_03126.pdf",
+    "pagina": 6,
+    "valor": "50.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 799
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 15,
+      "chars_estado": 4792
+     },
+     "leitura": {
+      "paginas": 45,
+      "cobre": true,
+      "distintos": 14,
+      "ocorrencias": 65,
+      "chars_estado": 20735
+     },
+     "leitura·poda": {
+      "paginas": 45,
+      "cobre": true,
+      "distintos": 11,
+      "ocorrencias": 17,
+      "chars_estado": 3410
+     }
+    },
+    "candidatos_citada": [
+     "2.026,16",
+     "50.000,00"
+    ]
+   },
+   {
+    "controle": "46634531000137-1-000233/2026",
+    "arquivo": "01 - Edital - EDITAL__FOLHA_DE_PAGAMENTO.pdf",
+    "pagina": 36,
+    "valor": "4.084.051,23",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 10,
+      "ocorrencias": 10,
+      "chars_estado": 943
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 11,
+      "ocorrencias": 14,
+      "chars_estado": 1987
+     },
+     "leitura": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 16,
+      "ocorrencias": 20,
+      "chars_estado": 3944
+     },
+     "leitura·poda": {
+      "paginas": 59,
+      "cobre": true,
+      "distintos": 6,
+      "ocorrencias": 8,
+      "chars_estado": 2670
+     }
+    },
+    "candidatos_citada": [
+     "18,08",
+     "26,62",
+     "28,26",
+     "29,16",
+     "30,98",
+     "2.773.099,10",
+     "4.084.051,23",
+     "4.301.000,00",
+     "4.410.000,00",
+     "4.866.877,39"
+    ]
+   },
+   {
+    "controle": "46643466000106-1-000704/2026",
+    "arquivo": "01 - Edital - pe169s.pdf",
+    "pagina": 12,
+    "valor": "77.000.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 413
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 42,
+      "ocorrencias": 43,
+      "chars_estado": 3050
+     },
+     "leitura·poda": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 1450
+     }
+    },
+    "candidatos_citada": [
+     "77.000.000,00"
+    ],
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6",
+      "posicao_bm25_pagina_citada": 21,
+      "melhor_posicao_com_o_valor": 11
+     }
+    ],
+    "trecho": "Permanecer abaixo do preço mínimo de R$77.000.000,00 (setenta e sete milhões de reais) definido para o pagamento ao Município pelo serviço de processamento e gerenciamento de créditos provenientes da Folha de Pagamento da Prefeitura de São "
+   },
+   {
+    "controle": "46643466000106-1-000967/2026",
+    "arquivo": "01 - Edital - PE169R.PDF.pdf",
+    "pagina": 12,
+    "valor": "77.000.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 413
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": false,
+      "distintos": 0,
+      "ocorrencias": 0,
+      "chars_estado": 0
+     },
+     "leitura": {
+      "paginas": 138,
+      "cobre": true,
+      "distintos": 42,
+      "ocorrencias": 86,
+      "chars_estado": 6016
+     },
+     "leitura·poda": {
+      "paginas": 138,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 8,
+      "chars_estado": 3096
+     }
+    },
+    "candidatos_citada": [
+     "77.000.000,00"
+    ],
+    "falhas": [
+     {
+      "onde": "top-k do BM25 da pergunta",
+      "tipo": "a página com o valor fica fora do top-6",
+      "posicao_bm25_pagina_citada": 31,
+      "melhor_posicao_com_o_valor": 27
+     }
+    ],
+    "trecho": "Permanecer abaixo do preço mínimo de R$ 77.000.000,00 (setenta e sete milhões de reais) definido para o pagamento ao Município pelo serviço de processamento e gerenciamento de créditos provenientes da Folha de Pagamento da Prefeitura de São"
+   },
+   {
+    "controle": "58197948000169-1-000025/2026",
+    "arquivo": "03 - Edital - EDITAL_014_2026_LEILO_INSTITUIO_FINANCEIRA_FOLHA_DE_PAGTO__A.pdf",
+    "pagina": 27,
+    "valor": "91.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 409
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 32,
+      "ocorrencias": 36,
+      "chars_estado": 2414
+     },
+     "leitura": {
+      "paginas": 47,
+      "cobre": true,
+      "distintos": 143,
+      "ocorrencias": 197,
+      "chars_estado": 7863
+     },
+     "leitura·poda": {
+      "paginas": 47,
+      "cobre": true,
+      "distintos": 88,
+      "ocorrencias": 119,
+      "chars_estado": 7638
+     }
+    },
+    "candidatos_citada": [
+     "91.000,00"
+    ]
+   },
+   {
+    "controle": "58987629000157-1-000219/2026",
+    "arquivo": "02 - Termo de Referência - termo de referencia.pdf",
+    "pagina": 15,
+    "valor": "726.192,48",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 820
+     },
+     "leitura": {
+      "paginas": 34,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 1179
+     },
+     "leitura·poda": {
+      "paginas": 34,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 4,
+      "chars_estado": 1179
+     }
+    },
+    "candidatos_citada": [
+     "726.192,48"
+    ]
+   },
+   {
+    "controle": "66229717000118-1-000062/2026",
+    "arquivo": "01 - Edital - PROCESSO_FOLHA_DE_PAGAMENTO.pdf",
+    "pagina": 29,
+    "valor": "480.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 271
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 677
+     },
+     "leitura": {
+      "paginas": 29,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 3,
+      "chars_estado": 1089
+     },
+     "leitura·poda": {
+      "paginas": 29,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 3,
+      "chars_estado": 1089
+     }
+    },
+    "candidatos_citada": [
+     "480.000,00"
+    ]
+   },
+   {
+    "controle": "75381178000129-1-000069/2026",
+    "arquivo": "02 - Edital - EDITAL-PREGAO-36.2026.pdf",
+    "pagina": 1,
+    "valor": "80.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 409
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 6,
+      "chars_estado": 1454
+     },
+     "leitura": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 19,
+      "chars_estado": 5482
+     },
+     "leitura·poda": {
+      "paginas": 31,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 14,
+      "chars_estado": 4795
+     }
+    },
+    "candidatos_citada": [
+     "80.000,00"
+    ]
+   },
+   {
+    "controle": "76002641000147-1-000323/2026",
+    "arquivo": "01 - Edital - EDITAL-Preg 049-2026 - Contratacao de instituicao financeira.pdf",
+    "pagina": 34,
+    "valor": "1.077.616,76",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 412
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 16,
+      "chars_estado": 1870
+     },
+     "leitura": {
+      "paginas": 43,
+      "cobre": true,
+      "distintos": 72,
+      "ocorrencias": 104,
+      "chars_estado": 6711
+     },
+     "leitura·poda": {
+      "paginas": 43,
+      "cobre": true,
+      "distintos": 25,
+      "ocorrencias": 47,
+      "chars_estado": 5111
+     }
+    },
+    "candidatos_citada": [
+     "1.077.616,76"
+    ]
+   },
+   {
+    "controle": "76002641000147-1-000324/2026",
+    "arquivo": "01 - Edital - EDITAL-Preg 049-2026 - Contratacao de instituicao financeira.pdf",
+    "pagina": 34,
+    "valor": "1.077.616,76",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 412
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 16,
+      "chars_estado": 1870
+     },
+     "leitura": {
+      "paginas": 43,
+      "cobre": true,
+      "distintos": 72,
+      "ocorrencias": 104,
+      "chars_estado": 6711
+     },
+     "leitura·poda": {
+      "paginas": 43,
+      "cobre": true,
+      "distintos": 25,
+      "ocorrencias": 47,
+      "chars_estado": 5111
+     }
+    },
+    "candidatos_citada": [
+     "1.077.616,76"
+    ]
+   },
+   {
+    "controle": "76205962000149-1-000111/2026",
+    "arquivo": "01 - Aviso de Contratação Direta - ADM - FOLHA DE PAGAMENTO.pdf",
+    "pagina": 84,
+    "valor": "750.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 820
+     },
+     "top-k": {
+      "paginas": 101,
+      "cobre": true,
+      "distintos": 30,
+      "ocorrencias": 63,
+      "chars_estado": 14998
+     },
+     "leitura": {
+      "paginas": 101,
+      "cobre": true,
+      "distintos": 30,
+      "ocorrencias": 63,
+      "chars_estado": 14998
+     },
+     "leitura·poda": {
+      "paginas": 101,
+      "cobre": true,
+      "distintos": 17,
+      "ocorrencias": 40,
+      "chars_estado": 12051
+     }
+    },
+    "candidatos_citada": [
+     "750.000,00"
+    ]
+   },
+   {
+    "controle": "77001311000108-1-000557/2026",
+    "arquivo": "01 - Edital - Relatorio - Edital - WCO621102-2129-TRDRYRWPGXIFW-8.pdf",
+    "pagina": 1,
+    "valor": "7.000.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 412
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 4,
+      "chars_estado": 1623
+     },
+     "leitura": {
+      "paginas": 28,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 6,
+      "chars_estado": 2288
+     },
+     "leitura·poda": {
+      "paginas": 28,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 1884
+     }
+    },
+    "candidatos_citada": [
+     "7.000.000,00"
+    ]
+   },
+   {
+    "controle": "77001311000108-1-000558/2026",
+    "arquivo": "01 - Edital - PE_n_133_2026__Gerenciamento_da_folha_de_pagamento__SMG_.pdf",
+    "pagina": 1,
+    "valor": "7.000.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 412
+     },
+     "top-k": {
+      "paginas": 7,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 4,
+      "chars_estado": 1648
+     },
+     "leitura": {
+      "paginas": 57,
+      "cobre": true,
+      "distintos": 32,
+      "ocorrencias": 45,
+      "chars_estado": 6336
+     },
+     "leitura·poda": {
+      "paginas": 57,
+      "cobre": true,
+      "distintos": 31,
+      "ocorrencias": 41,
+      "chars_estado": 4704
+     }
+    },
+    "candidatos_citada": [
+     "7.000.000,00"
+    ]
+   },
+   {
+    "controle": "82662958000102-1-000186/2026",
+    "arquivo": "03 - Estudo Técnico Preliminar - ETP-136-2026.pdf",
+    "pagina": 8,
+    "valor": "2.505.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 6,
+      "chars_estado": 1212
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 14,
+      "ocorrencias": 22,
+      "chars_estado": 2426
+     },
+     "leitura": {
+      "paginas": 41,
+      "cobre": true,
+      "distintos": 93,
+      "ocorrencias": 137,
+      "chars_estado": 7883
+     },
+     "leitura·poda": {
+      "paginas": 41,
+      "cobre": true,
+      "distintos": 56,
+      "ocorrencias": 87,
+      "chars_estado": 5628
+     }
+    },
+    "candidatos_citada": [
+     "1.500,00",
+     "1.606,41",
+     "1.626,59",
+     "2.326,80",
+     "2.505.000,00"
+    ]
+   },
+   {
+    "controle": "82777319000192-1-000103/2026",
+    "arquivo": "01 - Outros Documentos - outros.pdf",
+    "pagina": 13,
+    "valor": "350.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 3,
+      "ocorrencias": 5,
+      "chars_estado": 2040
+     },
+     "leitura": {
+      "paginas": 47,
+      "cobre": true,
+      "distintos": 5,
+      "ocorrencias": 10,
+      "chars_estado": 3536
+     },
+     "leitura·poda": {
+      "paginas": 47,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 9,
+      "chars_estado": 3132
+     }
+    },
+    "candidatos_citada": [
+     "350.000,00"
+    ]
+   },
+   {
+    "controle": "82804212000196-1-000264/2026",
+    "arquivo": "01 - Edital - EDITAL_233.2026_-_PE_233_-_FOLHA_DE_PAGAMENTO_MAIOR_LANCE.pdf",
+    "pagina": 34,
+    "valor": "310.954,76",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 8,
+      "chars_estado": 906
+     },
+     "leitura": {
+      "paginas": 73,
+      "cobre": true,
+      "distintos": 19,
+      "ocorrencias": 23,
+      "chars_estado": 1757
+     },
+     "leitura·poda": {
+      "paginas": 73,
+      "cobre": true,
+      "distintos": 13,
+      "ocorrencias": 17,
+      "chars_estado": 1384
+     }
+    },
+    "candidatos_citada": [
+     "310.954,76"
+    ]
+   },
+   {
+    "controle": "82804212000196-1-000266/2026",
+    "arquivo": "01 - Edital - EDITAL 2332026  PE 233  FOLHA DE PAGAMENTO MAIO.pdf",
+    "pagina": 34,
+    "valor": "310.954,76",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 8,
+      "chars_estado": 1133
+     },
+     "leitura": {
+      "paginas": 104,
+      "cobre": true,
+      "distintos": 19,
+      "ocorrencias": 46,
+      "chars_estado": 4023
+     },
+     "leitura·poda": {
+      "paginas": 104,
+      "cobre": true,
+      "distintos": 13,
+      "ocorrencias": 34,
+      "chars_estado": 3109
+     }
+    },
+    "candidatos_citada": [
+     "310.954,76"
+    ]
+   },
+   {
+    "controle": "87613279000167-1-000091/2026",
+    "arquivo": "05 - Outros Documentos - Outros documentos.pdf",
+    "pagina": 6,
+    "valor": "315.000,00",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 15,
+      "chars_estado": 3956
+     },
+     "leitura": {
+      "paginas": 49,
+      "cobre": true,
+      "distintos": 14,
+      "ocorrencias": 54,
+      "chars_estado": 9486
+     },
+     "leitura·poda": {
+      "paginas": 49,
+      "cobre": true,
+      "distintos": 13,
+      "ocorrencias": 53,
+      "chars_estado": 9081
+     }
+    },
+    "candidatos_citada": [
+     "315.000,00"
+    ]
+   },
+   {
+    "controle": "88814181000130-1-000414/2026",
+    "arquivo": "01 - Edital - Edital642026 1.pdf",
+    "pagina": 1,
+    "valor": "5.093.539,85",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 2,
+      "ocorrencias": 2,
+      "chars_estado": 479
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 5,
+      "chars_estado": 1107
+     },
+     "leitura": {
+      "paginas": 23,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 5,
+      "chars_estado": 1107
+     },
+     "leitura·poda": {
+      "paginas": 23,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 5,
+      "chars_estado": 1107
+     }
+    },
+    "candidatos_citada": [
+     "900.000,00",
+     "5.093.539,85"
+    ]
+   },
+   {
+    "controle": "92451152000129-1-000207/2026",
+    "arquivo": "19 - Outros Documentos - PRD1_146_2026_3TFD.pdf",
+    "pagina": 17,
+    "valor": "437.472,04",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 2,
+      "chars_estado": 758
+     },
+     "top-k": {
+      "paginas": 6,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 28,
+      "chars_estado": 4299
+     },
+     "leitura": {
+      "paginas": 36,
+      "cobre": true,
+      "distintos": 9,
+      "ocorrencias": 55,
+      "chars_estado": 10103
+     },
+     "leitura·poda": {
+      "paginas": 36,
+      "cobre": true,
+      "distintos": 7,
+      "ocorrencias": 45,
+      "chars_estado": 9539
+     }
+    },
+    "candidatos_citada": [
+     "437.472,04"
+    ]
+   },
+   {
+    "controle": "95993085000162-1-000050/2026",
+    "arquivo": "01 - Edital - Processo_82.2026_PE_36.2026__Instituicao_Banc_assinado_2.pdf",
+    "pagina": 12,
+    "valor": "282.002,02",
+    "por_camada": {
+     "verificador": true,
+     "+grafia": true
+    },
+    "escopos": {
+     "citada": {
+      "paginas": 1,
+      "cobre": true,
+      "distintos": 1,
+      "ocorrencias": 1,
+      "chars_estado": 410
+     },
+     "top-k": {
+      "paginas": 7,
+      "cobre": true,
+      "distintos": 13,
+      "ocorrencias": 32,
+      "chars_estado": 4916
+     },
+     "leitura": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 16,
+      "ocorrencias": 39,
+      "chars_estado": 5883
+     },
+     "leitura·poda": {
+      "paginas": 72,
+      "cobre": true,
+      "distintos": 4,
+      "ocorrencias": 23,
+      "chars_estado": 4801
+     }
+    },
+    "candidatos_citada": [
+     "282.002,02"
+    ]
+   }
+  ]
+ },
+ "sem_valor_alvo": {
+  "Q1": [
+   {
+    "controle": "13195862000169-1-000016/2026",
+    "resposta": "O aviso não marca sessão pública com data única (credenciamento): os documentos são recebidos em envelope fechado pela Comissão de Licitação no período de 21/11"
+   },
+   {
+    "controle": "16796575000100-1-000061/2025",
+    "resposta": "Não há sessão pública com data e hora marcadas: é credenciamento aberto por tempo indeterminado, com documentação e propostas recebidas a partir de 31/10/2025 ("
+   },
+   {
+    "controle": "18298174000148-1-000063/2025",
+    "resposta": "Sem sessão pública com data e hora marcadas (credenciamento). O edital de credenciamento fica aberto por prazo indeterminado a contar de 18/12/2025, podendo rec"
+   },
+   {
+    "controle": "18307470000168-1-000025/2026",
+    "resposta": "O edital não marca sessão pública com data e hora: é credenciamento, com recebimento dos documentos iniciado a partir de 15/05/2026 e encerrado em 15/05/2027, p"
+   }
+  ],
+  "Q5": [
+   {
+    "controle": "11348570000193-1-000030/2026",
+    "resposta": "Não há valor mínimo de contratação (nem valor estimado ou de referência): o TR (4.1) diz que “Não haverá alienação da folha de pagamento, não sendo devido nenhu"
+   },
+   {
+    "controle": "16925208000151-1-000047/2026",
+    "resposta": "Não há valor mínimo nem valor estimado de contratação. O edital declara que 'não haverá qualquer pagamento, repasse financeiro ou remuneração direta por parte d"
+   },
+   {
+    "controle": "18307470000168-1-000025/2026",
+    "resposta": "Não há valor mínimo, estimado ou de referência de contratação: nenhum documento fixa preço a ser pago pela folha, e o credenciamento é \"SEM ÔNUS PARA A CONTRATA"
+   },
+   {
+    "controle": "18307496000106-1-000041/2026",
+    "resposta": "Não há valor mínimo, estimado ou de referência: o objeto é 'SEM ÔNUS PARA A CONTRATANTE', o credenciamento 'não implica desembolso' da Contratante (item 9.1) e "
+   },
+   {
+    "controle": "75392019000120-1-000050/2026",
+    "resposta": "Não há valor mínimo fixado nos documentos, nem valor a ser pago pela instituição financeira ao Município. A Cláusula Quarta da minuta (Do Valor do Contrato) diz"
+   },
+   {
+    "controle": "75392019000120-1-000052/2026",
+    "resposta": "Não localizado valor mínimo, estimado ou de referência. A contratação é sem ônus: a Cláusula Quarta – Do Valor do Contrato (minuta) diz que a contratação não ge"
+   }
+  ]
+ }
+}

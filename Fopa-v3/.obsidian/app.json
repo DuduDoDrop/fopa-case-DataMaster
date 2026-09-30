@@ -1,0 +1,21 @@
+{
+  "showInlineTitle": true,
+  "promptDelete": false,
+  "alwaysUpdateLinks": true,
+  "newLinkFormat": "shortest",
+  "useMarkdownLinks": false,
+  "attachmentFolderPath": "98-Anexos",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "00-Entrada",
+  "showUnsupportedFiles": true,
+  "readableLineLength": true,
+  "foldHeading": true,
+  "foldIndent": true,
+  "spellcheck": true,
+  "spellcheckLanguages": [
+    "pt-BR"
+  ],
+  "defaultViewMode": "preview",
+  "livePreview": true,
+  "trashOption": "system"
+}

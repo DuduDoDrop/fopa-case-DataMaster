@@ -1,0 +1,27 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/admin/orcamento",
+ "status": 200,
+ "corpo": {
+  "vigente": {
+   "id": 1,
+   "teto_brl_dia": null,
+   "max_por_execucao": null,
+   "auto_processar": true,
+   "alterado_por": "seed",
+   "em": "2026-09-26T08:40:41.709987+00:00"
+  },
+  "historico": [
+   {
+    "id": 1,
+    "teto_brl_dia": null,
+    "max_por_execucao": null,
+    "auto_processar": true,
+    "vigente": true,
+    "alterado_por": "seed",
+    "em": "2026-09-26T08:40:41.709987+00:00"
+   }
+  ],
+  "aviso_custo": "~R$ 3-4 por edital (custo medido)"
+ }
+}

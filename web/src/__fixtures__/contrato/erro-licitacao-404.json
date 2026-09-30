@@ -1,0 +1,8 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/licitacoes/00000000000000-1-000001-2026",
+ "status": 404,
+ "corpo": {
+  "detail": "Licitação 00000000000000-1-000001-2026 não encontrada."
+ }
+}

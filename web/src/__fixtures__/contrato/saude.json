@@ -1,0 +1,57 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/saude",
+ "status": 200,
+ "corpo": {
+  "ok": true,
+  "api_ok": true,
+  "ambiente": "demo",
+  "auth_mode": "local",
+  "caiu": [],
+  "avisos": [],
+  "worker": {
+   "ok": true,
+   "status": 200,
+   "health": {
+    "ok": true,
+    "git_sha": "d491ec7618f7997f4c50aacba3733be7a4117c00",
+    "tesseract": "5.4.0.20240606",
+    "tessdata_sha256": "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb",
+    "idiomas": [
+     "por"
+    ],
+    "storage": {
+     "backend": "fs",
+     "raiz": "C:\\Users\\Nome\\AppData\\Local\\Temp\\tmpoksnni3x\\dados",
+     "ok": true,
+     "existe": true
+    },
+    "anthropic_key_presente": false,
+    "versao_regras": "b32b66ede7f6ed51fa0775df2523353e413f8f19f7579a05eca8f4d918813e3c",
+    "versao_prompt": "255fb1467e4dccca63da5462f5beb1a94fedc93bc3ea1c273f283a0617bf734f",
+    "escopo_versao": "5700476d5b8c2607ee596100a877ee8f61abe5a42c78eba2dbc1bdb5a551f35b"
+   }
+  },
+  "postgres": {
+   "ok": true
+  },
+  "n8n": {
+   "ok": true,
+   "status": 200
+  },
+  "ultima_coleta": {
+   "id": 4,
+   "workflow": "W01",
+   "script_legado": null,
+   "iniciado_em": "2026-09-26T08:40:42.310136+00:00",
+   "duracao_s": null,
+   "cego": true,
+   "status": "ok"
+  },
+  "ultimo_alerta": {
+   "em": "2026-09-26T08:10:42.313239+00:00",
+   "workflow": "W20",
+   "mensagem": "worker respondeu 503 em /extrair"
+  }
+ }
+}

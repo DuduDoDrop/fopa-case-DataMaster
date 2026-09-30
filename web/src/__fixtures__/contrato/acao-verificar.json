@@ -1,0 +1,8 @@
+{
+ "metodo": "POST",
+ "caminho": "/api/acoes/verificar",
+ "status": 202,
+ "corpo": {
+  "execucao_id": 3
+ }
+}

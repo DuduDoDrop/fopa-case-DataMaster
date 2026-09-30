@@ -1,0 +1,57 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/execucoes/2",
+ "status": 200,
+ "corpo": {
+  "execucao": {
+   "id": 2,
+   "workflow": "W01",
+   "n8n_execution_id": "760",
+   "script_legado": null,
+   "gatilho": "site",
+   "iniciado_em": "2026-09-25T08:40:42.302020+00:00",
+   "duracao_s": 42.5,
+   "argumentos": null,
+   "contadores": {
+    "novas": 3,
+    "vistas": 1500
+   },
+   "cego": false,
+   "status": "ok",
+   "erro": null,
+   "controle": null,
+   "custo_brl_gravado": 0.0,
+   "custo_brl": 0.0,
+   "chamadas": 0,
+   "sem_preco": 0
+  },
+  "buscas": [
+   {
+    "id": 1,
+    "termo": "folha de pagamento",
+    "paginas_lidas": 30,
+    "total_declarado": 1500,
+    "lidos": 1500,
+    "cobertura_pct": 100.0,
+    "teto_atingido": null,
+    "falhou": false,
+    "pagina_falha": null,
+    "em": "2026-09-26T08:40:42.304124+00:00"
+   },
+   {
+    "id": 2,
+    "termo": "folha salarial",
+    "paginas_lidas": 3,
+    "total_declarado": 120,
+    "lidos": 120,
+    "cobertura_pct": 100.0,
+    "teto_atingido": null,
+    "falhou": false,
+    "pagina_falha": null,
+    "em": "2026-09-26T08:40:42.304124+00:00"
+   }
+  ],
+  "buscas_paginas": [],
+  "execucoes_modelo": []
+ }
+}

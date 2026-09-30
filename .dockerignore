@@ -1,0 +1,16 @@
+# amostras pesadas: só o fixture entra na imagem
+amostras/*
+!amostras/_fixture
+saidas/
+FOPA/
+Fopa-v2/
+.git/
+.venv/
+__pycache__/
+*.pyc
+.env*
+*.key
+# snapshots do acervo (~300 MB cada): o importador os recebe montados
+acervo/
+# ledger de execução de planos
+.superpowers/

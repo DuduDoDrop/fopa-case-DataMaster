@@ -1,0 +1,11 @@
+{
+ "metodo": "POST",
+ "caminho": "/api/acoes/processar",
+ "status": 202,
+ "corpo": {
+  "aceitos": [
+   "12345678000101-1-000001/2026"
+  ],
+  "recusados": []
+ }
+}

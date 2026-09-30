@@ -1,0 +1,12 @@
+{
+ "metodo": "PUT",
+ "caminho": "/api/admin/usuarios",
+ "status": 200,
+ "corpo": {
+  "email": "nova@teste.br",
+  "nome": null,
+  "papel": "operador",
+  "ativo": true,
+  "supremo": false
+ }
+}

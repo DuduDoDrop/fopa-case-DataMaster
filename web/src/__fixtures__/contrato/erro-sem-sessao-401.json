@@ -1,0 +1,8 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/me",
+ "status": 401,
+ "corpo": {
+  "detail": "Sessão não encontrada. Faça login para continuar."
+ }
+}

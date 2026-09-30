@@ -1,0 +1,42 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/execucoes/4",
+ "status": 200,
+ "corpo": {
+  "execucao": {
+   "id": 4,
+   "workflow": "W01",
+   "n8n_execution_id": "771",
+   "script_legado": null,
+   "gatilho": "schedule",
+   "iniciado_em": "2026-09-26T08:40:42.310136+00:00",
+   "duracao_s": null,
+   "argumentos": null,
+   "contadores": null,
+   "cego": true,
+   "status": "ok",
+   "erro": null,
+   "controle": null,
+   "custo_brl_gravado": 0.0,
+   "custo_brl": 0.0,
+   "chamadas": 0,
+   "sem_preco": 0
+  },
+  "buscas": [
+   {
+    "id": 4,
+    "termo": "folha salarial",
+    "paginas_lidas": 0,
+    "total_declarado": null,
+    "lidos": 0,
+    "cobertura_pct": 0.0,
+    "teto_atingido": null,
+    "falhou": true,
+    "pagina_falha": 1,
+    "em": "2026-09-26T08:40:42.311660+00:00"
+   }
+  ],
+  "buscas_paginas": [],
+  "execucoes_modelo": []
+ }
+}

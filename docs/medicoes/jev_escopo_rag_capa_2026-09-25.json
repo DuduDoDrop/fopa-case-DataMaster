@@ -1,0 +1,1588 @@
+{
+ "resumo": {
+  "objeto_so": {
+   "n_pos": 124,
+   "n_neg": 19,
+   "auc": 0.967,
+   "pos_>=0.5": 0.96,
+   "neg_<0.5": 0.895,
+   "pos_<=0.25 (falso 'não' convicto)": 0,
+   "neg_>=0.75 (falso 'sim' convicto)": 1,
+   "p_pos_mediana": 0.905,
+   "p_neg_mediana": 0.15
+  },
+  "com_rag": {
+   "n_pos": 124,
+   "n_neg": 19,
+   "auc": 0.97,
+   "pos_>=0.5": 0.992,
+   "neg_<0.5": 0.789,
+   "pos_<=0.25 (falso 'não' convicto)": 1,
+   "neg_>=0.75 (falso 'sim' convicto)": 3,
+   "p_pos_mediana": 0.98,
+   "p_neg_mediana": 0.07
+  },
+  "discordancias": [
+   {
+    "controle": "18335922000115-1-000001/2025",
+    "objeto_so": 0.34,
+    "com_rag": 0.84
+   },
+   {
+    "controle": "18094839000100-1-000024/2025",
+    "objeto_so": 0.48,
+    "com_rag": 0.91
+   },
+   {
+    "controle": "13195862000169-1-000016/2026",
+    "objeto_so": 0.46,
+    "com_rag": 0.76
+   },
+   {
+    "controle": "45316509000186-1-000123/2025",
+    "objeto_so": 0.51,
+    "com_rag": 0.18
+   }
+  ],
+  "n": 143,
+  "usd": 0.02838,
+  "tokens": 675753,
+  "modelo": "jev-1.13.0",
+  "teto_chars": 12000,
+  "pergunta_rag": "This is the 'objeto' (subject) of a Brazilian public procurement notice, written in Portuguese. Is the public body contracting a bank or financial institution to RUN ITS PAYROLL — that is, to process, manage and pay the salary credits of its public servants ('processamento e gerenciamento de créditos provenientes da folha de pagamento', 'pagamento da folha', 'centralização da folha', 'cessão onerosa do direito de processar a folha')? Judge what is being CONTRACTED, not words that are merely mentioned. Besides `objeto`, `trechos_do_edital` holds pages of the notice itself (file and page number): use them as evidence of what is being contracted.",
+  "piores_com_rag": [
+   {
+    "controle": "45316509000186-1-000123/2025",
+    "rotulo": 1,
+    "objeto_so": 0.51,
+    "com_rag": 0.18,
+    "paginas_rag": 4,
+    "chars_rag": 11313,
+    "discordancia": true,
+    "objeto": "[Portal de Compras Públicas] - CREDENCIAMENTO DE INSTITUIÇÕES FINANCEIRAS PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS DE GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLH"
+   },
+   {
+    "controle": "13195862000169-1-000016/2026",
+    "rotulo": 1,
+    "objeto_so": 0.46,
+    "com_rag": 0.76,
+    "paginas_rag": 2,
+    "chars_rag": 1690,
+    "discordancia": true,
+    "objeto": "Credenciamento de instituição financeira para prestação de serviços bancários de gerenciamento de créditos provenientes da Folha de Pagamento dos servidores púb"
+   },
+   {
+    "controle": "45787678000102-1-000091/2026",
+    "rotulo": 1,
+    "objeto_so": 0.57,
+    "com_rag": 0.8,
+    "paginas_rag": 6,
+    "chars_rag": 11797,
+    "discordancia": false,
+    "objeto": "Contratação de instituição financeira bancária para a prestação de serviços bancários de processamento e gerenciamento de créditos provenientes da folha de paga"
+   },
+   {
+    "controle": "18335922000115-1-000001/2025",
+    "rotulo": 1,
+    "objeto_so": 0.34,
+    "com_rag": 0.84,
+    "paginas_rag": 3,
+    "chars_rag": 11934,
+    "discordancia": true,
+    "objeto": "CREDENCIAMENTO de Instituições Bancárias, autorizadas pelo Banco Central do Brasil, interessadas na prestação de serviços contínuos de processamento de crédito "
+   },
+   {
+    "controle": "06553556000191-1-000017/2025",
+    "rotulo": 1,
+    "objeto_so": 0.84,
+    "com_rag": 0.9,
+    "paginas_rag": 5,
+    "chars_rag": 11697,
+    "discordancia": false,
+    "objeto": "Contratação de instituição financeira com objetivo de centralização, Estado do Piauí, por intermédio da Secretaria da Fazenda no Banco do Brasil S/A de 100% (ce"
+   },
+   {
+    "controle": "01911667000109-1-000011/2026",
+    "rotulo": 0,
+    "objeto_so": 0.92,
+    "com_rag": 0.97,
+    "paginas_rag": 4,
+    "chars_rag": 11289,
+    "discordancia": false,
+    "objeto": "PRESTACAO DE SERVICO RELACIONADO A TARIFAS BANCARIAS E OPERACIONALIZACAO INCIDENTES SOBRE OS SERVICOS PRESTADOS POR INSTITUICAO FINANCEIRA PUBLICA OFICIAL, BEM "
+   },
+   {
+    "controle": "95440517000108-1-000189/2026",
+    "rotulo": 0,
+    "objeto_so": 0.48,
+    "com_rag": 0.96,
+    "paginas_rag": 5,
+    "chars_rag": 11758,
+    "discordancia": false,
+    "objeto": "Contratação de instituição bancária para pagamento de tarifas folha de pagamento. Ato que autoriza a Contratação Direta nº 49/2026"
+   },
+   {
+    "controle": "95440517000108-1-000191/2026",
+    "rotulo": 0,
+    "objeto_so": 0.1,
+    "com_rag": 0.88,
+    "paginas_rag": 5,
+    "chars_rag": 11847,
+    "discordancia": false,
+    "objeto": "Contratação de instituição bancária para serviços de envio/retorno de arquivos de contas a pagar, folhas de pagamento e respectivas tarifas, convênio 03651. Ato"
+   },
+   {
+    "controle": "95440517000108-1-000190/2026",
+    "rotulo": 0,
+    "objeto_so": 0.09,
+    "com_rag": 0.63,
+    "paginas_rag": 11,
+    "chars_rag": 11763,
+    "discordancia": false,
+    "objeto": "Contratação de instituição bancária para serviços de envio/retorno de arquivos de folhas de pagamento dos funcionários do Fundeb, convênio 27514. Ato que autori"
+   },
+   {
+    "controle": "01963093000112-1-000005/2024",
+    "rotulo": 0,
+    "objeto_so": 0.54,
+    "com_rag": 0.24,
+    "paginas_rag": 5,
+    "chars_rag": 10378,
+    "discordancia": false,
+    "objeto": "Prestação de serviços cessão onerosa de sistema de folha de pagamento para processamento das informações relativas ao exercício 2024. Ato que autoriza a Contrat"
+   }
+  ]
+ },
+ "itens": [
+  {
+   "controle": "18335922000115-1-000001/2025",
+   "rotulo": 1,
+   "objeto_so": 0.34,
+   "com_rag": 0.84,
+   "paginas_rag": 3,
+   "chars_rag": 11934,
+   "discordancia": true,
+   "objeto": "CREDENCIAMENTO de Instituições Bancárias, autorizadas pelo Banco Central do Brasil, interessadas na prestação de serviços contínuos de processamento de crédito "
+  },
+  {
+   "controle": "18094839000100-1-000024/2025",
+   "rotulo": 1,
+   "objeto_so": 0.48,
+   "com_rag": 0.91,
+   "paginas_rag": 5,
+   "chars_rag": 11502,
+   "discordancia": true,
+   "objeto": "Credenciamento de instituição financeira para prestação de serviços bancários de gerenciamento decréditos provenientes da Folha de Pagamento dos servidores públ"
+  },
+  {
+   "controle": "13195862000169-1-000016/2026",
+   "rotulo": 1,
+   "objeto_so": 0.46,
+   "com_rag": 0.76,
+   "paginas_rag": 2,
+   "chars_rag": 1690,
+   "discordancia": true,
+   "objeto": "Credenciamento de instituição financeira para prestação de serviços bancários de gerenciamento de créditos provenientes da Folha de Pagamento dos servidores púb"
+  },
+  {
+   "controle": "45316509000186-1-000123/2025",
+   "rotulo": 1,
+   "objeto_so": 0.51,
+   "com_rag": 0.18,
+   "paginas_rag": 4,
+   "chars_rag": 11313,
+   "discordancia": true,
+   "objeto": "[Portal de Compras Públicas] - CREDENCIAMENTO DE INSTITUIÇÕES FINANCEIRAS PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS DE GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLH"
+  },
+  {
+   "controle": "76170240000104-1-000051/2026",
+   "rotulo": 1,
+   "objeto_so": 0.89,
+   "com_rag": 0.93,
+   "paginas_rag": 4,
+   "chars_rag": 10912,
+   "discordancia": false,
+   "objeto": "Serviços de instituição financeira oficial ou privada para cessão onerosa do direito de processamento da folha de pagamento. Edital nº PCE 12/2026"
+  },
+  {
+   "controle": "44826840000183-1-000004/2026",
+   "rotulo": 1,
+   "objeto_so": 0.68,
+   "com_rag": 0.97,
+   "paginas_rag": 5,
+   "chars_rag": 11862,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA, INCLUSIVE SOB A FORMA DE COOPERATIVA DE CRÉDITO, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, "
+  },
+  {
+   "controle": "43206424000110-1-000042/2026",
+   "rotulo": 1,
+   "objeto_so": 0.48,
+   "com_rag": 0.92,
+   "paginas_rag": 4,
+   "chars_rag": 11722,
+   "discordancia": false,
+   "objeto": "Servicos de administracao gerenciamento e processamento de creditos provenientes da folha de pagamento dos salarios subsidios proventos pensoes bolsa estagio e "
+  },
+  {
+   "controle": "95993085000162-1-000050/2026",
+   "rotulo": 1,
+   "objeto_so": 0.74,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11300,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, APTA À PRESTAÇÃO, EM CARÁTER DE EXCLUSIVIDADE, DOS SERVIÇOS DE PROCES"
+  },
+  {
+   "controle": "00533003000190-1-000001/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11519,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA GERENCIAMENTO E PROCESSAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES DA SAMA - GESTÃO DO SANEAMENTO BÁSCIO E DE SERVIÇO"
+  },
+  {
+   "controle": "01607619000121-1-000323/2025",
+   "rotulo": 1,
+   "objeto_so": 0.83,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 10993,
+   "discordancia": false,
+   "objeto": "[Portal de Compras Públicas] - Cessão Onerosa do direito de efetuar o processamento e operacionalização da Folha de Pagamento dos servidores munciipais. Edital "
+  },
+  {
+   "controle": "18312983000167-1-000140/2025",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11816,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO BANCÁRIA OU COOPERATIVA DE CRÉDITO CENTRAL, DEVIDAMENTE AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL (BACEN), PARA A PRESTAÇÃO"
+  },
+  {
+   "controle": "18316281000151-1-000200/2025",
+   "rotulo": 1,
+   "objeto_so": 0.88,
+   "com_rag": 0.97,
+   "paginas_rag": 5,
+   "chars_rag": 11183,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira para prestação de serviços, em caráter de exclusividade, do processamento de 100% (cem por cento) dos créditos proveniente"
+  },
+  {
+   "controle": "07711666000105-1-000014/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.97,
+   "paginas_rag": 5,
+   "chars_rag": 11274,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA OU DE PAGAMENTO, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, PARA PRESTAÇÃO DE SERVIÇOS BANCÁR"
+  },
+  {
+   "controle": "13882949000104-1-000050/2026",
+   "rotulo": 1,
+   "objeto_so": 0.94,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11497,
+   "discordancia": false,
+   "objeto": "[LICITANET] - Contratação de instituição financeira para prestação de serviços financeiros, incluindo a folha de pagamento dos servidores ativos e inativos da A"
+  },
+  {
+   "controle": "46668596000101-1-000108/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.99,
+   "paginas_rag": 5,
+   "chars_rag": 11969,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS DE GERENCIAMENTO, COM EXCLUSIVIDADE, DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLICOS MU"
+  },
+  {
+   "controle": "18307496000106-1-000041/2026",
+   "rotulo": 1,
+   "objeto_so": 0.78,
+   "com_rag": 0.96,
+   "paginas_rag": 5,
+   "chars_rag": 11599,
+   "discordancia": false,
+   "objeto": "CREDENCIAMENTO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA CENTRALIZAR E PROCESSAR OS CRÉDITOS DE FOLHA DE PAGAMENTO DE TODOS OS SER"
+  },
+  {
+   "controle": "06553556000191-1-000017/2025",
+   "rotulo": 1,
+   "objeto_so": 0.84,
+   "com_rag": 0.9,
+   "paginas_rag": 5,
+   "chars_rag": 11697,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira com objetivo de centralização, Estado do Piauí, por intermédio da Secretaria da Fazenda no Banco do Brasil S/A de 100% (ce"
+  },
+  {
+   "controle": "56983778000112-1-000007/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11335,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira pública ou privada, autorizada pelo Banco Central do Brasil para explorar, com exclusividade, a gestão da folha de pagamen"
+  },
+  {
+   "controle": "07520224000173-1-000153/2025",
+   "rotulo": 1,
+   "objeto_so": 0.74,
+   "com_rag": 0.96,
+   "paginas_rag": 5,
+   "chars_rag": 11808,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA OU DE PAGAMENTO, QUE ATENDA AS REGRAS DE FUNCIONAMENTO ESTABELECIDAS PELO BANCO CENTRAL DO BRASIL, PARA OPERAR OS SERVIÇOS"
+  },
+  {
+   "controle": "05959770000180-1-000005/2026",
+   "rotulo": 1,
+   "objeto_so": 0.98,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11702,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira, autorizada pelo Banco Central do Brasil, para a gestão e operacionalização da folha de pagamento de servidores e parlamen"
+  },
+  {
+   "controle": "10404184000109-1-000012/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.99,
+   "paginas_rag": 5,
+   "chars_rag": 11907,
+   "discordancia": false,
+   "objeto": "Contratacao de instituicao financeira autorizada pelo Banco Central do Brasil pelo prazo de 60 sessenta meses para a prestacao integrada de servicos bancarios a"
+  },
+  {
+   "controle": "51637593000132-1-000057/2026",
+   "rotulo": 1,
+   "objeto_so": 0.74,
+   "com_rag": 0.97,
+   "paginas_rag": 5,
+   "chars_rag": 11773,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária, registrada no Banco Central do Brasil - BACEN, para operar os serviços de processamento e gerenciamento de créditos proveni"
+  },
+  {
+   "controle": "44483444000109-1-000016/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11876,
+   "discordancia": false,
+   "objeto": "O objeto da presente licitação é a escolha da proposta mais vantajosa para a contratação de empresa bancária objetivando serviços de gerenciamento e processamen"
+  },
+  {
+   "controle": "29138328000150-1-000067/2026",
+   "rotulo": 1,
+   "objeto_so": 0.89,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11969,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA A PRESTAÇÃO DE SERVIÇOS BANCÁRIOS DE PAGAMENTO, COM EXCLUSIVIDADE, DA FOLHA DE SALÁRIO DOS SERVIDORES PÚBLICOS ATIVOS"
+  },
+  {
+   "controle": "88566872000162-1-000604/2025",
+   "rotulo": 1,
+   "objeto_so": 0.71,
+   "com_rag": 0.98,
+   "paginas_rag": 6,
+   "chars_rag": 11727,
+   "discordancia": false,
+   "objeto": "Cessão onerosa de folha de pagamento da Prefeitura municipal do Rio Grande."
+  },
+  {
+   "controle": "46634564000187-1-001087/2025",
+   "rotulo": 1,
+   "objeto_so": 0.68,
+   "com_rag": 0.96,
+   "paginas_rag": 5,
+   "chars_rag": 11939,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA, INCLUSIVE SOB A FORMA DE COOPERATIVA DE CRÉDITO, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, "
+  },
+  {
+   "controle": "45318581000142-1-000038/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11586,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA PROCESSAR, COM EXCLUSIVIDADE, OS CRÉDITOS DA FOLHA DE PAGAMENTO DOS SERVIDORES DA PREFEITURA MUNICIPAL DE RESTINGA/SP"
+  },
+  {
+   "controle": "07615750000117-1-000067/2026",
+   "rotulo": 1,
+   "objeto_so": 0.66,
+   "com_rag": 0.96,
+   "paginas_rag": 6,
+   "chars_rag": 11759,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA VISANDO A PERMISSÃO PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENT"
+  },
+  {
+   "controle": "76002641000147-1-000323/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11161,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira, pública ou privada, autorizada a funcionar pelo Banco Central do Brasil, para a prestação dos serviços de processamento, "
+  },
+  {
+   "controle": "01621714000180-1-000102/2026",
+   "rotulo": 1,
+   "objeto_so": 0.75,
+   "com_rag": 0.96,
+   "paginas_rag": 6,
+   "chars_rag": 11772,
+   "discordancia": false,
+   "objeto": "[Portal de Compras Públicas] - CESSÃO ONEROSA DE FOLHA DE PAGAMENTO EXECUTIVO E LEGISLATIVO DO MUNICÍPIO DE MUITOS CAPÕES. Edital nº 23/2026/2026"
+  },
+  {
+   "controle": "45298569000113-1-000003/2026",
+   "rotulo": 1,
+   "objeto_so": 0.75,
+   "com_rag": 0.96,
+   "paginas_rag": 7,
+   "chars_rag": 11931,
+   "discordancia": false,
+   "objeto": "[LICITANET] - Contratação de instituição bancária para operar os serviços de processamento e gerenciamento de créditos provenientes da Folha de Pagamento dos se"
+  },
+  {
+   "controle": "87613071000148-1-000049/2026",
+   "rotulo": 1,
+   "objeto_so": 0.88,
+   "com_rag": 0.98,
+   "paginas_rag": 6,
+   "chars_rag": 11766,
+   "discordancia": false,
+   "objeto": "Referente a cessão onerosa para o gerenciamento e processamento da folha de pagamento do Poder Executivo Municipal para servidores ativos (efetivos, celetistas,"
+  },
+  {
+   "controle": "13714803000150-1-000027/2026",
+   "rotulo": 1,
+   "objeto_so": 0.76,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11589,
+   "discordancia": false,
+   "objeto": "Contratação de Instituição Bancária Pública ou Privada para operar os serviços de processamento e gerenciamento de créditos da folha de pagamento dos servidores"
+  },
+  {
+   "controle": "18311043000153-1-000026/2026",
+   "rotulo": 1,
+   "objeto_so": 0.89,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11494,
+   "discordancia": false,
+   "objeto": "Contratação de Instituição Financeira autorizada a funcionar pelo Banco Central do Brasil para prestação de serviços relacionados à operacionalização da folha d"
+  },
+  {
+   "controle": "08349029000195-1-000047/2026",
+   "rotulo": 1,
+   "objeto_so": 0.95,
+   "com_rag": 0.98,
+   "paginas_rag": 7,
+   "chars_rag": 11625,
+   "discordancia": false,
+   "objeto": "[Portal de Compras Públicas] - CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, PÚBLICA OU PRIVADA, REGULARMENTE AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, PARA"
+  },
+  {
+   "controle": "11286341000191-1-000034/2026",
+   "rotulo": 1,
+   "objeto_so": 0.93,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11073,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA PRESTAÇÃO DE SERVIÇOS DE PAGAMENTO DA FOLHA DE SALÁRIO DOS SERVIDORES ATIVOS, EFETIVOS, CONTRATADOS, COMISSIONADOS, I"
+  },
+  {
+   "controle": "44892693000140-1-000208/2026",
+   "rotulo": 1,
+   "objeto_so": 0.86,
+   "com_rag": 0.97,
+   "paginas_rag": 4,
+   "chars_rag": 11491,
+   "discordancia": false,
+   "objeto": "- CONTRATAÇÃO DE EMPRESA ESPECIALIZADA, PARA PRESTAÇÃO DE SERVIÇO DE PAGAMENTO DE FOLHA DE SALÁRIO DOS SERVIDORES ATIVOS E APOSENTADOS DO MUNICÍPIO DE CARAPICUÍ"
+  },
+  {
+   "controle": "25005166000121-1-000254/2025",
+   "rotulo": 1,
+   "objeto_so": 0.46,
+   "com_rag": 0.93,
+   "paginas_rag": 4,
+   "chars_rag": 11509,
+   "discordancia": false,
+   "objeto": "CREDENCIAMENTO DE INSTITUIÇÃO FINANCEIRA PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS DE GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚB"
+  },
+  {
+   "controle": "27792373000107-1-000006/2026",
+   "rotulo": 1,
+   "objeto_so": 0.82,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11538,
+   "discordancia": false,
+   "objeto": "[LICITANET] - Pregão Eletrônico para futura e eventual contratação de empresa habilitada em INSTITUIÇÃO FINANCEIRA,AUTORIZADA PELO BANCO CENTRAL, ATRAVÉS DE PRE"
+  },
+  {
+   "controle": "13460266000169-1-000070/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.99,
+   "paginas_rag": 5,
+   "chars_rag": 11646,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira enquadrada nos segmentos S1 ou S2, para a concessão onerosa, em caráter precário, do direito de processar e gerenciar, com"
+  },
+  {
+   "controle": "75381178000129-1-000069/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.99,
+   "paginas_rag": 7,
+   "chars_rag": 11867,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA GERENCIAMENTO, PROCESSAMENTO E OPERACIONALIZAÇÃO DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLICOS MUNICIPAIS Edital nº 3"
+  },
+  {
+   "controle": "28916716000152-1-000104/2025",
+   "rotulo": 1,
+   "objeto_so": 0.74,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11710,
+   "discordancia": false,
+   "objeto": "CONTRATACAO DE INSTITUICAO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL PARA A PRESTACAO DE SERVICOS DE PROCESSAMENTO E GERENCIAMENTO DE CREDITO DA FOLHA "
+  },
+  {
+   "controle": "18128280000183-1-000025/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 10679,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira para prestação de serviços de processamento, gerenciamento e operacionalização da folha de pagamento dos servidores públic"
+  },
+  {
+   "controle": "49556863000139-1-000038/2026",
+   "rotulo": 1,
+   "objeto_so": 0.61,
+   "com_rag": 0.95,
+   "paginas_rag": 4,
+   "chars_rag": 11752,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária, registrada no Banco Central do Brasil- BACEN, para operar os serviços de processamento e gerenciamento de créditos provenie"
+  },
+  {
+   "controle": "46643466000106-1-000704/2026",
+   "rotulo": 1,
+   "objeto_so": 0.7,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11603,
+   "discordancia": false,
+   "objeto": "CONTRATACAO DE INSTITUICAO BANCARIA PARA OPERAR OS SERVICOS DE PROCESSAMENTO E GERENCIAMENTO DE CREDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERVIDORES ATIVO"
+  },
+  {
+   "controle": "35444991000186-1-000014/2026",
+   "rotulo": 1,
+   "objeto_so": 0.9,
+   "com_rag": 0.97,
+   "paginas_rag": 5,
+   "chars_rag": 11586,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária pública ou privada, bem como cooperativa de crédito, autorizada pelo banco central do brasil para centralizar e processar pe"
+  },
+  {
+   "controle": "94707684000100-1-000043/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.96,
+   "paginas_rag": 5,
+   "chars_rag": 11828,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA PRESTAÇÃO DOS SERVIÇOS DE GERENCIAMENTO E PROCESSAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES ATIVOS, INCLUSIVE AQUELE"
+  },
+  {
+   "controle": "76970326000103-1-000080/2026",
+   "rotulo": 1,
+   "objeto_so": 0.8,
+   "com_rag": 0.95,
+   "paginas_rag": 5,
+   "chars_rag": 11694,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira, devidamente autorizada pelo Banco Central do Brasil, para os serviços de processamento e gerenciamento de créditos proven"
+  },
+  {
+   "controle": "46634077000114-1-000074/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 3,
+   "chars_rag": 10911,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira, autorizada pelo Banco Central do Brasil, para prestação de serviços de pagamento da folha salarial e outras indenizações "
+  },
+  {
+   "controle": "45731650000145-1-000125/2026",
+   "rotulo": 1,
+   "objeto_so": 0.89,
+   "com_rag": 0.98,
+   "paginas_rag": 7,
+   "chars_rag": 11642,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária para serviços de folha de pagamento Edital nº 39/2026"
+  },
+  {
+   "controle": "46177523000109-1-000249/2026",
+   "rotulo": 1,
+   "objeto_so": 0.75,
+   "com_rag": 0.98,
+   "paginas_rag": 7,
+   "chars_rag": 11881,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira para operar, em caráter de exclusividade, os serviços de processamento e gerenciamento de créditos provenientes da Folha d"
+  },
+  {
+   "controle": "18194076000160-1-000058/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11882,
+   "discordancia": false,
+   "objeto": "[Portal de Compras Públicas] - Contratação de instituição financeira pública ou privada autorizada pelo Banco Central do Brasil para a prestação de serviços de "
+  },
+  {
+   "controle": "07387343000108-1-000096/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.99,
+   "paginas_rag": 4,
+   "chars_rag": 11448,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, DORAVANTE DENOMINADA BANCO, PARA PRESTAÇÃO DE SERVIÇOS DA GESTÃO DA FOLHA DE PAGAMENTO DE SALÁRIO DOS SERVIDORES ATIVOS, "
+  },
+  {
+   "controle": "01612509000158-1-000157/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11525,
+   "discordancia": false,
+   "objeto": "[LICITANET] - Contratação de Instituição Financeira, pública ou privada, para a prestação de serviços bancários de pagamento de folha de salário dos servidores "
+  },
+  {
+   "controle": "44925691000100-1-000039/2026",
+   "rotulo": 1,
+   "objeto_so": 0.68,
+   "com_rag": 0.96,
+   "paginas_rag": 5,
+   "chars_rag": 11521,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária pública ou privada, bem como cooperativa de crédito, autorizada pelo Banco Central do Brasil para operar os serviços de proc"
+  },
+  {
+   "controle": "18133439000158-1-000013/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11363,
+   "discordancia": false,
+   "objeto": "Cessão onerosa à instituição financeira devidamente autorizada a funcionar pelo Banco Central do Brasil, da prestação dos serviços de recebimento, processamento"
+  },
+  {
+   "controle": "01612500000147-1-000027/2026",
+   "rotulo": 1,
+   "objeto_so": 0.95,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11702,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA TEM COMO FINALIDADE A PRESTAÇÃO DE SERVIÇOS BANCÁRIOS NECESSÁRIOS AO PROCESSAMENTO E GERENCIAMENTO DA FOLHA DE PAGAMENTO D"
+  },
+  {
+   "controle": "88775390000112-1-000250/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.97,
+   "paginas_rag": 5,
+   "chars_rag": 10801,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira pública ou cooperativa de crédito, devidamente autorizada pelo Banco Central do Brasil, para a prestação de serviços de ge"
+  },
+  {
+   "controle": "78121878000172-1-000107/2026",
+   "rotulo": 1,
+   "objeto_so": 0.85,
+   "com_rag": 0.97,
+   "paginas_rag": 6,
+   "chars_rag": 11944,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira autorizada pelo Banco Central do Brasil, para centralizar, processar e gerenciar, com exclusividade, os créditos referente"
+  },
+  {
+   "controle": "76170240000104-1-000048/2026",
+   "rotulo": 1,
+   "objeto_so": 0.9,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11922,
+   "discordancia": false,
+   "objeto": "Serviços de instituição financeira oficial ou privada para cessão onerosa do direito de processamento da folha de pagamento. Edital nº 90012/2026"
+  },
+  {
+   "controle": "82909409000190-1-000081/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.97,
+   "paginas_rag": 6,
+   "chars_rag": 11661,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL PARA O PROCESSAMENTO E GERENCIAMENTO INTEGRAL DA FOLHA DE PAGAMENTO DOS SERVIDORES"
+  },
+  {
+   "controle": "76966860000146-1-000184/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11394,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira oficial ou privada para prestação de serviços de processamento e gerenciamento da folha de pagamento dos servidores públic"
+  },
+  {
+   "controle": "25053133000157-1-000016/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.98,
+   "paginas_rag": 3,
+   "chars_rag": 9045,
+   "discordancia": false,
+   "objeto": "O objeto da licitação trata da seleção de instituição financeira, autorizada pelo Banco Central do Brasil, para prestação de serviços de pagamento da folha sala"
+  },
+  {
+   "controle": "08142655000106-1-000048/2026",
+   "rotulo": 1,
+   "objeto_so": 0.98,
+   "com_rag": 0.99,
+   "paginas_rag": 4,
+   "chars_rag": 11820,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, PÚBLICA OU PRIVADA, PARA OPERAR, EM CARÁTER DE EXCLUSIVIDADE, OS SERVIÇOS DE GESTÃO DA FOLHA DE PAGAMENTO DOS SERVIDORES "
+  },
+  {
+   "controle": "87613279000167-1-000091/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11454,
+   "discordancia": false,
+   "objeto": "Constitui objeto da presente licitação a cessão onerosa do direito à prestação dos serviços de processamento e pagamento da folha de pagamento do Município de M"
+  },
+  {
+   "controle": "07010511000133-1-000008/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.99,
+   "paginas_rag": 7,
+   "chars_rag": 11552,
+   "discordancia": false,
+   "objeto": "1.1. Contratação de instituição financeira para prestação de serviços de processamento, gerenciamento e operacionalização da folha de pagamento dos servidores, "
+  },
+  {
+   "controle": "26753137000100-1-000025/2026",
+   "rotulo": 1,
+   "objeto_so": 0.94,
+   "com_rag": 0.99,
+   "paginas_rag": 5,
+   "chars_rag": 11911,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO BANCARIA PARA O GERENCIAMENTO DA FOLHA DE PAGAMENTO DO MUNICIPIO DE LAGOA DA CONFUSÃO-TO, ATENDENDO A SECRETARIA MUNICIPAL DE FINAÇAS"
+  },
+  {
+   "controle": "44556207000112-1-000013/2026",
+   "rotulo": 1,
+   "objeto_so": 0.76,
+   "com_rag": 0.98,
+   "paginas_rag": 10,
+   "chars_rag": 11919,
+   "discordancia": false,
+   "objeto": "A presente licitação tem por objeto, a Contratação de Instituição Bancária Pública ou Privada para operar os serviços de processamento e gerenciamento de crédit"
+  },
+  {
+   "controle": "07598709000180-1-000032/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.97,
+   "paginas_rag": 4,
+   "chars_rag": 11620,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, PARA PRESTAÇÃO DE SERVIÇOS BANCÁRIOS COM EXCLUSIV"
+  },
+  {
+   "controle": "45511847000179-1-000953/2025",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11962,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA PROCESSAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES DA PREFEITURA MUNICIPAL DE ARAÇATUBA/SP. Edital nº 104/2025"
+  },
+  {
+   "controle": "13988308000139-1-000107/2026",
+   "rotulo": 1,
+   "objeto_so": 0.9,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11935,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira pública ou privada, devidamente autorizada pelo Banco Central do Brasil, para prestação de serviços, necessários ao pagame"
+  },
+  {
+   "controle": "13780770000146-1-000040/2025",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.99,
+   "paginas_rag": 6,
+   "chars_rag": 11791,
+   "discordancia": false,
+   "objeto": "[LICITANET] - CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA BANCÁRIA AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA OPERACIONALIZAÇÃO, EM CARÁTER DE EXCLUSIVIDADE, DO PA"
+  },
+  {
+   "controle": "15023963000188-1-000010/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11600,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA PARA PRESTAÇÃO DE SERVIÇOS DE GERENCIAMENTO E PROCESSAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES ATIVOS"
+  },
+  {
+   "controle": "16418766000120-1-000048/2026",
+   "rotulo": 1,
+   "objeto_so": 0.88,
+   "com_rag": 0.96,
+   "paginas_rag": 6,
+   "chars_rag": 11461,
+   "discordancia": false,
+   "objeto": "[LICITANET] - Contratação de Instituição Financeira autorizada pelo Banco Central para explorar a exclusividade da folha de pagamento dos servidores públicos do"
+  },
+  {
+   "controle": "44855443000130-1-000055/2026",
+   "rotulo": 1,
+   "objeto_so": 0.93,
+   "com_rag": 0.97,
+   "paginas_rag": 4,
+   "chars_rag": 11914,
+   "discordancia": false,
+   "objeto": "Contratação de empresa especializada, sendo esta uma instituição financeira oficial ou privada ou instituição de pagamento, para a prestação de serviços de paga"
+  },
+  {
+   "controle": "02186708000104-1-000041/2026",
+   "rotulo": 1,
+   "objeto_so": 0.65,
+   "com_rag": 0.98,
+   "paginas_rag": 7,
+   "chars_rag": 11633,
+   "discordancia": false,
+   "objeto": "SOLICITAÇÃO CONTRATAÇÃO DE INSTITUIÇÃO BANCÁRIA PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS PROVENIENTES DA FOLHA DE PAGAMENTO DOS SERV"
+  },
+  {
+   "controle": "17954041000110-1-000025/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.97,
+   "paginas_rag": 1,
+   "chars_rag": 1309,
+   "discordancia": false,
+   "objeto": "Contratação direta de instituição financeira oficial para a gestão da folha de pagamento dos servidores públicos efetivos em atividade, servidores contratados e"
+  },
+  {
+   "controle": "75741330000137-1-000250/2026",
+   "rotulo": 1,
+   "objeto_so": 0.88,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11438,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, DEVIDAMENTE CREDENCIADA PARA PRESTAÇÃO DE SERVIÇOS PARA CENTRALIZAR E PROCESSAR OS CRÉDITOS DA FOLHA DE PAGAMENTO DOS SER"
+  },
+  {
+   "controle": "44925279000190-1-000005/2026",
+   "rotulo": 1,
+   "objeto_so": 0.62,
+   "com_rag": 0.98,
+   "paginas_rag": 6,
+   "chars_rag": 11677,
+   "discordancia": false,
+   "objeto": "contratação de instituição bancária, registrada no Banco Central do Brasil - BACEN, para operar os serviços de processamento e gerenciamento de créditos proveni"
+  },
+  {
+   "controle": "93244606000153-1-000103/2025",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.97,
+   "paginas_rag": 3,
+   "chars_rag": 9800,
+   "discordancia": false,
+   "objeto": "[Portal de Compras Públicas] - A presente licitação tem por objeto, a contratação de empresa para cessão onerosa do direito de efetuar o pagamento da folha dos "
+  },
+  {
+   "controle": "83102434000120-1-000111/2026",
+   "rotulo": 1,
+   "objeto_so": 0.98,
+   "com_rag": 0.98,
+   "paginas_rag": 1,
+   "chars_rag": 1710,
+   "discordancia": false,
+   "objeto": "DISPENSA DE LICITAÇÃO PARA ESCOLHA DA CAIXA ECONÔMICA FEDERAL (CEF) PARA A PRESTAÇÃO DE SERVIÇOS BANCÁRIOS DE PROCESSAMENTO E PAGAMENTO DA FOLHA DE SALÁRIOS DOS"
+  },
+  {
+   "controle": "46478053000113-1-000030/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.98,
+   "paginas_rag": 1,
+   "chars_rag": 762,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira, autorizada pelo BANCO CENTRAL DO BRASIL, para o gerenciamento e processamento da folha de pagamento dos servidores públic"
+  },
+  {
+   "controle": "04332995000149-1-000008/2026",
+   "rotulo": 1,
+   "objeto_so": 0.95,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11910,
+   "discordancia": false,
+   "objeto": "[LICITANET] - Contratação de Instituição Bancária Pública ou Privada para Operar os Serviços de Arrecadação Secundária e Centralizada de Tributos e Preços Públi"
+  },
+  {
+   "controle": "05903125000145-1-000244/2026",
+   "rotulo": 1,
+   "objeto_so": 0.95,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11557,
+   "discordancia": false,
+   "objeto": "Contratação de Instituição Financeira Pública, regularmente em atividade conforme legislação específica, para prestação de serviços bancários de: (a) processame"
+  },
+  {
+   "controle": "01612150000119-1-000335/2026",
+   "rotulo": 1,
+   "objeto_so": 0.74,
+   "com_rag": 0.96,
+   "paginas_rag": 5,
+   "chars_rag": 11994,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira pública ou privada, inclusive sob a forma de cooperativa de crédito, autorizada a funcionar pelo Banco Central do Brasil, "
+  },
+  {
+   "controle": "75381178000129-1-000057/2026",
+   "rotulo": 1,
+   "objeto_so": 0.95,
+   "com_rag": 0.98,
+   "paginas_rag": 6,
+   "chars_rag": 11741,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL PARA PRESTAÇÃO DE SERVIÇOS DE GERENCIAMENTO, PROCESSAMENTO E OPERACIONALIZAÇÃO DA "
+  },
+  {
+   "controle": "95990198000104-1-000082/2026",
+   "rotulo": 1,
+   "objeto_so": 0.71,
+   "com_rag": 0.96,
+   "paginas_rag": 5,
+   "chars_rag": 11791,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO/COOPERATIVA FINANCEIRA, PÚBLICA OU PRIVADA, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, PARA A PRESTAÇÃO DE SERVIÇOS DE PROC"
+  },
+  {
+   "controle": "46634317000180-1-000055/2026",
+   "rotulo": 1,
+   "objeto_so": 0.85,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11283,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira autorizada pelo Banco Central do Brasil para prestação de serviços de processamento e gerenciamento dos créditos provenien"
+  },
+  {
+   "controle": "06554356000153-1-000023/2026",
+   "rotulo": 1,
+   "objeto_so": 0.9,
+   "com_rag": 0.95,
+   "paginas_rag": 4,
+   "chars_rag": 10111,
+   "discordancia": false,
+   "objeto": "Contratação de Instituição bancária oficial, empresa pública, em caráter de exclusividade, para a prestação dos serviços de processamento de créditos da folha d"
+  },
+  {
+   "controle": "07778129000174-1-000041/2026",
+   "rotulo": 1,
+   "objeto_so": 0.91,
+   "com_rag": 0.99,
+   "paginas_rag": 5,
+   "chars_rag": 11543,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira autorizada pelo Banco Central do Brasil para a prestação, em caráter de exclusividade, dos serviços de centralização, proc"
+  },
+  {
+   "controle": "07598709000180-1-000023/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11778,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PÚBLICA OU PRIVADA OU DE PAGAMENTO, AUTORIZADA A FUNCIONAR PELO BANCO CENTRAL DO BRASIL, PARA PRESTAÇÃO DE SERVIÇOS BANCÁR"
+  },
+  {
+   "controle": "08782146000148-1-000023/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.96,
+   "paginas_rag": 6,
+   "chars_rag": 11893,
+   "discordancia": false,
+   "objeto": "[Portal de Compras Públicas] - Contratação de instituição financeira para prestação dos serviços de pagamento, com exclusividade, de salários, proventos e venci"
+  },
+  {
+   "controle": "03073673000160-1-000056/2026",
+   "rotulo": 1,
+   "objeto_so": 0.95,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11336,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira, pública ou privada, para a prestação de serviços bancários ao Município de Bonito - MS, com exclusividade no processament"
+  },
+  {
+   "controle": "95640652000105-1-000053/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.99,
+   "paginas_rag": 3,
+   "chars_rag": 11241,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira para gestão com exclusividade do processamento da folha de pagamento dos servidores ativos, licenciados e outros da admini"
+  },
+  {
+   "controle": "01505643000150-1-000118/2026",
+   "rotulo": 1,
+   "objeto_so": 0.98,
+   "com_rag": 0.93,
+   "paginas_rag": 2,
+   "chars_rag": 4858,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, PARA A PRESTAÇÃO DE SERVIÇO BANCÁRIOS DE PROCESSAMENTO, GERENCIAMENTO E OPERACIONALIZAÇÃO DA FOLHA DE PAGAMENTO, COMPREEN"
+  },
+  {
+   "controle": "13922588000182-1-000038/2026",
+   "rotulo": 1,
+   "objeto_so": 0.92,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11458,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária, devidamente autorizada pelo Banco Central do Brasil, em caráter de exclusividade, para prestação de serviços de administraç"
+  },
+  {
+   "controle": "18308742000144-1-000046/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.99,
+   "paginas_rag": 4,
+   "chars_rag": 10938,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira, pública ou privada, para gestão da folha de pagamento dos agentes políticos, servidores ativos (efetivos, comissionados e"
+  },
+  {
+   "controle": "03424272000107-1-000015/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11751,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, PÚBLICA OU PRIVADA, AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA PRESTAÇÃO DE SERVIÇOS DE GERENCIAMENTO E PROCESSAMENTO "
+  },
+  {
+   "controle": "22681423000157-1-000050/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11033,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA GERENCIAMENTO E PROCESSAMENTO DA FOLHA DE PAGAMENTO DOS SERVIDORES DE FRANCISCO SÁ. Ato que autoriza a Contratação Di"
+  },
+  {
+   "controle": "01640429000106-1-000092/2026",
+   "rotulo": 1,
+   "objeto_so": 0.83,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11410,
+   "discordancia": false,
+   "objeto": "CONTRATACAO DE INSTITUICAO FINANCEIRA PARA PRESTACAO DE SERVICOS, EM CARATER DE EXCLUSIVIDADE, DO PROCESSAMENTO DE 100% 'CEM POR CENTO' DOS CREDITOS PROVENIENTE"
+  },
+  {
+   "controle": "01612501000191-1-000024/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.97,
+   "paginas_rag": 5,
+   "chars_rag": 11970,
+   "discordancia": false,
+   "objeto": "[Portal de Compras Públicas] - Credenciamento de instituição financeira autorizada a funcionar pelo Banco Central do Brasil, com agência física instalada e em p"
+  },
+  {
+   "controle": "16796575000100-1-000061/2025",
+   "rotulo": 1,
+   "objeto_so": 0.81,
+   "com_rag": 0.93,
+   "paginas_rag": 4,
+   "chars_rag": 11285,
+   "discordancia": false,
+   "objeto": "Credenciamento de instituições financeiras, públicas ou privadas, autorizadas a funcionar pelo Banco Central do Brasil, para prestação de serviços bancários de "
+  },
+  {
+   "controle": "23563067000130-1-000083/2026",
+   "rotulo": 1,
+   "objeto_so": 0.73,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11941,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira, pública ou privada, autorizada a funcionar pelo Banco Central do Brasil, para prestação dos serviços de processamento, ge"
+  },
+  {
+   "controle": "79373767000116-1-000063/2026",
+   "rotulo": 1,
+   "objeto_so": 0.75,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11567,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PARA A PRESTAÇÃO DE SERVIÇOS, EM CARÁTER DE EXCLUSIVIDADE, PELO PERÍODO DE 60 (SESSENTA) MESES, PARA PROCESSAMENTO E GEREN"
+  },
+  {
+   "controle": "01612478000135-1-000021/2026",
+   "rotulo": 1,
+   "objeto_so": 0.84,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11509,
+   "discordancia": false,
+   "objeto": "[Portal de Compras Públicas] - CONTRATAÇÃO DE INSTITUIÇÃO BANCÁRIA AUTORIZADA PELO BANCO CENTRAL DO BRASIL PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAME"
+  },
+  {
+   "controle": "02404006000150-1-000024/2026",
+   "rotulo": 1,
+   "objeto_so": 0.51,
+   "com_rag": 0.97,
+   "paginas_rag": 5,
+   "chars_rag": 11828,
+   "discordancia": false,
+   "objeto": "- Prestação de serviços de processamento de folha de pagamento. Edital nº 01/2026"
+  },
+  {
+   "controle": "45787678000102-1-000091/2026",
+   "rotulo": 1,
+   "objeto_so": 0.57,
+   "com_rag": 0.8,
+   "paginas_rag": 6,
+   "chars_rag": 11797,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira bancária para a prestação de serviços bancários de processamento e gerenciamento de créditos provenientes da folha de paga"
+  },
+  {
+   "controle": "49528128000111-1-000019/2026",
+   "rotulo": 1,
+   "objeto_so": 0.84,
+   "com_rag": 0.98,
+   "paginas_rag": 6,
+   "chars_rag": 11580,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária oficial para operar os serviços de processamento e gerenciamento de créditos provenientes da Folha de Pagamento dos vereador"
+  },
+  {
+   "controle": "14109763000180-1-000252/2026",
+   "rotulo": 1,
+   "objeto_so": 0.87,
+   "com_rag": 0.96,
+   "paginas_rag": 4,
+   "chars_rag": 11525,
+   "discordancia": false,
+   "objeto": "[LICITANET] - Contratação de instituição financeira pública ou privada regulamentante autorizada a funcionar pelo Banco Central do Brasil para a prestação de se"
+  },
+  {
+   "controle": "06554000000110-1-000030/2026",
+   "rotulo": 1,
+   "objeto_so": 0.94,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11576,
+   "discordancia": false,
+   "objeto": "[LICITANET] - Prestação de serviços bancários de gerenciamento e processamento da folha de pagamento dos servidores públicos municipais da administração direta."
+  },
+  {
+   "controle": "77721363000140-1-000118/2026",
+   "rotulo": 1,
+   "objeto_so": 0.9,
+   "com_rag": 0.98,
+   "paginas_rag": 6,
+   "chars_rag": 11644,
+   "discordancia": false,
+   "objeto": "A contratação de instituição financeira ou Cooperativas de crédito, autorizada pelo Banco Central do Brasil, para operar o serviço de pagamento de subsídios e s"
+  },
+  {
+   "controle": "29052875000119-1-000025/2026",
+   "rotulo": 1,
+   "objeto_so": 0.82,
+   "com_rag": 0.94,
+   "paginas_rag": 5,
+   "chars_rag": 11004,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA, PÚBLICA OU PRIVADA, PARA PRESTAÇÃO DE SERVIÇOS DE CENTRALIZAÇÃO, PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS DA FOLHA DE PA"
+  },
+  {
+   "controle": "80869621000145-1-000015/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.99,
+   "paginas_rag": 5,
+   "chars_rag": 11842,
+   "discordancia": false,
+   "objeto": "Contratacao de instituicao financeira autorizada pelo Banco Central do Brasil para prestacao de servicos bancarios de processamento gerenciamento e operacionali"
+  },
+  {
+   "controle": "45678000000183-1-000001/2026",
+   "rotulo": 1,
+   "objeto_so": 0.84,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11562,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE INSTITUIÇÃO BANCÁRIA PÚBLICA OU PRIVADA PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS DA FOLHA DE PAGAMENTO DOS SERVIDORES"
+  },
+  {
+   "controle": "49556863000139-1-000022/2026",
+   "rotulo": 1,
+   "objeto_so": 0.66,
+   "com_rag": 0.95,
+   "paginas_rag": 4,
+   "chars_rag": 11752,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária, registrada no Banco Central do Brasil- BACEN, para operar os serviços de processamento e gerenciamento de créditos provenie"
+  },
+  {
+   "controle": "06116743000108-1-000039/2026",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.97,
+   "paginas_rag": 4,
+   "chars_rag": 11968,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira, pública ou privada, autorizada pela legislação vigente, para realizar com exclusividade o processamento e gerenciamento d"
+  },
+  {
+   "controle": "17744558000184-1-000001/2026",
+   "rotulo": 1,
+   "objeto_so": 0.73,
+   "com_rag": 0.93,
+   "paginas_rag": 5,
+   "chars_rag": 11019,
+   "discordancia": false,
+   "objeto": "[Portal de Compras Públicas] - Contratação de instituição financeira pública ou privada, inclusive sob a forma de cooperativa de crédito, autorizada a funcionar"
+  },
+  {
+   "controle": "01740430000102-1-000089/2026",
+   "rotulo": 1,
+   "objeto_so": 0.78,
+   "com_rag": 0.98,
+   "paginas_rag": 5,
+   "chars_rag": 11787,
+   "discordancia": false,
+   "objeto": "REFERENTE A CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA PUBLICA OU PRIVADA PARA OPERAR OS SERVIÇOS DE PROCESSAMENTO E GERENCIAMENTO DE CRÉDITOS DA FOLHA DE PAGAMENTO "
+  },
+  {
+   "controle": "75924290000169-1-000002/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.97,
+   "paginas_rag": 4,
+   "chars_rag": 11314,
+   "discordancia": false,
+   "objeto": "Contratação de Instituição Financeira, devidamente autorizada pelo Banco Central do Brasil, para a prestação de serviços de processamento e gerenciamento da fol"
+  },
+  {
+   "controle": "13782461000105-1-000139/2025",
+   "rotulo": 1,
+   "objeto_so": 0.96,
+   "com_rag": 0.99,
+   "paginas_rag": 5,
+   "chars_rag": 11830,
+   "discordancia": false,
+   "objeto": "[LICITANET] - CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA BANCÁRIA AUTORIZADA PELO BANCO CENTRAL DO BRASIL, PARA OPERACIONALIZAÇÃO, EM CARÁTER DE EXCLUSIVIDADE, DO PA"
+  },
+  {
+   "controle": "01067255000134-1-000185/2025",
+   "rotulo": 1,
+   "objeto_so": 0.92,
+   "com_rag": 0.94,
+   "paginas_rag": 5,
+   "chars_rag": 11765,
+   "discordancia": false,
+   "objeto": "Contratação, mediante credenciamento com a condição de critério de terceiro, de instituição financeira para a prestação de serviços relativos à folha de pagamen"
+  },
+  {
+   "controle": "20720165000145-1-000032/2026",
+   "rotulo": 1,
+   "objeto_so": 0.88,
+   "com_rag": 0.98,
+   "paginas_rag": 8,
+   "chars_rag": 11902,
+   "discordancia": false,
+   "objeto": "Contratação de Instituição Financeira, Pública ou Privada, inclusive cooperativa de crédito, devidamente autorizada a funcionar pelo Banco Central do Brasil, pa"
+  },
+  {
+   "controle": "06769798000117-1-000119/2026",
+   "rotulo": 1,
+   "objeto_so": 0.97,
+   "com_rag": 0.99,
+   "paginas_rag": 5,
+   "chars_rag": 11849,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira oficial para prestação de serviços bancários, compreendendo a centralização da movimentação financeira do Município, o pro"
+  },
+  {
+   "controle": "04530390000162-1-000002/2026",
+   "rotulo": 1,
+   "objeto_so": 0.93,
+   "com_rag": 0.98,
+   "paginas_rag": 4,
+   "chars_rag": 11746,
+   "discordancia": false,
+   "objeto": "[LICITANET] - CONTRATAÇÃO DE INSTITUIÇÃO BANCÁRIA PÚBLICA OU PRIVADA PARA OPERAR OS SERVIÇOS DE ARRECADAÇÃO SECUNDÁRIA E CENTRALIZADA DE TRIBUTOS E PREÇOS PÚBLI"
+  },
+  {
+   "controle": "01335363000140-1-000043/2026",
+   "rotulo": 0,
+   "objeto_so": 0.1,
+   "com_rag": 0.06,
+   "paginas_rag": 3,
+   "chars_rag": 4661,
+   "discordancia": false,
+   "objeto": "Nº 29038. ADOÇÃO DAS PROVIDÊNCIAS NECESSÁRIAS PARA CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA OFICIALMENTE AUTORIZADA PELO BANCO CENTRAL DO BRASIL, EM ESPECÍFICO PAR"
+  },
+  {
+   "controle": "01963093000112-1-000005/2024",
+   "rotulo": 0,
+   "objeto_so": 0.54,
+   "com_rag": 0.24,
+   "paginas_rag": 5,
+   "chars_rag": 10378,
+   "discordancia": false,
+   "objeto": "Prestação de serviços cessão onerosa de sistema de folha de pagamento para processamento das informações relativas ao exercício 2024. Ato que autoriza a Contrat"
+  },
+  {
+   "controle": "07616162000106-1-000060/2024",
+   "rotulo": 0,
+   "objeto_so": 0.23,
+   "com_rag": 0.1,
+   "paginas_rag": 6,
+   "chars_rag": 11481,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE SERVIÇOS ESPECIALIZADOS PARA REALIZAÇÃO DE ESTUDO TÉCNICO DE VIABILIDADE ECONÔMICO-FINANCEIRA – EVEF, PARA ESTIMAR O MELHOR VALOR A SER PAGO PELO"
+  },
+  {
+   "controle": "03155926000144-1-000082/2024",
+   "rotulo": 0,
+   "objeto_so": 0.3,
+   "com_rag": 0.05,
+   "paginas_rag": 1,
+   "chars_rag": 2225,
+   "discordancia": false,
+   "objeto": "Contratação de empresa para prestação de serviços especializados para realização de Estudo Técnico de Viabilidade Econômico-financeira – EVEF, para estimar o me"
+  },
+  {
+   "controle": "03155934000190-1-000008/2026",
+   "rotulo": 0,
+   "objeto_so": 0.06,
+   "com_rag": 0.07,
+   "paginas_rag": 6,
+   "chars_rag": 11866,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO “AD ÊXITO” DE EMPRESA ESPECIALIZADA PARA A EXECUÇÃO DE SERVIÇOS TÉCNICOS ESPECIALIZADOS, CONSISTENTE NA ELABORAÇÃO DE ESTUDO TÉCNICO DE VIABILIDADE "
+  },
+  {
+   "controle": "03681582000107-1-000122/2024",
+   "rotulo": 0,
+   "objeto_so": 0.45,
+   "com_rag": 0.06,
+   "paginas_rag": 1,
+   "chars_rag": 2216,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE SERVIÇOS ESPECIALIZADOS PARA REALIZAÇÃO DE ESTUDO TÉCNICO DE VIABILIDADE ECONÔMICO-FINANCEIRA – EVEF, PARA ESTIMAR O MELHOR VALOR A SER PAGO PELO"
+  },
+  {
+   "controle": "01911667000109-1-000011/2026",
+   "rotulo": 0,
+   "objeto_so": 0.92,
+   "com_rag": 0.97,
+   "paginas_rag": 4,
+   "chars_rag": 11289,
+   "discordancia": false,
+   "objeto": "PRESTACAO DE SERVICO RELACIONADO A TARIFAS BANCARIAS E OPERACIONALIZACAO INCIDENTES SOBRE OS SERVICOS PRESTADOS POR INSTITUICAO FINANCEIRA PUBLICA OFICIAL, BEM "
+  },
+  {
+   "controle": "05105283000150-1-000052/2026",
+   "rotulo": 0,
+   "objeto_so": 0.19,
+   "com_rag": 0.06,
+   "paginas_rag": 4,
+   "chars_rag": 9783,
+   "discordancia": false,
+   "objeto": "[Portal de Compras Públicas] - CONTRATAÇÃO DE EMPRESA PARA CONTRATAÇÃO DE PRESTADORA DE SERVIÇOS ESPECIALIZADOS DE IMPLEMENTAÇÃO, INTEGRAÇÃO E OTIMIZAÇÃO DA FOL"
+  },
+  {
+   "controle": "05521027000143-1-000001/2026",
+   "rotulo": 0,
+   "objeto_so": 0.05,
+   "com_rag": 0.04,
+   "paginas_rag": 5,
+   "chars_rag": 11992,
+   "discordancia": false,
+   "objeto": "Contratação de instituição financeira oficial para prestação de serviços bancários, consistentes na manutenção de conta bancária institucional destinada ao rece"
+  },
+  {
+   "controle": "05903125000145-1-000214/2025",
+   "rotulo": 0,
+   "objeto_so": 0.39,
+   "com_rag": 0.13,
+   "paginas_rag": 3,
+   "chars_rag": 11530,
+   "discordancia": false,
+   "objeto": "A contratação de serviços especializados para realização de Estudo Técnico de Viabilidade Econômico-financeira-(EVEF), para estimar o melhor valor a ser pago pe"
+  },
+  {
+   "controle": "07000268000172-1-000024/2024",
+   "rotulo": 0,
+   "objeto_so": 0.15,
+   "com_rag": 0.13,
+   "paginas_rag": 1,
+   "chars_rag": 2181,
+   "discordancia": false,
+   "objeto": "Contratação de serviços especializados para realização de Estudo Técnico Preliminar, para estimar o melhor valor a ser pago pelos serviços referente à gestão ba"
+  },
+  {
+   "controle": "07535446000160-1-000094/2024",
+   "rotulo": 0,
+   "objeto_so": 0.03,
+   "com_rag": 0.02,
+   "paginas_rag": 6,
+   "chars_rag": 11579,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE EMPRESA ESPECIALIZADA PARA REALIZAR A MIGRAÇÃO DE DADOS (BANCO DE DADOS FIREBIRD PARA BANCO DE DADOS POSTGRESQL) DO SISTEMA DE FOLHA DE PAGAMENTO"
+  },
+  {
+   "controle": "12200176000176-1-000513/2024",
+   "rotulo": 0,
+   "objeto_so": 0.17,
+   "com_rag": 0.12,
+   "paginas_rag": 6,
+   "chars_rag": 11656,
+   "discordancia": false,
+   "objeto": "contratação de serviços especializados para realização de Estudo Técnico de Viabilidade Econômico-financeira – EVEF, para estimar o melhor valor a ser pago pelo"
+  },
+  {
+   "controle": "29115474000160-1-000288/2026",
+   "rotulo": 0,
+   "objeto_so": 0.05,
+   "com_rag": 0.04,
+   "paginas_rag": 1,
+   "chars_rag": 4000,
+   "discordancia": false,
+   "objeto": "Prestação de serviços de concessão de empréstimo pessoal, compra de dívida dos Servidores Públicos Municipais Estatutários diretos, ativos, inativos e pensionis"
+  },
+  {
+   "controle": "35050756000120-1-000129/2025",
+   "rotulo": 0,
+   "objeto_so": 0.03,
+   "com_rag": 0.03,
+   "paginas_rag": 4,
+   "chars_rag": 11805,
+   "discordancia": false,
+   "objeto": "CONTRATAÇÃO DE EMPRESA ESPECIALIZADA PARA REALIZAR A MIGRAÇÃO DE DADOS (BANCO DE DADOS FIREBIRD PARA BANCO DE DADOS POSTGRESQL) DO SISTEMA DE FOLHA DE PAGAMENTO"
+  },
+  {
+   "controle": "45310125000156-1-000012/2025",
+   "rotulo": 0,
+   "objeto_so": 0.02,
+   "com_rag": 0.03,
+   "paginas_rag": 1,
+   "chars_rag": 1277,
+   "discordancia": false,
+   "objeto": "Objeto: Contratação de empresa de informática para prestação de serviços de backup’s diários de arquivos e banco de dados do servidor do SASSOM: movimentação de"
+  },
+  {
+   "controle": "95440517000108-1-000189/2026",
+   "rotulo": 0,
+   "objeto_so": 0.48,
+   "com_rag": 0.96,
+   "paginas_rag": 5,
+   "chars_rag": 11758,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária para pagamento de tarifas folha de pagamento. Ato que autoriza a Contratação Direta nº 49/2026"
+  },
+  {
+   "controle": "95440517000108-1-000190/2026",
+   "rotulo": 0,
+   "objeto_so": 0.09,
+   "com_rag": 0.63,
+   "paginas_rag": 11,
+   "chars_rag": 11763,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária para serviços de envio/retorno de arquivos de folhas de pagamento dos funcionários do Fundeb, convênio 27514. Ato que autori"
+  },
+  {
+   "controle": "95440517000108-1-000191/2026",
+   "rotulo": 0,
+   "objeto_so": 0.1,
+   "com_rag": 0.88,
+   "paginas_rag": 5,
+   "chars_rag": 11847,
+   "discordancia": false,
+   "objeto": "Contratação de instituição bancária para serviços de envio/retorno de arquivos de contas a pagar, folhas de pagamento e respectivas tarifas, convênio 03651. Ato"
+  }
+ ]
+}

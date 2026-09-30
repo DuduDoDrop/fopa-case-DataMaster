@@ -1,0 +1,54 @@
+{
+ "pdf": "tests/ocr_baseline/sao-lourenco-scan-6p.pdf",
+ "sha256_pdf": "980286c98a2d11947761d50b5d9cfa14ce8c82b2a2f12db73d94290be805c2ee",
+ "pdf_origem": {
+  "caminho": "amostras/Concorrencia - Eletronica - Sao Lourenco do Sul-RS/01 - Edital original (digitalizado, 44p).pdf",
+  "sha256": "55da3d8726798c2cd7e48c21ebb1e4b04f39cfa11aabfe87c6bf40dd44edc8ed",
+  "paginas_fisicas": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ]
+ },
+ "paginas": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "dpi": 150,
+ "tesseract_host": "5.4.0.20240606",
+ "tesseract_binario": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+ "tessdata_sha256": "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb",
+ "configuracao_ocr": {
+  "lang": "por",
+  "psm": 3,
+  "oem": 3,
+  "perfil": "fopa.ocr.PERFIL_TEXTO"
+ },
+ "arquivos": {
+  "p01.png": "72c9698eed377b3020918221498e3826f86e82b9da633b1a31ec263b43325492",
+  "p01.host.txt": "59739cc52c599a43751d5701897e7a5483464ec29f90715cbe94754339f46190",
+  "p02.png": "3e16bb66fbebc3ba47644c38919e7349b088fdffaeba5737d4c9426abf315f1a",
+  "p02.host.txt": "6443a02352967bebf1de8a0b28c7d800070aeaf01ab6c12e472ff994ff643b9a",
+  "p03.png": "d0ca99219f2ce611ab9783c02511e9984626578255eb27638c90c60717b11842",
+  "p03.host.txt": "830ea4cd3fbd009c2b9d8979dcf7ccdc377870e6ceaa8e9b83e7813a7c2d6211",
+  "p04.png": "fbb298d4081782a7b3861ddfee4aaa8f63e097811fd0d37836ad0d2d0f69335d",
+  "p04.host.txt": "6b70596ddabed71255922fb881c0b35035863b20d160e7f8936bd0f2a6e97b8c",
+  "p05.png": "2e39e2637e98472f50bce01be2f4a2130e3966cb8ac34594efa1b64168f313f2",
+  "p05.host.txt": "1168c27956d88f519e16d6cbf10b47ab7697861f355f7f4699b893acf9e0238c",
+  "p06.png": "adec5e68296f2d7b844c997e2c029cb58b624e2f73391b33dbf4b855b7bc81ee",
+  "p06.host.txt": "e0b8040557b04cb381353ee01c53117a5ad85efb01554ad89e4254e70fbe4bf0"
+ },
+ "plataforma": {
+  "sistema": "Windows-11-10.0.26200-SP0",
+  "maquina": "AMD64",
+  "python": "3.12.10"
+ },
+ "gerado_em": "2026-09-24T04:49:50+00:00"
+}

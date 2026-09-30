@@ -1,0 +1,1407 @@
+{
+  "name": "W21 Baixar",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W21 Baixar — documentos do PNCP para o storage\nSub-fluxo do W20 (sem Error Workflow: a falha sobe para o W20, que chama o W90 uma vez só com o id certo).\n\n- **Estado só por fn_transicao** — nova|retificada|falha_rede → baixando → baixada_ok | sem_pdf_legivel | formato_nao_suportado | falha_rede (db/002_eventos_transicoes.sql:18-40)\n- **/arquivos é a lista, nunca 1..N; só statusAtivo, por sequencialDocumento** — scripts/28_baixar_licitacao.py:499-513 (RN-07, scripts/fopa/pncp.py:318-320)\n- **429/5xx/rede: espera 30 s e repete 1×; esgotado → falha_rede** — scripts/fopa/pncp.py:62-101 (o backoff longo é do W20/W10: fn_registrar_falha, db/021)\n- **O PDF nunca passa pelo n8n**: o worker baixa, avalia (tetos 120/400 MB, 600 páginas, ZIP) e grava `arquivos` — api/baixar.py, scripts/28_baixar_licitacao.py:395-616\n- **Job longo: Wait 15 s → GET /jobs/{id} enquanto queued|running, máx. 60 voltas** — api/rotas_jobs.py:13-16\n- **Estado pelo resultado** — scripts/28_baixar_licitacao.py:562-602, uma regra só: api/baixar.py `estado_sugerido`\n- **E-mail \"carregada\" só entra na fila** (W50 envia) — plano §5 convenções; db/008:1-8\n- Devolve `{ok, continuar, estado, motivo}` ao W20.",
+        "height": 400,
+        "width": 760
+      },
+      "id": "fa4102e3-c238-5e7a-80f8-c834bc762f0b",
+      "name": "Sobre o W21",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -848
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "controle",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "8378019d-36fd-535e-864d-12f6775ac67c",
+      "name": "Chamado pelo W20",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — W21 passo 1: estado só muda por fn_transicao (db/013_correcoes_f0.sql:31-72), que grava o evento\nSELECT fn_transicao(l.controle, 'baixando', 'W21: baixar os documentos do PNCP',\n                    jsonb_build_object('n8n_execution_id', $2::text)) AS evento_id,\n       l.controle, l.slug, l.orgao, l.uf, l.municipio, l.modalidade, left(l.objeto, 300) AS objeto,\n       l.fim_prazo, l.fim_prazo_tem_hora, l.link,\n       substr(l.controle, 1, 14) AS cnpj,\n       split_part(l.controle, '/', 2)::int AS ano,\n       split_part(split_part(l.controle, '/', 1), '-', 3)::int AS seq\n  FROM licitacoes l\n WHERE l.controle = $1",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, $execution.id ] }}"
+        }
+      },
+      "id": "edc58661-10d5-5774-9c6c-ef64f15adab4",
+      "name": "Transição → baixando",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        288,
+        160
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://pncp.gov.br/api/pncp/v1/orgaos/{{ $('Transição → baixando').first().json.cnpj }}/compras/{{ $('Transição → baixando').first().json.ano }}/{{ $('Transição → baixando').first().json.seq }}/arquivos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "FOPA/3 (monitoramento de licitacoes de folha; estudo de viabilidade; contato: contato@exemplo.com)"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "53eee595-5119-568c-bf66-9a001ca94830",
+      "name": "GET /arquivos (PNCP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        160
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — /arquivos é a lista da API; nunca iterar 1..N (scripts/fopa/pncp.py:318-320, RN-07)\n// regra — 429/5xx/rede: esperar 30 s e repetir UMA vez (scripts/fopa/pncp.py:62-70, ESPERA_429); esgotado → falha_rede\n// regra — só statusAtivo, em ordem de sequencialDocumento (scripts/28_baixar_licitacao.py:499-513)\nconst r = $input.first().json || {};\nconst tentativa = $runIndex + 1;\nconst status = r.statusCode ?? null;\nlet falha = null;\nlet transitoria = false;\nif (r.error) {\n  falha = 'PNCP /arquivos sem resposta (rede/timeout): ' + String(r.error.message || r.error.description || JSON.stringify(r.error)).slice(0, 200);\n  transitoria = true;\n} else if (status !== 200 && status !== 204) {\n  falha = `PNCP /arquivos respondeu HTTP ${status}`;\n  transitoria = status === 429 || status >= 500;\n}\nlet lista = [];\nif (!falha && status === 200) {\n  lista = r.body;\n  if (typeof lista === 'string') {\n    try { lista = lista.trim() ? JSON.parse(lista) : []; }\n    catch (e) { falha = 'PNCP /arquivos devolveu um corpo que não é JSON'; lista = []; }\n  }\n  if (!Array.isArray(lista)) lista = lista ? [lista] : [];\n}\nconst docs = lista\n  .filter((a) => a && a.statusAtivo)\n  .sort((a, b) => (a.sequencialDocumento || 0) - (b.sequencialDocumento || 0))\n  .map((a) => ({ url: a.url || a.uri, sequencialDocumento: a.sequencialDocumento,\n                 tipoDocumentoNome: a.tipoDocumentoNome, titulo: a.titulo, statusAtivo: a.statusAtivo }));\nreturn [{ json: {\n  tentativa, http_status: status, falha, motivo: falha,\n  repetir: !!falha && transitoria && tentativa < 2,\n  total: lista.length, ativos: docs.length, docs,\n} }];\n"
+      },
+      "id": "88eaf210-6b67-5799-941e-17260b977008",
+      "name": "Avaliar /arquivos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4b1e9fd6-c81f-548e-922c-07879fc02b85",
+              "leftValue": "={{ $json.repetir === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "c93df351-12ab-5bd2-a5b1-c892d95c0e0c",
+      "name": "Repetir /arquivos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "390584ba-2da8-559d-a014-45518d252fc0",
+      "name": "Esperar 30 s (PNCP)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a3837142-0703-5de3-86d0-aee22aa665bf",
+              "leftValue": "={{ !$json.falha }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "1be158bc-373b-55da-804e-079c54e9beb5",
+      "name": "PNCP respondeu?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3296d843-0fa7-5064-bb4f-f87096135b36",
+              "leftValue": "={{ $json.ativos > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "8372f8df-c5a0-54bf-83f8-88fbb585b5ff",
+      "name": "Há documento ativo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1728,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — nenhum arquivo ativo: nada a baixar (scripts/28_baixar_licitacao.py:500-503). Desfecho, não erro de rede.\nSELECT fn_transicao($1, 'sem_pdf_legivel', 'W21: nenhum arquivo ativo no PNCP (' || $2 || ' no total)',\n                    jsonb_build_object('n8n_execution_id', $3::text, 'total', $2::int)) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Chamado pelo W20').first().json.controle, $json.total, $execution.id ] }}"
+        }
+      },
+      "id": "7bf48ed4-481b-575b-804f-80931757265c",
+      "name": "Estado sem_pdf_legivel",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2016,
+        520
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ok: true, continuar: false, estado: 'sem_pdf_legivel',\n  controle: $('Chamado pelo W20').first().json.controle,\n  motivo: 'nenhum arquivo ativo no PNCP' } }];\n"
+      },
+      "id": "ed427625-0523-51b3-a771-6b47a3e8745a",
+      "name": "Retorno: sem arquivo ativo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/jobs/baixar",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ controle: $('Chamado pelo W20').first().json.controle, docs: $json.docs }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "aae072be-fecb-537d-b3a4-037ed674daa4",
+      "name": "POST /jobs/baixar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2016,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a6ba456f-840e-53ad-9400-82b32c0a4a51",
+              "leftValue": "={{ $json.statusCode === 202 && !!($json.body && $json.body.job_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "49d7f18c-3050-5675-b61d-7c1f9a5164bd",
+      "name": "Job aceito?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2304,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 15,
+        "unit": "seconds"
+      },
+      "id": "19c1f074-caed-581e-94db-004b56e9ab71",
+      "name": "Esperar 15 s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2592,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.FOPA_WORKER_URL }}/jobs/{{ $('POST /jobs/baixar').first().json.body.job_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "1f713488-4cd1-514f-8718-2198060c586b",
+      "name": "GET /jobs/{id}",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2880,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — laço dos jobs longos: Wait 15 s → GET /jobs/{id} enquanto `queued` OU `running`\n// (api/rotas_jobs.py:13-16; api/jobs.py:18-20 — sucesso é `done`, não `ok`), máx. 60 voltas (plano §5 W21 passo 6).\n// Worker sem resposta numa volta (reinício) não mata o laço: conta a volta e pergunta de novo.\nconst MAX = 60;\nconst r = $input.first().json || {};\nconst volta = $runIndex + 1;\nconst jobId = $('POST /jobs/baixar').first().json.body.job_id;\nconst b = (r.body && typeof r.body === 'object') ? r.body : {};\nlet status;\nif (r.error) status = 'sem_resposta';\nelse if (r.statusCode !== 200) status = 'http_' + r.statusCode;\nelse status = String(b.status || 'desconhecido');\nconst ativo = status === 'queued' || status === 'running' || status === 'sem_resposta';\nlet motivo = null;\nif (status === 'error') {\n  const e = b.erro || {};\n  motivo = `job ${jobId} falhou: ${e.tipo || 'erro'}: ${String(e.mensagem || '').slice(0, 300)}`;\n} else if (ativo && volta >= MAX) {\n  motivo = `job ${jobId} não terminou em ${MAX} voltas de 15 s (último status: ${status})`;\n} else if (!ativo && status !== 'done') {\n  motivo = `GET /jobs/${jobId} respondeu ${status}`;\n}\nreturn [{ json: {\n  job_id: jobId, volta, status,\n  continuar_esperando: ativo && volta < MAX,\n  concluido: status === 'done',\n  result: status === 'done' ? (b.result || {}) : null,\n  progresso: b.progresso ?? null,\n  motivo,\n} }];\n"
+      },
+      "id": "adcd6191-e506-502a-9e7c-ab10a524e719",
+      "name": "Status do job",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fc34830e-3b9a-51b2-a758-f1523aa72c75",
+              "leftValue": "={{ $json.continuar_esperando === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "348962b9-9df4-5339-9bf0-f19b44d594c7",
+      "name": "Ainda na fila ou rodando?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3456,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "795be5a2-9767-59cb-ada9-9c3c4ecd705a",
+              "leftValue": "={{ $json.concluido === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "0060881c-d42f-5752-86a2-e8a63c226ec4",
+      "name": "Job concluído?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3744,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — estado pelo resultado do download (scripts/28_baixar_licitacao.py:562-602): ≥1 PDF bom → baixada_ok;\n// só formato → formato_nao_suportado (não se retenta); falha de rede → falha_rede (o W10 retenta); senão sem_pdf_legivel.\n// A regra é UMA: o worker a aplica em api/baixar.py `estado_sugerido`, a mesma do importador do acervo.\nconst res = $json.result || {};\nconst arquivos = res.arquivos || [];\nconst bons = arquivos.filter((a) => a.status === 'ok');\nconst estado = res.estado_sugerido || 'sem_pdf_legivel';\nconst n_paginas = bons.reduce((s, a) => s + (a.pag || 0), 0);\nconst recusados = res.recusados || [];\nconst falhas = res.falhas_download || [];\nconst motivo = {\n  baixada_ok: `W21: ${bons.length} arquivo(s), ${n_paginas} página(s)`,\n  formato_nao_suportado: `W21: só formato não suportado (${recusados.length} recusado(s))`,\n  falha_rede: `W21: download falhou na rede (${falhas.length} arquivo(s))`,\n  sem_pdf_legivel: 'W21: nenhum PDF legível baixado',\n}[estado] || ('W21: ' + estado);\nreturn [{ json: {\n  estado, motivo, job_id: $json.job_id,\n  n_arquivos: bons.length, n_paginas, n_ocr: bons.filter((a) => a.requer_ocr).length,\n  arquivos: bons.map((a) => ({ id: a.id, nome: a.nome, pag: a.pag, requer_ocr: a.requer_ocr, bytes: a.bytes })),\n  recusados, falhas_download: falhas, total_bytes: res.total_bytes || 0,\n} }];\n"
+      },
+      "id": "aa856b10-d17c-5bcc-88a1-7d930516dfc0",
+      "name": "Estado pelo resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4032,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — W21 passo 8: o estado que o resultado pede, por fn_transicao (evento com o job e os números)\nSELECT fn_transicao($1, $2::estado_licitacao, $3, $4::jsonb) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Chamado pelo W20').first().json.controle, $json.estado, $json.motivo, JSON.stringify({ n8n_execution_id: String($execution.id), job_id: $json.job_id, arquivos: $json.n_arquivos, paginas: $json.n_paginas, recusados: $json.recusados.map(r => ({ seq: r.seq, arquivo: r.arquivo, motivo: r.motivo })), falhas_download: $json.falhas_download.map(f => ({ seq: f.seq, arquivo: f.arquivo, erro: f.erro })) }) ] }}"
+        }
+      },
+      "id": "540a213c-80ca-57f5-af7a-2309ba2539bf",
+      "name": "Transição pelo resultado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4320,
+        160
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8a34c66b-7b94-59c3-ba11-32fea5b678be",
+              "leftValue": "={{ $('Estado pelo resultado').first().json.estado === 'baixada_ok' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "1d764bf7-0707-5b2e-a93c-3d1c1628651d",
+      "name": "Baixou?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4608,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\nconst quando = (iso, temHora) => {\n  if (!iso) return 'sem data';\n  const d = new Date(iso);\n  const tz = 'America/Sao_Paulo';\n  return temHora === false\n    ? d.toLocaleDateString('pt-BR', { timeZone: tz })\n    : d.toLocaleString('pt-BR', { timeZone: tz, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });\n};\nconst site = String($env.FOPA_SITE_PUBLIC_URL || '').replace(/\\/+$/, '');\nconst n8nBase = String($env.WEBHOOK_URL || '').replace(/\\/+$/, '');\nconst linkExecucao = `${n8nBase}/workflow/${$workflow.id}/executions/${$execution.id}`;\n// regra — e-mail \"carregada\" (plano §2 Alertas; §5 W21 passo 9): o fluxo só ENFILEIRA, quem envia é o W50\nconst lic = $('Transição → baixando').first().json;\nconst r = $('Estado pelo resultado').first().json;\nconst sessao = quando(lic.fim_prazo, lic.fim_prazo_tem_hora);\nconst onde = `${lic.municipio || lic.orgao || lic.controle}/${lic.uf || '—'}`;\nconst assunto = `[FOPA] Carregada: ${onde} · sessão ${sessao}`;\nconst pncp = lic.link || `https://pncp.gov.br/app/editais/${lic.cnpj}/${lic.ano}/${lic.seq}`;\nconst lista = (xs, f) => xs.length ? '<ul>' + xs.map((x) => '<li>' + f(x) + '</li>').join('') + '</ul>' : '<p>nenhum</p>';\nconst corpo = [\n  `<p><b>${esc(lic.orgao || '')}</b> — ${esc(onde)}</p>`,\n  `<p>${esc(lic.modalidade || 'modalidade não informada')} · controle ${esc(lic.controle)} · sessão ${esc(sessao)}</p>`,\n  `<p>${esc(lic.objeto || '')}</p>`,\n  `<p>${r.n_arquivos} arquivo(s), ${r.n_paginas} página(s); OCR previsto em ${r.n_ocr} arquivo(s).</p>`,\n  lista(r.arquivos, (a) => `${esc(a.nome)} — ${a.pag ?? '?'} p.${a.requer_ocr ? ' (OCR)' : ''}`),\n  `<p>Recusados pela política de coleta:</p>` + lista(r.recusados, (x) => `${esc(x.arquivo)} — ${esc(x.motivo)}`),\n  r.falhas_download.length ? `<p>Falhas de download:</p>` + lista(r.falhas_download, (x) => `${esc(x.arquivo)} — ${esc(x.erro)}`) : '',\n  `<p><a href=\"${esc(site)}/licitacao/${esc(lic.slug)}\">Abrir no site</a> · <a href=\"${esc(pncp)}\">PNCP</a> · `\n    + `<a href=\"${esc(linkExecucao)}\">execução ${esc($execution.id)} no n8n</a></p>`,\n].join('');\nreturn [{ json: { controle: lic.controle, assunto, corpo_html: corpo } }];\n"
+      },
+      "id": "1f131043-65a9-5172-a9d7-19e52fea49fc",
+      "name": "Montar e-mail carregada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4896,
+        -56
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — e-mail DESLIGADO (o produto manda só DOIS e-mails — licitação nova, pelo W01,\n-- e a extração pedida no botão do site, pelo W24; db/038-039). O fluxo segue igual; este nó não enfileira.\nSELECT NULL::bigint AS email_id",
+        "options": {}
+      },
+      "id": "46869fe2-627e-53ea-a22f-faeb2d8711c6",
+      "name": "Enfileirar e-mail carregada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5184,
+        -56
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $('Estado pelo resultado').first().json;\nreturn [{ json: { ok: true, continuar: true, estado: 'baixada_ok',\n  controle: $('Chamado pelo W20').first().json.controle, motivo: r.motivo,\n  arquivos: r.n_arquivos, paginas: r.n_paginas, ocr: r.n_ocr, recusados: r.recusados.length,\n  email_id: $json.email_id ?? null, job_id: r.job_id } }];\n"
+      },
+      "id": "2eeb585c-080c-57c5-b8d6-44a0f9d42e8c",
+      "name": "Retorno: baixada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5472,
+        -56
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// formato_nao_suportado e sem_pdf_legivel são desfecho (não se retentam); falha_rede é erro: o W20 registra a falha e o backoff\nconst r = $('Estado pelo resultado').first().json;\nreturn [{ json: { ok: r.estado !== 'falha_rede', continuar: false, estado: r.estado,\n  controle: $('Chamado pelo W20').first().json.controle, motivo: r.motivo,\n  recusados: r.recusados.length, falhas_download: r.falhas_download.length, job_id: r.job_id } }];\n"
+      },
+      "id": "3554ccd5-3a4d-553b-9296-bcef457dc209",
+      "name": "Retorno: sem PDF bom",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4896,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Falha vira MOTIVO escrito (fica em licitacao_eventos e no retorno para o W20), nunca silêncio.\n// Aceita o item de qualquer ramo que falhou: HTTP com erro de rede, HTTP com status ruim, laço esgotado.\nconst j = $input.first().json || {};\nlet motivo = j.motivo || j.falha || null;\nif (!motivo && j.error) {\n  motivo = 'sem resposta (rede/timeout): ' + String(j.error.message || j.error.description || JSON.stringify(j.error)).slice(0, 240);\n}\nif (!motivo && j.statusCode) {\n  const corpo = typeof j.body === 'string' ? j.body : JSON.stringify(j.body ?? '');\n  motivo = `HTTP ${j.statusCode}: ${corpo.slice(0, 300)}`;\n}\nreturn [{ json: { motivo: 'W21: ' + (motivo || 'falha sem motivo declarado') } }];\n"
+      },
+      "id": "340f4d73-036f-5901-a99b-85b236c376ef",
+      "name": "Motivo da falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — baixando → falha_rede (db/002:24): o W20 conta a tentativa e agenda o backoff (fn_registrar_falha, db/021)\nSELECT fn_transicao($1, 'falha_rede', $2, jsonb_build_object('n8n_execution_id', $3::text)) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Chamado pelo W20').first().json.controle, $json.motivo, $execution.id ] }}"
+        }
+      },
+      "id": "ee0ea7e9-8bef-57af-8c97-be445eee0bb9",
+      "name": "Estado falha_rede",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2880,
+        880
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ok: false, continuar: false, estado: 'falha_rede',\n  controle: $('Chamado pelo W20').first().json.controle,\n  motivo: $('Motivo da falha').first().json.motivo } }];\n"
+      },
+      "id": "085da9d8-81b3-594d-b536-7b4e5645e30e",
+      "name": "Retorno: falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Chamado pelo W20**\n\nEntrada do fluxo: recebe o número de controle da licitação.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "b516f1ef-a47b-5873-a250-8b79e4344550",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Transição → baixando**\n\nMarca a licitação como “baixando” e registra o evento. Se o processo cair daqui em diante, a fila sabe onde retomar.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6d9952e8-7950-581a-a1f8-098189201857",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · GET /arquivos (PNCP)**\n\nPede ao PNCP a lista de documentos da licitação. Espera até 60 s; erro de rede também vira resultado.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f1bd9847-c4ae-586e-ba53-230514a5369d",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Avaliar /arquivos**\n\nConfere a resposta e mantém só os documentos ativos, em ordem. Limite da API ou instabilidade pedem uma nova tentativa.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c747505e-5895-5f3f-bc4b-697b5c4bcd90",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Repetir /arquivos?**\n\nNa primeira falha passageira, espera e tenta de novo; senão, segue.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "138fba0b-068f-5ca6-acc2-1d11b5371c9e",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Esperar 30 s (PNCP)**\n\nEspera 30 segundos antes de repetir o pedido ao PNCP.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "24e379b4-b00f-59fc-9fcf-8b7a3ecfbcaf",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -50
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · PNCP respondeu?**\n\nCom resposta válida, segue; com falha mesmo após a nova tentativa, registra o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "195eed1e-fe54-52ee-bee9-e068fdc5d8c7",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Há documento ativo?**\n\nSe há documento ativo, manda baixar; senão, a licitação fica sem PDF legível.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5a2d82b6-235f-5afd-aa1d-6049fe7a9dc5",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Estado sem_pdf_legivel**\n\nMarca a licitação como sem PDF legível. É um desfecho, não um erro: não se tenta de novo sozinho.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5616d853-6ad4-5847-bacf-110cb10aaa2e",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        670
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Retorno: sem arquivo ativo**\n\nDevolve ao W20 que não há o que baixar.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "575faa69-f69b-5594-9cb3-a9984192aa6d",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        670
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · POST /jobs/baixar**\n\nPede ao worker o download: ele baixa cada documento, identifica o formato real, abre compactados, converte o que não é PDF e guarda tudo com o hash SHA-256.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e28d0957-cdd9-5fd9-8db0-09bbe9a35f27",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Job aceito?**\n\nSe o worker aceitou o trabalho, acompanha; senão, registra o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "78a9d395-58cf-5233-b1b0-e6b2768c3a86",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Esperar 15 s**\n\nIntervalo entre as consultas ao andamento do download.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "06fcfa5a-2b08-5e11-86db-f19c4995ca52",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 15 · GET /jobs/{id}**\n\nConsulta no worker o andamento do download.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4293d4f9-aa86-53ee-af8e-4ed44b1c7da6",
+      "name": "Nota — passo 15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 16 · Status do job**\n\nLê o andamento. Uma volta sem resposta não interrompe o acompanhamento; o limite é de 15 minutos.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6d76581b-1f3f-5c94-bf25-c4221f2aade3",
+      "name": "Nota — passo 16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 17 · Ainda na fila ou rodando?**\n\nEnquanto o download não termina, volta a esperar.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "0d4b1976-f4e3-56df-90f0-ef4486e29eb4",
+      "name": "Nota — passo 17",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 18 · Job concluído?**\n\nDownload concluído segue para o resultado; erro vai para o motivo da falha.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "294647b1-52fa-5bf6-ba4c-d9aec84a3536",
+      "name": "Nota — passo 18",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 19 · Estado pelo resultado**\n\nDefine o estado: baixada (há PDF bom), formato não suportado, falha de rede (tenta de novo depois) ou sem PDF legível.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7eca2523-c025-5df8-a554-82ceb36c88c3",
+      "name": "Nota — passo 19",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 20 · Transição pelo resultado**\n\nGrava o novo estado e, no evento, os números, os arquivos recusados e as falhas.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5396b404-8368-5e59-be10-0f5a6492fc38",
+      "name": "Nota — passo 20",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4240,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 21 · Baixou?**\n\nSe baixou PDF bom, segue para a leitura; senão, devolve o desfecho.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4391358f-f3fc-5ba8-920a-7980f4b3d453",
+      "name": "Nota — passo 21",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4528,
+        310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 22 · Retorno: sem PDF bom**\n\nDevolve ao W20 o desfecho sem PDF bom. Falha de rede conta tentativa; os demais casos são finais.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "29593d26-20aa-5623-bd20-43598c6f01a4",
+      "name": "Nota — passo 22",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4816,
+        598
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 23 · Montar e-mail carregada**\n\nMonta o texto do aviso “carregada”, que fica registrado na execução.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6eaedd7a-30b4-516a-86ff-c9f37b26d622",
+      "name": "Nota — passo 23",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4816,
+        94
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 24 · Enfileirar e-mail carregada**\n\nDesligado: o produto envia só dois e-mails. O texto montado fica apenas no registro.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "2e778395-5d5f-54f6-8d13-46c5fcf8cebf",
+      "name": "Nota — passo 24",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5104,
+        94
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 25 · Retorno: baixada**\n\nDevolve ao W20 que a licitação foi baixada, com arquivos, páginas e quantos precisam de OCR.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "073516bc-e72a-5dd7-b3c0-6da575ec96fc",
+      "name": "Nota — passo 25",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5392,
+        94
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 26 · Motivo da falha**\n\nTransforma qualquer falha (rede, HTTP, download recusado, tempo esgotado) em um motivo escrito. Nenhuma falha passa em silêncio.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e4e01248-922e-53f1-bc40-cf21f9071f64",
+      "name": "Nota — passo 26",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        1030
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 27 · Estado falha_rede**\n\nMarca a licitação com falha de rede, para nova tentativa mais tarde.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "d7ea81c5-97a8-5924-bb7e-c6a16da5fe57",
+      "name": "Nota — passo 27",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        1030
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 28 · Retorno: falha**\n\nDevolve ao W20 a falha; ele conta a tentativa e agenda a próxima.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "917304db-ade5-5928-bd04-6a7a65dcbfea",
+      "name": "Nota — passo 28",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        1030
+      ]
+    }
+  ],
+  "connections": {
+    "Chamado pelo W20": {
+      "main": [
+        [
+          {
+            "node": "Transição → baixando",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transição → baixando": {
+      "main": [
+        [
+          {
+            "node": "GET /arquivos (PNCP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /arquivos (PNCP)": {
+      "main": [
+        [
+          {
+            "node": "Avaliar /arquivos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avaliar /arquivos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avaliar /arquivos": {
+      "main": [
+        [
+          {
+            "node": "Repetir /arquivos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repetir /arquivos?": {
+      "main": [
+        [
+          {
+            "node": "Esperar 30 s (PNCP)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PNCP respondeu?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar 30 s (PNCP)": {
+      "main": [
+        [
+          {
+            "node": "GET /arquivos (PNCP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PNCP respondeu?": {
+      "main": [
+        [
+          {
+            "node": "Há documento ativo?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Há documento ativo?": {
+      "main": [
+        [
+          {
+            "node": "POST /jobs/baixar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Estado sem_pdf_legivel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado sem_pdf_legivel": {
+      "main": [
+        [
+          {
+            "node": "Retorno: sem arquivo ativo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /jobs/baixar": {
+      "main": [
+        [
+          {
+            "node": "Job aceito?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job aceito?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job aceito?": {
+      "main": [
+        [
+          {
+            "node": "Esperar 15 s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar 15 s": {
+      "main": [
+        [
+          {
+            "node": "GET /jobs/{id}",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /jobs/{id}": {
+      "main": [
+        [
+          {
+            "node": "Status do job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Status do job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status do job": {
+      "main": [
+        [
+          {
+            "node": "Ainda na fila ou rodando?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ainda na fila ou rodando?": {
+      "main": [
+        [
+          {
+            "node": "Esperar 15 s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job concluído?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job concluído?": {
+      "main": [
+        [
+          {
+            "node": "Estado pelo resultado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado pelo resultado": {
+      "main": [
+        [
+          {
+            "node": "Transição pelo resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transição pelo resultado": {
+      "main": [
+        [
+          {
+            "node": "Baixou?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixou?": {
+      "main": [
+        [
+          {
+            "node": "Montar e-mail carregada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retorno: sem PDF bom",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar e-mail carregada": {
+      "main": [
+        [
+          {
+            "node": "Enfileirar e-mail carregada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enfileirar e-mail carregada": {
+      "main": [
+        [
+          {
+            "node": "Retorno: baixada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Motivo da falha": {
+      "main": [
+        [
+          {
+            "node": "Estado falha_rede",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado falha_rede": {
+      "main": [
+        [
+          {
+            "node": "Retorno: falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "saveManualExecutions": true
+  }
+}

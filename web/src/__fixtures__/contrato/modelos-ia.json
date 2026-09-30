@@ -1,0 +1,99 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/modelos-ia",
+ "status": 200,
+ "corpo": {
+  "provedores": [
+   {
+    "id": "openai",
+    "rotulo": "OpenAI (GPT)",
+    "modelos": [
+     {
+      "id": "gpt-5.6-sol",
+      "rotulo": "GPT-5.6 Sol",
+      "esforco": "medium",
+      "nota": "o que extraiu Poá (25/09)",
+      "estimativa": {
+       "usd": 0.65,
+       "usd_max": 1.43,
+       "brl": 3.32
+      }
+     },
+     {
+      "id": "gpt-6-sol",
+      "rotulo": "GPT-6 Sol",
+      "esforco": "medium",
+      "nota": "raciocínio forte, metade do preço do 5.6 Sol",
+      "estimativa": {
+       "usd": 0.325,
+       "usd_max": 0.72,
+       "brl": 1.66
+      }
+     },
+     {
+      "id": "gpt-6-astra",
+      "rotulo": "GPT-6 Astra",
+      "esforco": "medium",
+      "nota": "o mais capaz da OpenAI; o mais caro",
+      "estimativa": {
+       "usd": 1.626,
+       "usd_max": 3.59,
+       "brl": 8.29
+      }
+     },
+     {
+      "id": "gpt-6-luna",
+      "rotulo": "GPT-6 Luna",
+      "esforco": "medium",
+      "nota": "o mais barato e rápido",
+      "estimativa": {
+       "usd": 0.016,
+       "usd_max": 0.04,
+       "brl": 0.08
+      }
+     }
+    ]
+   },
+   {
+    "id": "claude",
+    "rotulo": "Claude (Anthropic)",
+    "modelos": [
+     {
+      "id": "claude-opus-5-5",
+      "rotulo": "Claude Opus 5.5",
+      "esforco": "medium",
+      "nota": "o extrator do projeto; mais barato que o Opus 5",
+      "estimativa": {
+       "usd": 0.65,
+       "usd_max": 1.43,
+       "brl": 3.32
+      }
+     },
+     {
+      "id": "claude-sonnet-5",
+      "rotulo": "Claude Sonnet 5",
+      "esforco": "medium",
+      "nota": "equilíbrio entre qualidade e custo",
+      "estimativa": {
+       "usd": 0.325,
+       "usd_max": 0.72,
+       "brl": 1.66
+      }
+     },
+     {
+      "id": "claude-haiku-4-5",
+      "rotulo": "Claude Haiku 4.5",
+      "esforco": null,
+      "nota": "o mais barato; sem controle de esforço",
+      "estimativa": {
+       "usd": 0.177,
+       "usd_max": 0.36,
+       "brl": 0.9
+      }
+     }
+    ]
+   }
+  ],
+  "base": "edital de Poá (25/09): 118 mil tokens de entrada, 3 chamadas"
+ }
+}

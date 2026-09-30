@@ -1,0 +1,9 @@
+{
+  "accentColor": "#B23A32",
+  "theme": "obsidian",
+  "baseFontSize": 16,
+  "interfaceFontFamily": "IBM Plex Sans",
+  "textFontFamily": "IBM Plex Sans",
+  "monospaceFontFamily": "IBM Plex Mono",
+  "showViewHeader": true
+}

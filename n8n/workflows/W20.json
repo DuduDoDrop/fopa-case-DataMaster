@@ -1,0 +1,1594 @@
+{
+  "name": "W20 Processar uma licitação",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W20 Processar uma licitação — orquestra W21 → W22 → W23 → W24\nChamado pelo W10 (fila) e pelo W11 (site) com `{controle, forcar?}`. **Error Workflow = W90 só aqui** (raiz): em W21-W24 o Error Trigger dispararia em cascata com o id da sub-execução e o lease 'W20:'||id não casaria — plano §5 W90.\n\n- **Lease 'W20:'||execução** (toma o do W10/fn_reivindicar ou um vencido; nunca o de outro W20 vivo) — plano §5 W20 passo 1; db/021_fila_w10.sql\n- **Reservada para demo sem `forcar` → não processa** (devolve o lease e `{ok:false}`) — plano §5 W20 passo 2\n- **Entra no passo que o estado pede**: nova|retificada|falha_rede → W21; baixada_ok|erro_leitura → W22; preparada|erro_extracao|aguardando_orcamento → W23; respondida|verificada → W24 — db/002_eventos_transicoes.sql\n- **Cada passo devolve `{ok, continuar, estado, motivo}`**; `continuar=false` com ok é desfecho (sem PDF, sem vaga, sem orçamento, publicada)\n- **Ramo de erro = fn_registrar_falha**: estado de erro, tentativas+1, backoff 15 min → 2 h → 12 h, erro_definitivo na 4ª, lease devolvido — db/021_fila_w10.sql:33-55 (scripts/20_monitor.py:600-617 era \"falha nunca é retentada\")\n- **Lease devolvido nos dois ramos**; se o W20 morrer, o W90 devolve (UPDATE … WHERE lease_por='W20:'||id)\n- `execucoes_workflow` W20 ok|erro alimenta o disjuntor do W10 (fn_disjuntor_w20_aberto)",
+        "height": 440,
+        "width": 860
+      },
+      "id": "7545c3a2-30b5-5b68-a5e2-9bb34f8cc318",
+      "name": "Sobre o W20",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -840
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "controle",
+              "type": "string"
+            },
+            {
+              "name": "forcar",
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "id": "86630ba1-9d2d-5bfd-ad27-4dea09f593fc",
+      "name": "Chamado pelo W10/W11",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — lease 'W20:'||execução (plano §5 W20 passo 1). Toma o que o W10 reivindicou (fn_reivindicar, db/021), um\n-- vencido ou um livre; nunca o de outro W20 vivo. A mesma instrução abre a linha do W20 em execucoes_workflow.\nWITH alvo AS (\n    SELECT controle, lease_por, lease_ate FROM licitacoes WHERE controle = $1 FOR UPDATE\n), tomada AS (\n    UPDATE licitacoes l\n       SET lease_por = 'W20:' || $2, lease_ate = now() + interval '2 hours'\n      FROM alvo a\n     WHERE l.controle = a.controle\n       AND (a.lease_por IS NULL OR a.lease_ate IS NULL OR a.lease_ate < now()\n            OR a.lease_por NOT LIKE 'W20:%' OR a.lease_por = 'W20:' || $2)\n    RETURNING l.controle, l.estado::text AS estado, l.leitura_vigente_id, l.modalidade, l.reserva_demo,\n              l.tentativas, l.lease_por\n), registro AS (\n    INSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status, controle, argumentos)\n    SELECT 'W20', $2, $3, 'em_curso', t.controle, $4::jsonb FROM tomada t\n    RETURNING id\n)\nSELECT $1::text AS controle_pedido,\n       EXISTS (SELECT 1 FROM alvo) AS existe,\n       (SELECT a.lease_por FROM alvo a) AS lease_antes,\n       t.controle, t.estado, t.leitura_vigente_id, t.modalidade, t.reserva_demo, t.tentativas, t.lease_por,\n       (SELECT r.id FROM registro r) AS execucao_workflow_id\n  FROM (SELECT 1) um LEFT JOIN tomada t ON true",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, $execution.id, $execution.mode, JSON.stringify({ controle: $json.controle, forcar: $json.forcar === true || $json.forcar === 'true' }) ] }}"
+        }
+      },
+      "id": "e4aa3996-0c8f-5854-89bd-78378ef1f349",
+      "name": "Tomar lease",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        288,
+        120
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "60f6ebc3-d55b-5222-8ed1-f3ebd69054ec",
+              "leftValue": "={{ !!$json.execucao_workflow_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "30d0c137-6dc0-5ce5-bbf8-23a4df00ab89",
+      "name": "Lease tomado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nada foi tocado: nem estado, nem tentativas. Quem segura o lease termina o trabalho (ou o W90/W10 o devolve).\nconst j = $input.first().json;\nreturn [{ json: { ok: false, continuar: false, controle: j.controle_pedido,\n  motivo: j.existe ? `W20: lease ocupado por ${j.lease_antes}` : 'W20: licitação não existe',\n  lease_tomado: false } }];\n"
+      },
+      "id": "ebd0f920-1f32-50da-a2a8-f8b2754a4937",
+      "name": "Retorno: lease ocupado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8c2a0247-3d17-5c80-97b5-aad369dcfe91",
+              "leftValue": "={{ $json.reserva_demo === true && !($('Chamado pelo W10/W11').first().json.forcar === true || $('Chamado pelo W10/W11').first().json.forcar === 'true') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "b7046571-b290-5cbe-9dd1-2a76917dfc4e",
+      "name": "Reservada para demo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — reservada para a demo só roda com forcar (plano §5 W20 passo 2; api/demo_reservar.py). Não é falha da\n-- fonte: devolve o lease sem contar tentativa e marca a linha do W20 como 'recusado' (fora do disjuntor do W10).\nWITH w AS (\n    UPDATE execucoes_workflow\n       SET status = 'recusado', erro = 'reservada para demo (sem forcar)',\n           duracao_s = round(extract(epoch FROM now() - iniciado_em)::numeric, 3)\n     WHERE id = $3::bigint RETURNING id)\nUPDATE licitacoes SET lease_por = NULL, lease_ate = NULL\n WHERE controle = $1 AND lease_por = 'W20:' || $2\nRETURNING controle, estado::text AS estado, lease_por, (SELECT id FROM w) AS execucao_workflow_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Tomar lease').first().json.controle, $execution.id, $('Tomar lease').first().json.execucao_workflow_id ] }}"
+        }
+      },
+      "id": "2bdd66fc-3dd6-5712-8f39-94ca1d2370a6",
+      "name": "Devolver lease (demo)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1152,
+        480
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ok: false, continuar: false, controle: $json.controle, estado_final: $json.estado,\n  motivo: 'W20: reservada para demo (use forcar)', lease_devolvido: $json.lease_por === null } }];\n"
+      },
+      "id": "6a13a7dc-959d-589e-ac1e-e78b3e1d572e",
+      "name": "Retorno: reservada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "836dd3e5-3fc7-5595-9b3a-ef4068126e9b",
+                    "leftValue": "={{ ['nova', 'retificada', 'falha_rede', 'baixando'].includes($json.estado) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "W21 Baixar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0ea7a517-1078-570b-a182-389b2eb194e3",
+                    "leftValue": "={{ ['baixada_ok', 'erro_leitura', 'lendo'].includes($json.estado) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "W22 Ler"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8e7934cb-fd01-5e18-a1b3-ebc0ae32e562",
+                    "leftValue": "={{ ['preparada', 'erro_extracao', 'aguardando_orcamento'].includes($json.estado) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "W23 Extrair"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fb60dd0a-212f-55d4-b998-36ba86b15201",
+                    "leftValue": "={{ ['respondida', 'verificada'].includes($json.estado) }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "W24 Verificar e publicar"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "nada a fazer"
+        }
+      },
+      "id": "0b62b1a0-5dd9-5654-9816-fe47155af340",
+      "name": "Próximo passo",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1152,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W21}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "controle": "={{ $('Tomar lease').first().json.controle }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "controle",
+              "displayName": "controle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "c83dccef-fb81-536d-b7e6-f2261a537afe",
+      "name": "Executar W21 Baixar",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        -240
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W22}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "controle": "={{ $('Tomar lease').first().json.controle }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "controle",
+              "displayName": "controle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "81b506fe-1f18-52ac-97c5-b6e11121eccc",
+      "name": "Executar W22 Ler",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2304,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W23}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "controle": "={{ $('Tomar lease').first().json.controle }}",
+            "workflow_execucao_id": "={{ ((v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v))) ? null : Number(v))($('Tomar lease').first().json.execucao_workflow_id) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "controle",
+              "displayName": "controle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "workflow_execucao_id",
+              "displayName": "workflow_execucao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "b51e6205-913e-573b-93c3-bb7b6d4140a0",
+      "name": "Executar W23 Extrair",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3024,
+        240
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "{{WF:W24}}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "controle": "={{ $('Tomar lease').first().json.controle }}",
+            "execucao_id": "={{ ((v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v))) ? null : Number(v))($('Executar W23 Extrair').isExecuted ? $('Executar W23 Extrair').first().json.execucao_id : null) }}",
+            "modo": "publicar"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "controle",
+              "displayName": "controle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "execucao_id",
+              "displayName": "execucao_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "modo",
+              "displayName": "modo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "23da7006-be87-5d3e-8bb0-1b405fd98b21",
+      "name": "Executar W24 Verificar e publicar",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3744,
+        480
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b2460eac-2fa7-5edd-ae23-d5473376c9bb",
+                    "leftValue": "={{ $json.ok === true && $json.continuar === true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "segue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "23d41df5-d533-568c-8887-3a9aea88be75",
+                    "leftValue": "={{ $json.ok !== true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "falhou"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "concluiu"
+        }
+      },
+      "id": "926547a6-121f-528b-8e77-1eb57e6e2270",
+      "name": "Resultado W21",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1872,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f667c081-1fb4-561e-bde5-cb4a69fec083",
+                    "leftValue": "={{ $json.ok === true && $json.continuar === true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "segue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9c2c1a0a-1c53-556b-998c-3a386317f25e",
+                    "leftValue": "={{ $json.ok !== true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "falhou"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "concluiu"
+        }
+      },
+      "id": "4287b251-7dfa-5fac-b166-d29e25bafb61",
+      "name": "Resultado W22",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2592,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "630d7c0c-4dd0-5551-929d-61de02bad573",
+                    "leftValue": "={{ $json.ok === true && $json.continuar === true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "segue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a12c88cd-8374-5514-b9f3-94f7d6876101",
+                    "leftValue": "={{ $json.ok !== true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "falhou"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "concluiu"
+        }
+      },
+      "id": "1ef61964-a355-5787-8270-5226e51f453a",
+      "name": "Resultado W23",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        3312,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6ff21e14-ebd5-5d76-b581-3f4ebe80237b",
+                    "leftValue": "={{ $json.ok === true && $json.continuar === true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "segue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f8ca5a89-36a1-5f61-b92c-0c609243e689",
+                    "leftValue": "={{ $json.ok !== true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "falhou"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "concluiu"
+        }
+      },
+      "id": "17c4b4d9-2acc-51cc-9e8c-7c032463cb4e",
+      "name": "Resultado W24",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        4032,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// O que o W20 fez, passo a passo, para execucoes_workflow.contadores e para o retorno.\nconst lease = $('Tomar lease').first().json;\nconst PASSOS = [['W21', 'Executar W21 Baixar'], ['W22', 'Executar W22 Ler'], ['W23', 'Executar W23 Extrair'],\n                ['W24', 'Executar W24 Verificar e publicar']];\nconst passos = PASSOS.filter(([, no]) => $(no).isExecuted).map(([w, no]) => {\n  const r = $(no).first().json || {};\n  return { passo: w, ok: r.ok === true, estado: r.estado ?? null, motivo: r.motivo ?? null };\n});\nconst ultimo = $input.first().json || {};\nconst w23 = $('Executar W23 Extrair').isExecuted ? ($('Executar W23 Extrair').first().json || {}) : {};\nconst w24 = $('Executar W24 Verificar e publicar').isExecuted ? ($('Executar W24 Verificar e publicar').first().json || {}) : {};\nreturn [{ json: {\n  controle: lease.controle, estado_inicial: lease.estado, execucao_workflow_id: lease.execucao_workflow_id,\n  ok: true, adiado: ultimo.adiado === true,\n  motivo: ultimo.motivo ?? (passos.length ? null : `nada a fazer no estado ${lease.estado}`),\n  execucao_id: w23.execucao_id ?? null, verificacao_id: w24.verificacao_id ?? null, html_uri: w24.html_uri ?? null,\n  passos,\n} }];\n"
+      },
+      "id": "75e39a73-c207-5ebd-b18e-f5850920afa5",
+      "name": "Resumo do sucesso",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4608,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — lease devolvido também no ramo de sucesso (plano §5 W20 passo 8). Se o estado avançou (e não foi só\n-- \"adiado\"), zera tentativas e backoff: a contagem de 4 é de falhas SEGUIDAS (db/021 fn_registrar_falha).\n-- O custo da rodada é a soma das chamadas desta execução (a verdade é chamadas_modelo, não um número devolvido).\nWITH lic AS (\n    UPDATE licitacoes\n       SET lease_por = NULL, lease_ate = NULL,\n           tentativas = CASE WHEN estado::text <> $3 AND NOT $4::bool THEN 0 ELSE tentativas END,\n           proxima_tentativa_em = CASE WHEN estado::text <> $3 AND NOT $4::bool THEN NULL ELSE proxima_tentativa_em END\n     WHERE controle = $1 AND lease_por = 'W20:' || $2\n    RETURNING controle, estado::text AS estado_final, tentativas, proxima_tentativa_em, lease_por\n), custo AS (\n    SELECT sum(c.brl) AS brl, count(*) AS chamadas,\n           count(*) FILTER (WHERE c.preco_conhecido IS NOT TRUE) AS sem_preco\n      FROM chamadas_modelo c JOIN execucoes_modelo e ON e.id = c.execucao_id\n     WHERE e.workflow_execucao_id = $5::bigint\n), reg AS (\n    UPDATE execucoes_workflow\n       SET status = 'ok', duracao_s = round(extract(epoch FROM now() - iniciado_em)::numeric, 3),\n           custo_brl = COALESCE((SELECT brl FROM custo), 0), contadores = $6::jsonb\n     WHERE id = $5::bigint RETURNING id\n)\nSELECT (SELECT count(*) FROM lic) = 1 AS lease_devolvido,\n       COALESCE(lic.estado_final, (SELECT estado::text FROM licitacoes WHERE controle = $1)) AS estado_final,\n       lic.tentativas, lic.proxima_tentativa_em,\n       (SELECT brl FROM custo) AS custo_brl, (SELECT chamadas FROM custo) AS chamadas,\n       (SELECT sem_preco FROM custo) AS sem_preco, (SELECT id FROM reg) AS execucao_workflow_id\n  FROM (SELECT 1) um LEFT JOIN lic ON true",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, $execution.id, $json.estado_inicial, $json.adiado, $json.execucao_workflow_id, JSON.stringify({ estado_inicial: $json.estado_inicial, passos: $json.passos, adiado: $json.adiado }) ] }}"
+        }
+      },
+      "id": "2ffa2d5e-dade-595d-b933-012a9780c32c",
+      "name": "Concluir e devolver lease",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4896,
+        -120
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $('Resumo do sucesso').first().json;\nconst c = $input.first().json;\nreturn [{ json: { ok: true, controle: r.controle, estado_inicial: r.estado_inicial, estado_final: c.estado_final,\n  custo_brl: c.custo_brl == null ? null : Number(c.custo_brl), chamadas: Number(c.chamadas || 0),\n  sem_preco: Number(c.sem_preco || 0), execucao_id: r.execucao_id, verificacao_id: r.verificacao_id,\n  html_uri: r.html_uri, adiado: r.adiado, motivo: r.motivo, passos: r.passos,\n  lease_devolvido: c.lease_devolvido === true, tentativas: c.tentativas,\n  proxima_tentativa_em: c.proxima_tentativa_em, execucao_workflow_id: c.execucao_workflow_id } }];\n"
+      },
+      "id": "0a6561d1-c6d7-53db-ac78-e797aeb8f768",
+      "name": "Retorno: sucesso",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5184,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// O que o W20 fez, passo a passo, para execucoes_workflow.contadores e para o retorno.\nconst lease = $('Tomar lease').first().json;\nconst PASSOS = [['W21', 'Executar W21 Baixar'], ['W22', 'Executar W22 Ler'], ['W23', 'Executar W23 Extrair'],\n                ['W24', 'Executar W24 Verificar e publicar']];\nconst passos = PASSOS.filter(([, no]) => $(no).isExecuted).map(([w, no]) => {\n  const r = $(no).first().json || {};\n  return { passo: w, ok: r.ok === true, estado: r.estado ?? null, motivo: r.motivo ?? null };\n});\nconst ultimo = $input.first().json || {};\nconst w23 = $('Executar W23 Extrair').isExecuted ? ($('Executar W23 Extrair').first().json || {}) : {};\nconst w24 = $('Executar W24 Verificar e publicar').isExecuted ? ($('Executar W24 Verificar e publicar').first().json || {}) : {};\nreturn [{ json: {\n  controle: lease.controle, estado_inicial: lease.estado, execucao_workflow_id: lease.execucao_workflow_id,\n  ok: false, adiado: ultimo.adiado === true,\n  motivo: ultimo.motivo ?? 'passo devolveu ok=false sem motivo',\n  execucao_id: w23.execucao_id ?? null, verificacao_id: w24.verificacao_id ?? null, html_uri: w24.html_uri ?? null,\n  passos,\n} }];\n"
+      },
+      "id": "0797e148-80cc-57f0-806e-a298d1d1ae6a",
+      "name": "Resumo da falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4608,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — ramo false do W20 (plano §5 W20 passos 4-7) = fn_registrar_falha (db/021_fila_w10.sql:33-55): passo em curso\n-- vira o estado de erro dele (baixando→falha_rede, lendo→erro_leitura, extraindo→erro_extracao; os outros ficam),\n-- tentativas+1, proxima_tentativa_em = backoff 15 min → 2 h → 12 h, erro_definitivo na 4ª, lease devolvido.\nSELECT fn_registrar_falha(l.controle,\n         (CASE l.estado WHEN 'baixando' THEN 'falha_rede'\n                        WHEN 'lendo' THEN 'erro_leitura'\n                        WHEN 'extraindo' THEN 'erro_extracao'\n                        ELSE l.estado::text END)::estado_licitacao,\n         $2, false) AS resultado\n  FROM licitacoes l\n WHERE l.controle = $1 AND l.lease_por = 'W20:' || $3",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, $json.motivo, $execution.id ] }}"
+        }
+      },
+      "id": "2a572318-e13d-5b26-ab13-a8d5474083a0",
+      "name": "Registrar falha (fn_registrar_falha)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4896,
+        600
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- execucoes_workflow W20 'erro' alimenta o disjuntor do W10 (fn_disjuntor_w20_aberto, db/021; scripts/20_monitor.py:600-617)\nWITH reg AS (\n    UPDATE execucoes_workflow\n       SET status = 'erro', erro = $3, duracao_s = round(extract(epoch FROM now() - iniciado_em)::numeric, 3),\n           contadores = $4::jsonb\n     WHERE id = $2::bigint RETURNING id)\nSELECT l.controle, l.estado::text AS estado_final, l.tentativas, l.proxima_tentativa_em, l.lease_por,\n       (SELECT id FROM reg) AS execucao_workflow_id\n  FROM licitacoes l WHERE l.controle = $1",
+        "options": {
+          "queryReplacement": "={{ [ $('Resumo da falha').first().json.controle, $('Resumo da falha').first().json.execucao_workflow_id, $('Resumo da falha').first().json.motivo, JSON.stringify({ estado_inicial: $('Resumo da falha').first().json.estado_inicial, passos: $('Resumo da falha').first().json.passos, resultado: $json.resultado ?? null }) ] }}"
+        }
+      },
+      "id": "15e1f29b-5d96-5a6b-81c5-e8f05f2d4661",
+      "name": "Fechar W20 com erro",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5184,
+        600
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $('Resumo da falha').first().json;\nconst c = $input.first().json;\nreturn [{ json: { ok: false, controle: r.controle, estado_inicial: r.estado_inicial, estado_final: c.estado_final,\n  motivo: r.motivo, passos: r.passos, resultado: $('Registrar falha (fn_registrar_falha)').first().json.resultado ?? null,\n  tentativas: c.tentativas, proxima_tentativa_em: c.proxima_tentativa_em,\n  lease_devolvido: c.lease_por === null, execucao_workflow_id: c.execucao_workflow_id } }];\n"
+      },
+      "id": "ef65b152-1363-5385-a2d4-81873bf4b471",
+      "name": "Retorno: falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5472,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Chamado pelo W10/W11**\n\nEntrada do fluxo: recebe o número de controle da licitação e se o pedido é forçado. Quem chama é a fila (W10) ou o site (W11).",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "74ea32cb-b5c6-5ad9-8b0f-085822111969",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Tomar lease**\n\nReserva a licitação para este processamento por até 2 horas e abre o registro da execução. Duas execuções nunca processam a mesma licitação.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "976c8178-d5b1-5694-b0c8-7e79810a6a86",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · Lease tomado?**\n\nSe a reserva deu certo, segue; se outro processamento já a segura, devolve “reserva ocupada”.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "0843bcc9-56c5-5493-aacb-58db9daecc5a",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Reservada para demo?**\n\nLicitação guardada para demonstração só é processada com pedido forçado; nenhum processo automático pode usá-la.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "57491e92-8c5b-5ed2-ae86-5b345f5f8f73",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Retorno: lease ocupado**\n\nDevolve que a licitação está ocupada ou não existe. Nada foi alterado.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "14f8a0b5-228c-5738-9608-eba7c1ff2b09",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        630
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Devolver lease (demo)**\n\nRegistra a recusa e devolve a reserva, sem contar como falha.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "a2b52d80-c215-55a5-84fc-fb2f8dc752ef",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        630
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · Retorno: reservada**\n\nDevolve que a licitação está reservada para demonstração.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f16c781c-5f4f-545d-8976-d57a0fdc7617",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        630
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Próximo passo**\n\nEscolhe onde começar pelo estado atual: baixar (W21), ler (W22), extrair (W23) ou verificar e publicar (W24). Nada já feito é refeito.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "1999b5b9-dac6-5442-b772-c6da3e2ed8ec",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Executar W21 Baixar**\n\nChama o W21, que baixa os documentos da licitação no PNCP, e espera o resultado.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7ca5f083-0a0f-53d9-9f74-fd6998b86e87",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Resultado W21**\n\nTrês caminhos: segue para a leitura, falhou ou concluiu sem nada a ler.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3a64e940-cb03-584f-8efb-6e547fd3f770",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · Executar W22 Ler**\n\nChama o W22, que lê os documentos (com OCR quando necessário), e espera o resultado.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5bf87ace-1444-515c-a6ee-cb5e26da9107",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Resultado W22**\n\nTrês caminhos: segue para a extração, falhou ou concluiu.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "da05f050-b17d-5bf3-80fb-4f4f15b0f0db",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Executar W23 Extrair**\n\nChama o W23, que extrai as 17 respostas com o modelo de IA. O custo das chamadas fica ligado a esta execução.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "cfc5a087-8e54-58c2-8b5a-c27621c73936",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2944,
+        390
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 15 · Resultado W23**\n\nTrês caminhos: segue para a verificação, falhou ou foi adiado (sem vaga ou sem orçamento).",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7d831f18-5bea-551d-929c-8ddf49447a2a",
+      "name": "Nota — passo 15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3232,
+        390
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 16 · Executar W24 Verificar e publicar**\n\nChama o W24, que confere cada resposta nos documentos e publica o resultado no site.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "39eb7247-8db7-5230-bc90-4633c031bb3f",
+      "name": "Nota — passo 16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        630
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 17 · Resultado W24**\n\nPublicado ou concluído vai para o resumo de sucesso; falha vai para o resumo de falha.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "d372bc02-7351-5066-8857-88c3c237bfe3",
+      "name": "Nota — passo 17",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        630
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 18 · Resumo do sucesso**\n\nMonta o registro da rodada: estado inicial, os passos que rodaram, a extração, a verificação e o link do relatório.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "20810e94-ac7d-5315-9d0d-8504639c1056",
+      "name": "Nota — passo 18",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4528,
+        30
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 19 · Concluir e devolver lease**\n\nDevolve a reserva, zera as tentativas, soma o custo real pelas chamadas ao modelo e fecha o registro como concluído.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "002ebe12-7c93-5dbb-8f70-634979babae9",
+      "name": "Nota — passo 19",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4816,
+        30
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 20 · Retorno: sucesso**\n\nDevolve a quem chamou o estado final, o custo em R$ e os identificadores.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "91b3aa93-5f0c-56e9-9ffb-989feee14dc2",
+      "name": "Nota — passo 20",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5104,
+        30
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 21 · Resumo da falha**\n\nMonta o mesmo registro, com o motivo do passo que falhou.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f07f6f34-e952-5f8f-ab9f-58a2b9ef94f2",
+      "name": "Nota — passo 21",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4528,
+        750
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 22 · Registrar falha (fn_registrar_falha)**\n\nO banco conta a tentativa e agenda a próxima (15 min, 2 h, 12 h). Na 4ª falha seguida, a licitação vira erro definitivo.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e3dadd91-7085-5b5a-99af-c788f3f057c9",
+      "name": "Nota — passo 22",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4816,
+        750
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 23 · Fechar W20 com erro**\n\nFecha o registro com erro e o motivo. Três erros em 30 minutos abrem o disjuntor da fila.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "52141e7c-162f-5dc8-a17c-5068a0822068",
+      "name": "Nota — passo 23",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5104,
+        750
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 24 · Retorno: falha**\n\nDevolve a quem chamou o motivo, as tentativas e quando será a próxima.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "0ea914ff-d4e6-5455-90fa-a2d0179cad13",
+      "name": "Nota — passo 24",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5392,
+        750
+      ]
+    }
+  ],
+  "connections": {
+    "Chamado pelo W10/W11": {
+      "main": [
+        [
+          {
+            "node": "Tomar lease",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tomar lease": {
+      "main": [
+        [
+          {
+            "node": "Lease tomado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lease tomado?": {
+      "main": [
+        [
+          {
+            "node": "Reservada para demo?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retorno: lease ocupado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reservada para demo?": {
+      "main": [
+        [
+          {
+            "node": "Devolver lease (demo)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Próximo passo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Devolver lease (demo)": {
+      "main": [
+        [
+          {
+            "node": "Retorno: reservada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Próximo passo": {
+      "main": [
+        [
+          {
+            "node": "Executar W21 Baixar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Executar W22 Ler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Executar W23 Extrair",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Executar W24 Verificar e publicar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo do sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executar W21 Baixar": {
+      "main": [
+        [
+          {
+            "node": "Resultado W21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executar W22 Ler": {
+      "main": [
+        [
+          {
+            "node": "Resultado W22",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executar W23 Extrair": {
+      "main": [
+        [
+          {
+            "node": "Resultado W23",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executar W24 Verificar e publicar": {
+      "main": [
+        [
+          {
+            "node": "Resultado W24",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resultado W21": {
+      "main": [
+        [
+          {
+            "node": "Executar W22 Ler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo do sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resultado W22": {
+      "main": [
+        [
+          {
+            "node": "Executar W23 Extrair",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo do sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resultado W23": {
+      "main": [
+        [
+          {
+            "node": "Executar W24 Verificar e publicar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo do sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resultado W24": {
+      "main": [
+        [
+          {
+            "node": "Resumo do sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumo do sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumo do sucesso": {
+      "main": [
+        [
+          {
+            "node": "Concluir e devolver lease",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Concluir e devolver lease": {
+      "main": [
+        [
+          {
+            "node": "Retorno: sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumo da falha": {
+      "main": [
+        [
+          {
+            "node": "Registrar falha (fn_registrar_falha)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar falha (fn_registrar_falha)": {
+      "main": [
+        [
+          {
+            "node": "Fechar W20 com erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fechar W20 com erro": {
+      "main": [
+        [
+          {
+            "node": "Retorno: falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "saveManualExecutions": true,
+    "errorWorkflow": "{{WF:W90}}"
+  }
+}

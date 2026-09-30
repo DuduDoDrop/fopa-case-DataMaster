@@ -1,0 +1,8 @@
+{
+ "metodo": "PUT",
+ "caminho": "/api/admin/configuracao",
+ "status": 409,
+ "corpo": {
+  "detail": "trocar o provedor para 'claude' passa a gastar dinheiro de verdade (~R$ 3-4 por edital (custo medido)); reenvie com confirmar=true"
+ }
+}

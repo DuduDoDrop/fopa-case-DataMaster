@@ -1,0 +1,66 @@
+{
+ "tesseract": "5.4.0.20240606",
+ "tesseract_binario": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+ "tesseract_sha256": "babb405f4366b480d02cd8ff2bac8d497170f6c1711ce6f3d5d8bf0fb7fa6ed9",
+ "tesseract_host": "5.4.0.20240606",
+ "tessdata_sha256": "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb",
+ "tessdata_sha256_host": "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb",
+ "configuracao_ocr": {
+  "lang": "por",
+  "psm": 3,
+  "oem": 3,
+  "dpi": 150
+ },
+ "paginas": [
+  {
+   "pagina": 1,
+   "identica": true,
+   "similaridade": 1.0,
+   "chars_host": 2023,
+   "chars_aqui": 2023
+  },
+  {
+   "pagina": 2,
+   "identica": true,
+   "similaridade": 1.0,
+   "chars_host": 1224,
+   "chars_aqui": 1224
+  },
+  {
+   "pagina": 3,
+   "identica": true,
+   "similaridade": 1.0,
+   "chars_host": 1717,
+   "chars_aqui": 1717
+  },
+  {
+   "pagina": 4,
+   "identica": true,
+   "similaridade": 1.0,
+   "chars_host": 2520,
+   "chars_aqui": 2520
+  },
+  {
+   "pagina": 5,
+   "identica": true,
+   "similaridade": 1.0,
+   "chars_host": 2917,
+   "chars_aqui": 2917
+  },
+  {
+   "pagina": 6,
+   "identica": true,
+   "similaridade": 1.0,
+   "chars_host": 2974,
+   "chars_aqui": 2974
+  }
+ ],
+ "identicas": 6,
+ "similaridade_min": 1.0,
+ "plataforma": {
+  "sistema": "Windows-11-10.0.26200-SP0",
+  "maquina": "AMD64",
+  "python": "3.12.10"
+ },
+ "medido_em": "2026-09-24T04:51:37+00:00"
+}

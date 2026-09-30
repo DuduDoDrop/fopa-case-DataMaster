@@ -1,0 +1,98 @@
+/* CSS do painel (amostras/index.html), extraido de scripts/fopa/painel.py CSS.
+   Regenerar: python -c "import sys;sys.path.insert(0,'scripts');from fopa import painel;print(painel.CSS)"
+   Nao edite a mao: quem muda e o painel.py, e este arquivo acompanha. */
+:root{color-scheme:light;--ink:#11243D;--ink2:#1B3454;--paper:#FFFFFF;--surf:#FFFFFF;--surf2:#F4F2EE;
+--line:#DCD7CC;--muted:#55606E;--red:#B23A32;--reds:#F6E4E2;--teal:#1D6F63;
+--teals:#DDEAE7;--amber:#8A6A18;--ambers:#F5EBD2;
+--sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+--mono:'IBM Plex Mono',ui-monospace,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+font-size:15px;line-height:1.55;padding-inline:16px}
+.wrap{max-width:1240px;margin-inline:auto;padding-block:32px 64px;
+display:flex;flex-direction:column;gap:22px}
+header h1{font-size:31px;font-weight:600;margin:0 0 6px;line-height:1.2}
+.sub{color:var(--muted);margin:0;font-size:14.5px;max-width:78ch}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;
+text-transform:uppercase;color:var(--red);margin:0 0 8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px}
+.tile{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile b{display:block;font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+.tile span{font-size:12.5px;color:var(--muted)}
+.tile.ok b{color:var(--teal)} .tile.al b{color:var(--red)}
+.barra{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.barra input{flex:1 1 240px;min-width:0;padding:9px 12px;border-radius:8px;
+border:1px solid var(--line);background:var(--surf);color:var(--ink);
+font-family:var(--sans);font-size:14px}
+.barra button{padding:9px 13px;border-radius:8px;border:1px solid var(--line);
+background:var(--surf);color:var(--ink2);font-family:var(--sans);font-size:13px;
+cursor:pointer}
+.barra button[aria-pressed=true]{background:var(--ink);color:var(--paper);
+border-color:var(--ink)}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:12px;
+overflow:hidden}
+.card.urgente{border-left:4px solid var(--red)}
+.card.aviso{border-left:4px solid var(--amber)}
+td.gastou{color:var(--amber);font-weight:600}
+.topo{display:grid;grid-template-columns:1fr auto;gap:12px;padding:15px 18px;
+align-items:start}
+.nome{font-size:17px;font-weight:600;margin:0 0 3px}
+.meta{font-size:13px;color:var(--muted);margin:0}
+.obj{font-size:13.5px;color:var(--ink2);margin:9px 0 0;max-width:92ch}
+.prazo{text-align:right;white-space:nowrap}
+.prazo b{display:block;font-family:var(--mono);font-size:19px;
+font-variant-numeric:tabular-nums}
+.prazo.urgente b{color:var(--red)} .prazo.aviso b{color:var(--amber)}
+.prazo span{font-size:12px;color:var(--muted)}
+.nums{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);
+background:var(--surf2)}
+.num{padding:10px 18px;border-right:1px solid var(--line);min-width:118px}
+.num b{display:block;font-family:var(--mono);font-size:15px;
+font-variant-numeric:tabular-nums}
+.num span{font-size:11.5px;color:var(--muted);text-transform:uppercase;
+letter-spacing:.06em}
+.num.ok b{color:var(--teal)} .num.al b{color:var(--red)} .num.am b{color:var(--amber)}
+.acoes{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px;
+border-top:1px solid var(--line)}
+.acoes a{font-size:13px;text-decoration:none;padding:7px 12px;border-radius:7px;
+border:1px solid var(--line);color:var(--ink2);background:var(--surf)}
+.acoes a.forte{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.acoes a:hover{border-color:var(--ink2)}
+details.docs{border-top:1px solid var(--line)}
+details.docs>summary{cursor:pointer;padding:11px 18px;font-size:13px;
+color:var(--muted);list-style:none}
+details.docs>summary::-webkit-details-marker{display:none}
+details.docs>summary::before{content:'▸ ';color:var(--red)}
+details.docs[open]>summary::before{content:'▾ '}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--ink);color:var(--paper);text-align:left;font-size:11.5px;
+letter-spacing:.06em;text-transform:uppercase;padding:9px 14px;font-weight:600}
+td{padding:9px 14px;border-top:1px solid var(--line);vertical-align:top}
+td a{color:var(--ink2)}
+.sha{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.alerta{margin:0;padding:11px 18px;background:var(--reds);color:var(--red);
+font-size:13px;border-top:1px solid var(--line)}
+.vazio{padding:28px;text-align:center;color:var(--muted)}
+footer{color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);
+padding-top:16px}
+@media(max-width:620px){.topo{grid-template-columns:1fr}.prazo{text-align:left}}
+
+/* ---- atualizacao ao vivo (so com o servidor local) ---- */
+.atual{display:flex;align-items:center;gap:14px;margin:18px 0 0;flex-wrap:wrap}
+.primario{background:var(--teal);color:#fff;border:1px solid var(--teal);
+border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:600;
+cursor:pointer;font-family:inherit}
+.primario:hover{filter:brightness(1.08)}
+.primario:disabled{opacity:.55;cursor:default}
+.atualmsg{font-size:12.5px;color:var(--muted)}
+.achados{margin:14px 0 0;border:1px solid var(--line);border-radius:10px;
+background:var(--surf);padding:16px 18px}
+.achados h3{margin:0 0 8px;font-size:15px}
+.achados ul{margin:8px 0 0;padding-left:18px}
+.achados li{margin:5px 0;font-size:13px;line-height:1.45}
+.achados .alerta{color:var(--amber);font-weight:600}
+.acoes{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.secundario{background:transparent;color:var(--ink);border:1px solid var(--line);
+border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+.progresso{margin-top:12px;font-family:var(--mono);font-size:12px;
+color:var(--muted);white-space:pre-wrap;line-height:1.6}

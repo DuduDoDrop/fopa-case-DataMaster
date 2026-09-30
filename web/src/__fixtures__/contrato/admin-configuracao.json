@@ -1,0 +1,79 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/admin/configuracao",
+ "status": 200,
+ "corpo": {
+  "itens": [
+   {
+    "chave": "ano_minimo",
+    "valor": 2026,
+    "descricao": "ADR-015: só licitações com sessão neste ano ou depois; sem data de sessão, publicadas neste ano ou depois",
+    "alterado_por": "migracao-018",
+    "em": "2026-09-26T08:40:41.784254+00:00"
+   },
+   {
+    "chave": "effort",
+    "valor": "high",
+    "descricao": "ADR-009",
+    "alterado_por": "seed",
+    "em": "2026-09-26T08:40:41.750811+00:00"
+   },
+   {
+    "chave": "k_rag",
+    "valor": 12,
+    "descricao": "ADR-010: páginas por pergunta no modo RAG (12 desde 24/09/2026)",
+    "alterado_por": "db/026",
+    "em": "2026-09-26T08:40:41.831343+00:00"
+   },
+   {
+    "chave": "lote",
+    "valor": 6,
+    "descricao": "perguntas por chamada (3 chamadas por edital)",
+    "alterado_por": "seed",
+    "em": "2026-09-26T08:40:41.750811+00:00"
+   },
+   {
+    "chave": "max_extracoes",
+    "valor": 4,
+    "descricao": "ADR-009: extrações simultâneas (fn_tomar_vaga_extracao)",
+    "alterado_por": "seed",
+    "em": "2026-09-26T08:40:41.750811+00:00"
+   },
+   {
+    "chave": "max_tokens",
+    "valor": 16000,
+    "descricao": "teto de saída por chamada",
+    "alterado_por": "seed",
+    "em": "2026-09-26T08:40:41.750811+00:00"
+   },
+   {
+    "chave": "modelo",
+    "valor": "claude-opus-5",
+    "descricao": "ADR-009: modelo do extrator",
+    "alterado_por": "seed",
+    "em": "2026-09-26T08:40:41.750811+00:00"
+   },
+   {
+    "chave": "modelo_openai",
+    "valor": "gpt-5.6-sol",
+    "descricao": "ADR-012: plano B",
+    "alterado_por": "seed",
+    "em": "2026-09-26T08:40:41.750811+00:00"
+   },
+   {
+    "chave": "provedor",
+    "valor": "simulado",
+    "descricao": "simulado | gravado | claude | openai — só claude/openai gastam",
+    "alterado_por": "seed",
+    "em": "2026-09-26T08:40:41.750811+00:00"
+   }
+  ],
+  "provedores": [
+   "simulado",
+   "gravado",
+   "claude",
+   "openai"
+  ],
+  "aviso_custo": "~R$ 3-4 por edital (custo medido)"
+ }
+}

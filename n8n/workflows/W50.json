@@ -1,0 +1,514 @@
+{
+  "name": "W50 Envio de e-mails",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W50 Envio de e-mails — a cada minuto\nÚnico lugar que fala com o servidor de e-mail. Os outros fluxos só inserem em `emails(status='pendente')`.\n\n- **Falha nunca é silêncio** — scripts/20_monitor.py:408-435 (\"nada a fazer\" ≠ \"não consegui\"): o motivo fica na linha\n- **Falha não é definitiva na 1ª** — volta para a fila com espera crescente (2, 5, 15, 40 min, escrita no próprio erro) e só na 5ª tentativa vira `falhou` (plano §11 item 9: `falhou` com tentativas = 5)\n- **Marca órfã solta no claim** — 'em envio: W50 execução N' só era limpa pelo W90; execução que morre sem Error Workflow (container reiniciado) prendia a linha para sempre. Cada reserva grava a hora em `execucoes_workflow` (W50); marca com mais de 30 min volta para a fila\n- **Disjuntor em vez de moer a fonte** — scripts/20_monitor.py:600-617: no máximo 20 por minuto, 5 tentativas por e-mail\n- **Canal principal SMTP com senha de app** (credencial `smtp`, plano §5). Sem `SMTP_HOST` a credencial não existe e o envio falha de propósito, com o motivo na linha\n- **'enviado' só com aceite do servidor SMTP** (accepted[] + messageId) — n8n-core workflow-execute.js:1143-1146\n- Destinatário: admins ativos em `usuarios`. Execução com sucesso do agendamento não é salva (a trilha é a tabela `emails` + `execucoes_workflow`); a Manual (teste, demo) é.",
+        "height": 460,
+        "width": 700
+      },
+      "id": "3e7bffa2-3000-5eae-8ca2-cf5c11e14c7a",
+      "name": "Sobre o W50",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -78,
+        -720
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "* * * * *"
+            }
+          ]
+        }
+      },
+      "id": "afa483e5-27a7-5d90-936c-8fcff8bf91a3",
+      "name": "A cada minuto",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        198
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "858ea504-bbf0-5830-948a-07a1c86302a2",
+      "name": "Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        538
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — fila: os fluxos só inserem 'pendente', o W50 é o único que envia (db/008_emails_usuarios_sessoes_jobs_saude.sql:1-6)\n-- A reserva é UM comando: o SKIP LOCKED só vale dentro da própria instrução (o nó Postgres fecha a\n-- transação no fim de cada consulta), então quem marca \"em envio\" é o próprio claim. No mesmo comando:\n--   (1) marca órfã: 'em envio: W50 execução N' só é limpa pelo W90, e o W90 não roda quando a execução\n--       morre sem Error Workflow (container reiniciado, OOM). Cada reserva grava a hora em\n--       execucoes_workflow (W50, n8n_execution_id); marca cuja reserva passou de 30 min (ou sem registro)\n--       é solta aqui: volta para a fila, ou vira 'falhou' se as 5 tentativas já foram gastas;\n--   (2) espera crescente: quem falhou só volta depois do \"nova tentativa a partir de <UTC>\" do erro;\n--   (3) cinto de segurança: 'pendente' com 5 tentativas e sem marca vira 'falhou' (nunca fica parado).\n-- A consulta termina em SELECT: fila vazia = nenhum item, e o fluxo para aqui.\nWITH orfas AS (\n    UPDATE emails e\n       SET status = CASE WHEN e.tentativas >= 5 THEN 'falhou' ELSE 'pendente' END,\n           erro = 'marca órfã solta pelo W50 execução ' || $1 || ' (' || e.erro\n                  || ' passou de 30 min sem terminar)'\n                  || CASE WHEN e.tentativas >= 5 THEN '; 5 tentativas gastas' ELSE '; volta para a fila' END\n     WHERE e.status = 'pendente'\n       AND e.erro LIKE 'em envio: W50 execução %'\n       AND NOT EXISTS (SELECT 1 FROM execucoes_workflow w\n                        WHERE w.workflow = 'W50'\n                          AND w.n8n_execution_id = substring(e.erro FROM '^em envio: W50 execução (.+)$')\n                          AND w.iniciado_em > now() - interval '30 minutes')\n    RETURNING e.id\n), esgotados AS (\n    UPDATE emails e\n       SET status = 'falhou', erro = COALESCE(e.erro, 'sem motivo registrado') || ' — 5 tentativas gastas'\n     WHERE e.status = 'pendente' AND e.tentativas >= 5\n       AND (e.erro IS NULL OR e.erro NOT LIKE 'em envio:%')\n    RETURNING e.id\n), fila AS (\n    SELECT id FROM emails\n     WHERE status = 'pendente' AND tentativas < 5\n       AND (erro IS NULL OR erro NOT LIKE 'em envio:%')\n       AND COALESCE(substring(erro FROM 'nova tentativa a partir de (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z)')::timestamptz,\n                    '-infinity') <= now()\n     ORDER BY em\n     LIMIT 20\n     FOR UPDATE SKIP LOCKED\n), reserva AS (\n    UPDATE emails e\n       SET tentativas = e.tentativas + 1,\n           erro = 'em envio: W50 execução ' || $1\n      FROM fila\n     WHERE e.id = fila.id\n    RETURNING e.id, e.tipo, e.assunto, COALESCE(e.corpo_html, '') AS corpo_html, e.tentativas, e.em, e.para\n), registro AS (\n    INSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status, duracao_s, contadores)\n    SELECT 'W50', $1, $2,\n           CASE WHEN EXISTS (SELECT 1 FROM reserva) THEN 'em_curso' ELSE 'ok' END,\n           CASE WHEN EXISTS (SELECT 1 FROM reserva) THEN NULL ELSE 0 END,\n           jsonb_build_object('reservados', (SELECT count(*) FROM reserva),\n                              'orfas_soltas', (SELECT count(*) FROM orfas),\n                              'esgotados', (SELECT count(*) FROM esgotados))\n     WHERE EXISTS (SELECT 1 FROM reserva) OR EXISTS (SELECT 1 FROM orfas) OR EXISTS (SELECT 1 FROM esgotados)\n    RETURNING id\n)\nSELECT r.id, r.tipo, r.assunto, r.corpo_html, r.tentativas,\n       (SELECT id FROM registro) AS registro_id,\n       -- o destinatário da linha (db/038: a extração vai para quem pediu); sem ele, os admins ativos\n       COALESCE(r.para, (SELECT string_agg(u.email, ',' ORDER BY u.email) FROM usuarios u\n                          WHERE u.papel = 'admin' AND u.ativo)) AS para\n  FROM reserva r\n ORDER BY r.em, r.id",
+        "options": {
+          "queryReplacement": "={{ [ $execution.id, $execution.mode ] }}"
+        }
+      },
+      "id": "32303b3c-c00c-574e-900c-d2e823a61644",
+      "name": "Reservar pendentes",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        312,
+        198
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9b389a32-393d-528f-9e54-0482676c8245",
+      "name": "Um por vez",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        624,
+        198
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.FOPA_EMAIL_FROM }}",
+        "toEmail": "={{ $json.para }}",
+        "subject": "={{ $json.assunto }}",
+        "emailFormat": "html",
+        "html": "={{ $json.corpo_html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c817d6b4-2aa3-5355-9879-22eb19badd34",
+      "name": "Enviar (SMTP)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        962,
+        334
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "{{CRED:smtp}}",
+          "name": "smtp"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// regra — só é 'enviado' o que o servidor SMTP ACEITOU (nodemailer devolve accepted[] e messageId).\n// Não se confia no ramo de saída: quando o Send Email morre ANTES do laço de itens (credencial\n// 'smtp' ausente), o n8n 2.37.10 repassa o item de ENTRADA, sem marca de erro, como se fosse\n// sucesso (n8n-core workflow-execute.js:1143-1146). A 1ª versão deste fluxo marcou 'enviado'\n// um e-mail que nunca saiu. Falha nunca é silêncio: scripts/20_monitor.py:408-435.\nconst r = $json;\nconst origem = $('Um por vez').item.json;\nconst aceitos = Array.isArray(r.accepted) ? r.accepted : [];\nif (r.messageId && aceitos.length > 0) {\n  return { json: { id: origem.id, enviado: true, erro: null } };\n}\nlet erro;\nif (r.error) {\n  erro = 'SMTP recusou/falhou: ' + (typeof r.error === 'object' ? (r.error.message || JSON.stringify(r.error)) : r.error);\n} else if (Array.isArray(r.rejected) && r.rejected.length) {\n  erro = 'SMTP rejeitou os destinatários: ' + r.rejected.join(', ');\n} else if (!$env.FOPA_SMTP_CONFIGURADO) {\n  erro = \"SMTP não configurado: credencial 'smtp' ausente no n8n (SMTP_HOST vazio no docker/.env); \"\n       + 'o Send Email falhou antes de enviar.';\n} else {\n  erro = 'Send Email não confirmou o aceite do servidor SMTP (sem accepted/messageId).';\n}\nif (!origem.para) erro = 'sem destinatário: nenhum admin ativo em usuarios. ' + erro;\nreturn { json: { id: origem.id, enviado: false, erro: erro.slice(0, 1000) } };\n"
+      },
+      "id": "10e390df-6028-5e0c-95da-d49eb9e0d63a",
+      "name": "Conferir aceite do SMTP",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1274,
+        334
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1ced1161-553b-5370-9b03-c59f8b46b3ca",
+              "leftValue": "={{ $json.enviado }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7a852673-2887-5769-850b-3a74dcc0d00d",
+      "name": "Aceito?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1560,
+        334
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — enviado só depois do aceite do servidor SMTP. Vale mesmo se a marca tiver sido solta como órfã\n-- (execução lenta): o e-mail saiu, e isso é fato. Nunca reescreve linha já resolvida; sempre devolve 1 linha.\nWITH u AS (\n    UPDATE emails SET status = 'enviado', canal = 'smtp', enviado_em = now(), erro = NULL\n     WHERE id = $1 AND status = 'pendente'\n    RETURNING id, status, tentativas\n)\nSELECT $1::bigint AS id, COALESCE((SELECT status FROM u), 'ja_resolvido') AS status,\n       (SELECT tentativas FROM u) AS tentativas",
+        "options": {
+          "queryReplacement": "={{ [ $json.id ] }}"
+        }
+      },
+      "id": "6992918c-5d4c-5c4b-8304-b84f86670f0e",
+      "name": "Marcar enviado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1872,
+        164
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — falha de envio NÃO é definitiva na 1ª: volta para a fila com espera crescente e só vira\n-- 'falhou' na 5ª tentativa, com o motivo (plano §11 item 9: 'falhou' com tentativas = 5; nunca silêncio,\n-- scripts/20_monitor.py:408-435). A espera fica escrita no próprio erro (\"nova tentativa a partir de\n-- <UTC>\"), que a reserva lê: 2, 5, 15 e 40 min depois da 1ª, 2ª, 3ª e 4ª falha.\n-- Só mexe na linha se a marca ainda é DESTA execução (solta como órfã, outra já cuida dela).\nWITH u AS (\n    UPDATE emails\n       SET status = CASE WHEN tentativas >= 5 THEN 'falhou' ELSE 'pendente' END,\n           canal = 'smtp',\n           erro = CASE WHEN tentativas >= 5\n                       THEN 'falhou nas 5 tentativas; a última: ' || $2\n                       ELSE 'tentativa ' || tentativas || '/5 falhou; nova tentativa a partir de '\n                            || to_char((now() + CASE tentativas WHEN 1 THEN interval '2 minutes'\n                                                                WHEN 2 THEN interval '5 minutes'\n                                                                WHEN 3 THEN interval '15 minutes'\n                                                                ELSE interval '40 minutes' END)\n                                       AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')\n                            || ': ' || $2 END\n     WHERE id = $1 AND status = 'pendente' AND erro = 'em envio: W50 execução ' || $3\n    RETURNING id, status, tentativas, erro\n)\nSELECT $1::bigint AS id, COALESCE((SELECT status FROM u), 'ja_resolvido') AS status,\n       (SELECT tentativas FROM u) AS tentativas, (SELECT erro FROM u) AS erro",
+        "options": {
+          "queryReplacement": "={{ [ $json.id, $json.erro, $execution.id ] }}"
+        }
+      },
+      "id": "fbb67c0d-8e09-56bc-9511-3b667a459f06",
+      "name": "Marcar falha",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1872,
+        504
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — a rodada do W50 fica registrada: o que saiu, o que volta para a fila e o que falhou de vez\n-- (execucoes_workflow, db/007). É também a hora da reserva que a próxima usa para achar marca órfã.\nUPDATE execucoes_workflow\n   SET status = CASE WHEN $3::int + $4::int = 0 THEN 'ok' ELSE 'parcial' END,\n       duracao_s = round(extract(epoch FROM now() - iniciado_em)::numeric, 3),\n       contadores = COALESCE(contadores, '{}'::jsonb)\n                    || jsonb_build_object('enviados', $2::int, 'voltam_para_a_fila', $3::int,\n                                          'falhou_definitivo', $4::int)\n WHERE id = $1::bigint AND workflow = 'W50'\nRETURNING id, status, contadores",
+        "options": {
+          "queryReplacement": "={{ [ $('Reservar pendentes').first().json.registro_id, $input.all().filter(i => i.json.status === 'enviado').length, $input.all().filter(i => i.json.status === 'pendente').length, $input.all().filter(i => i.json.status === 'falhou').length ] }}"
+        }
+      },
+      "id": "3e005036-152b-5978-b045-16616c28e3cb",
+      "name": "Fechar registro",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        962,
+        -40
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · A cada minuto**\n\nGatilho agendado: roda a cada minuto. Um aviso chega em até um minuto; com a fila vazia, a execução termina na hora.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "a25f7286-97b9-530f-af82-a9fd8754674d",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        348
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Manual**\n\nGatilho manual, para testar o envio pelo editor.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "b70163eb-0f17-5309-954a-a193ee0e5961",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · Reservar pendentes**\n\nNuma única operação: devolve à fila e-mails presos por um envio interrompido, reserva até 20 pendentes na ordem de chegada e registra a rodada.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7b78831b-2921-5130-981f-f4a116462b68",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        232,
+        348
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Um por vez**\n\nLaço que envia um e-mail por volta.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3ae7421f-9b31-54ba-8a8c-a7737aa6649b",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        544,
+        348
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Enviar (SMTP)**\n\nEnvia o e-mail pelo servidor de e-mail (Resend, com SPF, DKIM e DMARC no domínio). Em caso de erro, segue para a conferência.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "a58f43b4-eab2-5216-8ad0-2fc95c722726",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        882,
+        484
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Conferir aceite do SMTP**\n\nSó conta como enviado o que o servidor aceitou de fato. Caso contrário, explica o erro: recusa, destinatário rejeitado ou servidor não configurado.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "304cc116-2df5-5a6c-bc67-5c448f1f7aca",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1194,
+        484
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · Aceito?**\n\nAceito pelo servidor vai para “enviado”; senão, vai para a falha.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "a5d03ba3-c060-55ad-9d2a-ed611f41f8bc",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1480,
+        484
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Marcar enviado**\n\nMarca o e-mail como enviado, com a hora do envio.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "61d93613-ac99-54c3-903b-92184aff1b9d",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        314
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Marcar falha**\n\nCom tentativas restantes, o e-mail volta à fila com espera crescente (2, 5, 15 e 40 minutos); na 5ª falha, fica como falhou, com o motivo.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "66afc4e0-a6b8-5042-98d5-eb55d403c1aa",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        654
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Fechar registro**\n\nFecha a rodada com os contadores: enviados, que voltam à fila e que falharam de vez.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "8591850e-a412-5aad-9cad-e60858e8f899",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        882,
+        110
+      ]
+    }
+  ],
+  "connections": {
+    "A cada minuto": {
+      "main": [
+        [
+          {
+            "node": "Reservar pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual": {
+      "main": [
+        [
+          {
+            "node": "Reservar pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reservar pendentes": {
+      "main": [
+        [
+          {
+            "node": "Um por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Um por vez": {
+      "main": [
+        [
+          {
+            "node": "Fechar registro",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar (SMTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar (SMTP)": {
+      "main": [
+        [
+          {
+            "node": "Conferir aceite do SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conferir aceite do SMTP": {
+      "main": [
+        [
+          {
+            "node": "Aceito?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aceito?": {
+      "main": [
+        [
+          {
+            "node": "Marcar enviado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marcar falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar enviado": {
+      "main": [
+        [
+          {
+            "node": "Um por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar falha": {
+      "main": [
+        [
+          {
+            "node": "Um por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "errorWorkflow": "{{WF:W90}}",
+    "saveManualExecutions": true,
+    "saveDataSuccessExecution": "none"
+  }
+}

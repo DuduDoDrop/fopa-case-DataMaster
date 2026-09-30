@@ -1,0 +1,1803 @@
+{
+ "medido_em": "2026-09-24T06:33:45",
+ "script": "scripts/72_jev_r4_conflito.py",
+ "modelo": "jev-1.13.0",
+ "pergunta": "A passagem citada do edital sustenta a afirmação? Julgue apenas a relação entre as duas: a passagem diz, ou implica diretamente, aquilo que a afirmação declara? Não avalie se a afirmação é verdadeira no mundo — só se ESTA passagem a sustenta.",
+ "criterios": {
+  "sustenta": "a passagem afirma o que a declaração diz, ou implica isso diretamente, sem precisar de outra informação",
+  "contradiz": "a passagem afirma o oposto da declaração, ou um valor, prazo ou nome diferente do que ela declara",
+  "nada_diz": "a passagem não trata do que a declaração afirma — fala de outro assunto, de outro campo, ou é genérica demais"
+ },
+ "parametros": {
+  "conviccao": 0.75,
+  "distancia_no_mesmo_arquivo": 3,
+  "camada_A": "top-2 BM25 da Q2 por outro arquivo; no citado, páginas a >= 3 da citada",
+  "camada_B": "páginas que abrem definição de objeto (verificador.RE_OBJETO + 'folha'), menos a citada; até 3 por arquivo",
+  "state": "corpo_sustenta com a troca: sem trecho_citado; 'paginas_do_outro_documento'",
+  "controle": "corpo_sustenta original com a página citada"
+ },
+ "custo": {
+  "usd": 0.004237,
+  "chamadas": 55,
+  "tokens": 100877,
+  "falhas": 0,
+  "chars_por_token": 2.766,
+  "limite_usd": 0.03,
+  "livro_anterior_usd": 0.029651,
+  "preco": "docs.typesafe.ai/models (23/09/2026); NAO conferido contra fatura"
+ },
+ "resumo": {
+  "licitacoes": 13,
+  "medidas": 11,
+  "nao_medidas": [
+   {
+    "municipio": "Rio Azul/PR",
+    "motivo": "sem resposta da Q2 e sem texto em disco"
+   },
+   {
+    "municipio": "Jaboatão dos Guararapes/PE",
+    "motivo": "sem resposta da Q2 e sem texto em disco"
+   }
+  ],
+  "camada_A": {
+   "pegou_os_2": "0/2",
+   "quietas": "8/9",
+   "falsos_positivos": 1,
+   "chamadas": 34,
+   "contradiz_convicto": 1,
+   "nada_diz_convicto": 1,
+   "sustenta": 28
+  },
+  "camada_B": {
+   "pegou_os_2": "0/2",
+   "quietas": "8/9",
+   "falsos_positivos": 1,
+   "chamadas": 11,
+   "contradiz_convicto": 1,
+   "nada_diz_convicto": 0,
+   "sustenta": 9
+  },
+  "camada_A+B": {
+   "pegou_os_2": "0/2",
+   "quietas": "8/9",
+   "falsos_positivos": 1,
+   "chamadas": 45,
+   "contradiz_convicto": 2,
+   "nada_diz_convicto": 1,
+   "sustenta": 37
+  },
+  "controle_pagina_citada": {
+   "n": 10,
+   "sustenta": 10,
+   "sem_texto_da_citada": 1
+  }
+ },
+ "licitacoes": [
+  {
+   "pasta": "ABERTO Concorrencia - Eletronica - Capao do Cipo-RS",
+   "controle": "04213779000184-1-000304/2026",
+   "municipio": "Capão do Cipó/RS",
+   "esperado": "quieta",
+   "requests": [
+    {
+     "camada": "A",
+     "arquivo": "03 - Outros Documentos - 2446_PUBLI DM CCE 05 2026.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.73,
+     "probabilidades": {
+      "nada_diz": 0.12,
+      "contradiz": 0.06,
+      "sustenta": 0.82
+     },
+     "usd": 4.809e-05,
+     "tokens": 1145,
+     "chars_estado": 1975
+    },
+    {
+     "camada": "A",
+     "arquivo": "04 - Outros Documentos - 2446_PUBLI JC CCE 05 2026.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.49,
+     "probabilidades": {
+      "nada_diz": 0.14,
+      "sustenta": 0.66,
+      "contradiz": 0.2
+     },
+     "usd": 0.00015615600000000001,
+     "tokens": 3718,
+     "chars_estado": 10790
+    },
+    {
+     "camada": "A",
+     "arquivo": "05 - Outros Documentos - 2446_PUBLI SITE CCE 05 2026.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "nada_diz",
+     "confianca": 0.43,
+     "probabilidades": {
+      "nada_diz": 0.62,
+      "contradiz": 0.07,
+      "sustenta": 0.31
+     },
+     "usd": 3.5826e-05,
+     "tokens": 853,
+     "chars_estado": 1094
+    },
+    {
+     "camada": "B",
+     "arquivo": "03 - Outros Documentos - 2446_PUBLI DM CCE 05 2026.pdf",
+     "paginas": [
+      1
+     ],
+     "igual_a": 0,
+     "escolha": "sustenta",
+     "confianca": 0.73,
+     "probabilidades": {
+      "nada_diz": 0.12,
+      "contradiz": 0.06,
+      "sustenta": 0.82
+     }
+    },
+    {
+     "camada": "B",
+     "arquivo": "04 - Outros Documentos - 2446_PUBLI JC CCE 05 2026.pdf",
+     "paginas": [
+      1
+     ],
+     "igual_a": 1,
+     "escolha": "sustenta",
+     "confianca": 0.49,
+     "probabilidades": {
+      "nada_diz": 0.14,
+      "sustenta": 0.66,
+      "contradiz": 0.2
+     }
+    }
+   ],
+   "fora": [
+    {
+     "arquivo": "01 - Edital - 6392499317341193742446_EDITAL CCE 05 2026.pdf",
+     "motivo": "sem texto extraído (exigiria OCR novo)"
+    },
+    {
+     "arquivo": "01 - Edital - EDITAL-CCE-05-2026.pdf",
+     "motivo": "sem texto extraído (exigiria OCR novo)"
+    },
+    {
+     "arquivo": "02 - Estudo Tecnico Preliminar - 6392499338424043532446_ETP CCE 05 2026.pdf",
+     "motivo": "sem texto extraído (exigiria OCR novo)"
+    },
+    {
+     "arquivo": "02 - Estudo Tecnico Preliminar - ETP.pdf",
+     "motivo": "sem texto extraído (exigiria OCR novo)"
+    }
+   ],
+   "fontes": {
+    "03 - Outros Documentos - 2446_PUBLI DM CCE 05 2026.pdf": "amostras/.../03 - Outros Documentos - 2446_PUBLI DM CCE 05 2026.txt (pdftotext)",
+    "04 - Outros Documentos - 2446_PUBLI JC CCE 05 2026.pdf": "amostras/.../04 - Outros Documentos - 2446_PUBLI JC CCE 05 2026.txt (pdftotext)",
+    "05 - Outros Documentos - 2446_PUBLI SITE CCE 05 2026.pdf": "amostras/.../05 - Outros Documentos - 2446_PUBLI SITE CCE 05 2026.txt (pdftotext)"
+   },
+   "q2": {
+    "trecho": "1. DO OBJETO:\nConstitui objeto da presente licitação a cessão onerosa do direito de efetuar o\n\npagamento da folha de servidores do Poder Executivo, Poder Legislativo e RPPS do",
+    "arquivo": "01 - Edital - EDITAL-CCE-05-2026.pdf",
+    "pagina": 1,
+    "veredito": "APROVADO",
+    "rn13_na_v3": false,
+    "fonte": "Postgres v3 (verificação vigente)",
+    "resposta": "\"1. DO OBJETO: Constitui objeto da presente licitação a cessão onerosa do direito de efetuar o pagamento da folha de servidores do Poder Executivo, Poder Legislativo e RPPS do Município de Capão do CIipó/RS, a ser executado em regime de maior lance, conforme especificações técnicas detalhadas no Termo de Referência (Anexo nº |.), minuta de contrato, documentos anexos ao presente edital.\"",
+    "arquivo_local": null
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "03 - Outros Documentos - 2446_PUBLI DM CCE 05 2026.pdf",
+      "paginas": [
+       1
+      ]
+     },
+     {
+      "arquivo": "04 - Outros Documentos - 2446_PUBLI JC CCE 05 2026.pdf",
+      "paginas": [
+       1
+      ]
+     },
+     {
+      "arquivo": "05 - Outros Documentos - 2446_PUBLI SITE CCE 05 2026.pdf",
+      "paginas": [
+       1
+      ]
+     }
+    ],
+    "B": [
+     {
+      "arquivo": "03 - Outros Documentos - 2446_PUBLI DM CCE 05 2026.pdf",
+      "paginas": [
+       1
+      ]
+     },
+     {
+      "arquivo": "04 - Outros Documentos - 2446_PUBLI JC CCE 05 2026.pdf",
+      "paginas": [
+       1
+      ]
+     }
+    ]
+   },
+   "controle_ausente": "página citada sem texto extraído (01 - Edital - EDITAL-CCE-05-2026.pdf p.1)"
+  },
+  {
+   "pasta": "ABERTO Concorrencia - Eletronica - Pirapo-RS",
+   "controle": "91553941000108-1-000039/2026",
+   "municipio": "Pirapó/RS",
+   "esperado": "contradiz",
+   "requests": [
+    {
+     "camada": "controle",
+     "arquivo": "01 - Edital - EDITAL.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.94,
+     "probabilidades": {
+      "nada_diz": 0.02,
+      "sustenta": 0.96,
+      "contradiz": 0.02
+     },
+     "usd": 6.547800000000001e-05,
+     "tokens": 1559,
+     "chars_estado": 3653
+    },
+    {
+     "camada": "A",
+     "arquivo": "01 - Edital - EDITAL.pdf",
+     "paginas": [
+      15,
+      18
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.7,
+     "probabilidades": {
+      "contradiz": 0.05,
+      "sustenta": 0.8,
+      "nada_diz": 0.15
+     },
+     "usd": 0.000107268,
+     "tokens": 2554,
+     "chars_estado": 6747
+    },
+    {
+     "camada": "A",
+     "arquivo": "02 - Estudo Tecnico Preliminar - ETP.pdf",
+     "paginas": [
+      2,
+      6
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.75,
+     "probabilidades": {
+      "contradiz": 0.05,
+      "sustenta": 0.84,
+      "nada_diz": 0.11
+     },
+     "usd": 8.110200000000001e-05,
+     "tokens": 1931,
+     "chars_estado": 4788
+    },
+    {
+     "camada": "A",
+     "arquivo": "03 - Outros Documentos - TERMO-DE-REFERENCIA.pdf",
+     "paginas": [
+      1,
+      4
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.72,
+     "probabilidades": {
+      "contradiz": 0.17,
+      "sustenta": 0.81,
+      "nada_diz": 0.02
+     },
+     "usd": 8.4084e-05,
+     "tokens": 2002,
+     "chars_estado": 5274
+    },
+    {
+     "camada": "B",
+     "arquivo": "01 - Edital - EDITAL.pdf",
+     "paginas": [
+      18
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.77,
+     "probabilidades": {
+      "nada_diz": 0.04,
+      "sustenta": 0.85,
+      "contradiz": 0.11
+     },
+     "usd": 6.6906e-05,
+     "tokens": 1593,
+     "chars_estado": 3657
+    },
+    {
+     "camada": "B",
+     "arquivo": "03 - Outros Documentos - TERMO-DE-REFERENCIA.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.74,
+     "probabilidades": {
+      "contradiz": 0.15,
+      "sustenta": 0.83,
+      "nada_diz": 0.02
+     },
+     "usd": 5.691e-05,
+     "tokens": 1355,
+     "chars_estado": 3057
+    }
+   ],
+   "fora": [],
+   "fontes": {
+    "01 - Edital - EDITAL.pdf": "amostras/.../01 - Edital - EDITAL.txt (pdftotext)",
+    "02 - Estudo Tecnico Preliminar - ETP.pdf": "amostras/.../02 - Estudo Tecnico Preliminar - ETP.txt (pdftotext)",
+    "03 - Outros Documentos - TERMO-DE-REFERENCIA.pdf": "amostras/.../03 - Outros Documentos - TERMO-DE-REFERENCIA.txt (pdftotext)"
+   },
+   "q2": {
+    "trecho": "1. DO OBJETO: \n1.1 Constitui objeto da presente licitação, contratação de instituição financeira publica ou \nprivada e/ou cooperativa de credito, para a cessão onerosa do direito de efetuar o \npagamento da folha de pagamento dos servidores ativos, inativos e pensionistas da",
+    "arquivo": "01 - Edital - EDITAL.pdf",
+    "pagina": 1,
+    "veredito": "REVISAR",
+    "rn13_na_v3": true,
+    "fonte": "Postgres v3 (verificação vigente)",
+    "resposta": "\"1.1 Constitui objeto da presente licitação, contratação de instituição financeira publica ou privada e/ou cooperativa de credito, para a cessão onerosa do direito de efetuar o pagamento da folha de pagamento dos servidores ativos, inativos e pensionistas da Prefeitura Municipal, Câmara Municipal de Vereadores e FAPS de Pirapó/RS, conforme especificações técnicas detalhadas no Estudo Técnico Preliminar, Termo de Referência, minuta de contrato.\" No preâmbulo consta ainda: \"Contratação a cessão onerosa do direito de efetuar o pagamento da folha de salários dos servidores públicos municipais dos ",
+    "arquivo_local": "01 - Edital - EDITAL.pdf"
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "01 - Edital - EDITAL.pdf",
+      "paginas": [
+       15,
+       18
+      ]
+     },
+     {
+      "arquivo": "02 - Estudo Tecnico Preliminar - ETP.pdf",
+      "paginas": [
+       2,
+       6
+      ]
+     },
+     {
+      "arquivo": "03 - Outros Documentos - TERMO-DE-REFERENCIA.pdf",
+      "paginas": [
+       1,
+       4
+      ]
+     }
+    ],
+    "B": [
+     {
+      "arquivo": "01 - Edital - EDITAL.pdf",
+      "paginas": [
+       18
+      ]
+     },
+     {
+      "arquivo": "03 - Outros Documentos - TERMO-DE-REFERENCIA.pdf",
+      "paginas": [
+       1
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "pasta": "ABERTO Concorrencia - Eletronica - Quevedos-RS",
+   "controle": "94444122000110-1-000073/2026",
+   "municipio": "Quevedos/RS",
+   "esperado": "contradiz",
+   "requests": [
+    {
+     "camada": "controle",
+     "arquivo": "01 - Edital - EDITAL.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "contradiz": 0.0,
+      "nada_diz": 0.0,
+      "sustenta": 1.0
+     },
+     "usd": 5.964e-05,
+     "tokens": 1420,
+     "chars_estado": 3016
+    },
+    {
+     "camada": "A",
+     "arquivo": "01 - Edital - EDITAL.pdf",
+     "paginas": [
+      31,
+      35
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.88,
+     "probabilidades": {
+      "sustenta": 0.92,
+      "nada_diz": 0.04,
+      "contradiz": 0.04
+     },
+     "usd": 9.135000000000001e-05,
+     "tokens": 2175,
+     "chars_estado": 5373
+    },
+    {
+     "camada": "B",
+     "arquivo": "01 - Edital - EDITAL.pdf",
+     "paginas": [
+      35
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.7,
+     "probabilidades": {
+      "contradiz": 0.05,
+      "nada_diz": 0.14,
+      "sustenta": 0.8
+     },
+     "usd": 6.6612e-05,
+     "tokens": 1586,
+     "chars_estado": 3440
+    }
+   ],
+   "fora": [],
+   "fontes": {
+    "01 - Edital - EDITAL.pdf": "amostras/.../01 - Edital - EDITAL.txt (pdftotext)"
+   },
+   "q2": {
+    "trecho": "O presente edital tem por objeto a Cessão onerosa do direito de realizar, com exclusividade, o \npagamento da folha dos servidores públicos municipais (ativos, inativos, pensionistas e \nestagiários), conforme Termo de Referência (anexo I) e descrição a seguir:",
+    "arquivo": "01 - Edital - EDITAL.pdf",
+    "pagina": 1,
+    "veredito": "REVISAR",
+    "rn13_na_v3": true,
+    "fonte": "Postgres v3 (verificação vigente)",
+    "resposta": "Cessão onerosa do direito de realizar, com exclusividade, o pagamento da folha dos servidores públicos municipais (ativos, inativos, pensionistas e estagiários), conforme Termo de Referência (anexo I).",
+    "arquivo_local": "01 - Edital - EDITAL.pdf"
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "01 - Edital - EDITAL.pdf",
+      "paginas": [
+       31,
+       35
+      ]
+     }
+    ],
+    "B": [
+     {
+      "arquivo": "01 - Edital - EDITAL.pdf",
+      "paginas": [
+       35
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "pasta": "ABERTO Pregao - Eletronico - Adrianopolis-PR",
+   "controle": "76105642000117-1-000027/2026",
+   "municipio": "Adrianópolis/PR",
+   "esperado": "quieta",
+   "requests": [
+    {
+     "camada": "controle",
+     "arquivo": "01 - Edital - EDITAL_DO_PREGO_ELETRNICO_0162026___INSTITUIO_FINANCEIR.pdf",
+     "paginas": [
+      2
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "contradiz": 0.0,
+      "nada_diz": 0.0,
+      "sustenta": 1.0
+     },
+     "usd": 7.0476e-05,
+     "tokens": 1678,
+     "chars_estado": 4326
+    },
+    {
+     "camada": "A",
+     "arquivo": "01 - Edital - EDITAL_DO_PREGO_ELETRNICO_0162026___INSTITUIO_FINANCEIR.pdf",
+     "paginas": [
+      13,
+      19
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "nada_diz": 0.0,
+      "contradiz": 0.0,
+      "sustenta": 1.0
+     },
+     "usd": 0.000116466,
+     "tokens": 2773,
+     "chars_estado": 8120
+    },
+    {
+     "camada": "B",
+     "arquivo": "01 - Edital - EDITAL_DO_PREGO_ELETRNICO_0162026___INSTITUIO_FINANCEIR.pdf",
+     "paginas": [
+      15,
+      21
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "nada_diz": 0.0,
+      "sustenta": 1.0,
+      "contradiz": 0.0
+     },
+     "usd": 9.5802e-05,
+     "tokens": 2281,
+     "chars_estado": 6709
+    }
+   ],
+   "fora": [],
+   "fontes": {
+    "01 - Edital - EDITAL_DO_PREGO_ELETRNICO_0162026___INSTITUIO_FINANCEIR.pdf": "amostras/.../01 - Edital - EDITAL_DO_PREGO_ELETRNICO_0162026___INSTITUIO_FINANCEIR.txt (pdftotext)"
+   },
+   "q2": {
+    "trecho": "1.1 -  Contratação de instituição financeira, pública ou privada, para prestação de serviços de processamento \ne gerenciamento da folha de pagamento dos servidores ativos, inativos, pensionistas, agentes políticos e \ndemais beneficiários da Administração Pública do Município de Adrianópolis, mediante cessão onerosa do \ndireito de operacionalização da folha de pagamento.",
+    "arquivo": "01 - Edital - EDITAL_DO_PREGO_ELETRNICO_0162026___INSTITUIO_FINANCEIR.pdf",
+    "pagina": 2,
+    "veredito": "APROVADO",
+    "rn13_na_v3": false,
+    "fonte": "Postgres v3 (verificação vigente)",
+    "resposta": "Contratação de instituição financeira, pública ou privada, para prestação de serviços de processamento e gerenciamento da folha de pagamento dos servidores ativos, inativos, pensionistas, agentes políticos e demais beneficiários da Administração Pública do Município de Adrianópolis, mediante cessão onerosa do direito de operacionalização da folha de pagamento.",
+    "arquivo_local": "01 - Edital - EDITAL_DO_PREGO_ELETRNICO_0162026___INSTITUIO_FINANCEIR.pdf"
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "01 - Edital - EDITAL_DO_PREGO_ELETRNICO_0162026___INSTITUIO_FINANCEIR.pdf",
+      "paginas": [
+       13,
+       19
+      ]
+     }
+    ],
+    "B": [
+     {
+      "arquivo": "01 - Edital - EDITAL_DO_PREGO_ELETRNICO_0162026___INSTITUIO_FINANCEIR.pdf",
+      "paginas": [
+       15,
+       21
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "pasta": "ABERTO Pregao - Eletronico - Bertioga-SP",
+   "controle": "68020916000147-1-000190/2026",
+   "municipio": "Bertioga/SP",
+   "esperado": "quieta",
+   "requests": [
+    {
+     "camada": "controle",
+     "arquivo": "01 - Edital - EDITAL.pdf",
+     "paginas": [
+      2
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "contradiz": 0.0,
+      "nada_diz": 0.0,
+      "sustenta": 1.0
+     },
+     "usd": 5.342400000000001e-05,
+     "tokens": 1272,
+     "chars_estado": 3021
+    },
+    {
+     "camada": "A",
+     "arquivo": "01 - Edital - EDITAL.pdf",
+     "paginas": [
+      35,
+      36
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.9,
+     "probabilidades": {
+      "sustenta": 0.93,
+      "contradiz": 0.05,
+      "nada_diz": 0.01
+     },
+     "usd": 6.854400000000001e-05,
+     "tokens": 1632,
+     "chars_estado": 4214
+    },
+    {
+     "camada": "A",
+     "arquivo": "03 - Outros Documentos - PEDIDO DE ESCLARECIMENTO II.pdf",
+     "paginas": [
+      1,
+      2
+     ],
+     "escolha": "nada_diz",
+     "confianca": 0.93,
+     "probabilidades": {
+      "nada_diz": 0.96,
+      "sustenta": 0.04,
+      "contradiz": 0.0
+     },
+     "usd": 7.169400000000001e-05,
+     "tokens": 1707,
+     "chars_estado": 4292
+    },
+    {
+     "camada": "A",
+     "arquivo": "04 - Outros Documentos - PEDIDO DE ESCLARECIMENTO III.pdf",
+     "paginas": [
+      1,
+      3
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.96,
+     "probabilidades": {
+      "sustenta": 0.97,
+      "contradiz": 0.02,
+      "nada_diz": 0.01
+     },
+     "usd": 9.559200000000002e-05,
+     "tokens": 2276,
+     "chars_estado": 7192
+    },
+    {
+     "camada": "A",
+     "arquivo": "05 - Outros Documentos - PEDIDO DE ESCLARECIMENTO.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.91,
+     "probabilidades": {
+      "nada_diz": 0.02,
+      "sustenta": 0.95,
+      "contradiz": 0.03
+     },
+     "usd": 5.640600000000001e-05,
+     "tokens": 1343,
+     "chars_estado": 2854
+    },
+    {
+     "camada": "A",
+     "arquivo": "06 - Outros Documentos - RESPOSTA.pdf",
+     "paginas": [
+      1,
+      2
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.89,
+     "probabilidades": {
+      "nada_diz": 0.02,
+      "contradiz": 0.05,
+      "sustenta": 0.93
+     },
+     "usd": 8.946000000000001e-05,
+     "tokens": 2130,
+     "chars_estado": 5622
+    },
+    {
+     "camada": "A",
+     "arquivo": "07 - Outros Documentos - RESPOSTA.pdf",
+     "paginas": [
+      4,
+      11
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.46,
+     "probabilidades": {
+      "contradiz": 0.15,
+      "nada_diz": 0.22,
+      "sustenta": 0.63
+     },
+     "usd": 9.1014e-05,
+     "tokens": 2167,
+     "chars_estado": 6585
+    },
+    {
+     "camada": "A",
+     "arquivo": "08 - Outros Documentos - RESPOSTA.pdf",
+     "paginas": [
+      6,
+      11
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.89,
+     "probabilidades": {
+      "contradiz": 0.01,
+      "sustenta": 0.93,
+      "nada_diz": 0.06
+     },
+     "usd": 9.437400000000001e-05,
+     "tokens": 2247,
+     "chars_estado": 6671
+    },
+    {
+     "camada": "A",
+     "arquivo": "09 - Outros Documentos - COMUNICADO SUSPENSAO.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.96,
+     "probabilidades": {
+      "contradiz": 0.01,
+      "sustenta": 0.98,
+      "nada_diz": 0.01
+     },
+     "usd": 3.7044000000000007e-05,
+     "tokens": 882,
+     "chars_estado": 1565
+    },
+    {
+     "camada": "B",
+     "arquivo": "01 - Edital - EDITAL.pdf",
+     "paginas": [
+      35
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.9,
+     "probabilidades": {
+      "sustenta": 0.93,
+      "nada_diz": 0.01,
+      "contradiz": 0.05
+     },
+     "usd": 4.179e-05,
+     "tokens": 995,
+     "chars_estado": 1943
+    }
+   ],
+   "fora": [],
+   "fontes": {
+    "01 - Edital - EDITAL.pdf": "amostras/.../01 - Edital - EDITAL.txt (pdftotext)",
+    "02 - Outros Documentos - PEDIDO DE ESCLARECIMENTO I.pdf": "amostras/.../02 - Outros Documentos - PEDIDO DE ESCLARECIMENTO I.txt (pdftotext)",
+    "03 - Outros Documentos - PEDIDO DE ESCLARECIMENTO II.pdf": "amostras/.../03 - Outros Documentos - PEDIDO DE ESCLARECIMENTO II.txt (pdftotext)",
+    "04 - Outros Documentos - PEDIDO DE ESCLARECIMENTO III.pdf": "amostras/.../04 - Outros Documentos - PEDIDO DE ESCLARECIMENTO III.txt (pdftotext)",
+    "05 - Outros Documentos - PEDIDO DE ESCLARECIMENTO.pdf": "amostras/.../05 - Outros Documentos - PEDIDO DE ESCLARECIMENTO.txt (pdftotext)",
+    "06 - Outros Documentos - RESPOSTA.pdf": "amostras/.../06 - Outros Documentos - RESPOSTA.txt (pdftotext)",
+    "07 - Outros Documentos - RESPOSTA.pdf": "amostras/.../07 - Outros Documentos - RESPOSTA.txt (pdftotext)",
+    "08 - Outros Documentos - RESPOSTA.pdf": "amostras/.../08 - Outros Documentos - RESPOSTA.txt (pdftotext)",
+    "09 - Outros Documentos - COMUNICADO SUSPENSAO.pdf": "amostras/.../09 - Outros Documentos - COMUNICADO SUSPENSAO.txt (pdftotext)"
+   },
+   "q2": {
+    "trecho": "2.1.  Constitui o objeto deste Pregão a cessão onerosa, com exclusividade, do direito de \nexecução dos serviços de processamento e gerenciamento da folha de pagamento do \nMunicípio de Bertioga/SP, instituição financeira pública ou privada, autorizada a funcionar \npelo Banco Central do Brasil com a possibilidade facultativa de instalação de Posto de \nAtendimento Bancário (PAB) junto ao paço municipal, conforme solicitação da Secretaria \nMunicipal de Administração, cujas especificações técnicas e quantitativas encontram-se \ndescritas nesse no anexo | - deste edital.",
+    "arquivo": "01 - Edital - EDITAL.pdf",
+    "pagina": 2,
+    "veredito": "APROVADO (harness)",
+    "rn13_na_v3": null,
+    "fonte": "saidas/_harness_…Bertioga-SP.json, execução 'opus-5 · high'",
+    "resposta": "Constitui o objeto deste Pregão a cessão onerosa, com exclusividade, do direito de execução dos serviços de processamento e gerenciamento da folha de pagamento do Município de Bertioga/SP, instituição financeira pública ou privada, autorizada a funcionar pelo Banco Central do Brasil com a possibilidade facultativa de instalação de Posto de Atendimento Bancário (PAB) junto ao paço municipal, conforme solicitação da Secretaria Municipal de Administração, cujas especificações técnicas e quantitativas encontram-se descritas nesse no anexo | - deste edital.",
+    "arquivo_local": "01 - Edital - EDITAL.pdf"
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "01 - Edital - EDITAL.pdf",
+      "paginas": [
+       35,
+       36
+      ]
+     },
+     {
+      "arquivo": "03 - Outros Documentos - PEDIDO DE ESCLARECIMENTO II.pdf",
+      "paginas": [
+       1,
+       2
+      ]
+     },
+     {
+      "arquivo": "04 - Outros Documentos - PEDIDO DE ESCLARECIMENTO III.pdf",
+      "paginas": [
+       1,
+       3
+      ]
+     },
+     {
+      "arquivo": "05 - Outros Documentos - PEDIDO DE ESCLARECIMENTO.pdf",
+      "paginas": [
+       1
+      ]
+     },
+     {
+      "arquivo": "06 - Outros Documentos - RESPOSTA.pdf",
+      "paginas": [
+       1,
+       2
+      ]
+     },
+     {
+      "arquivo": "07 - Outros Documentos - RESPOSTA.pdf",
+      "paginas": [
+       4,
+       11
+      ]
+     },
+     {
+      "arquivo": "08 - Outros Documentos - RESPOSTA.pdf",
+      "paginas": [
+       6,
+       11
+      ]
+     },
+     {
+      "arquivo": "09 - Outros Documentos - COMUNICADO SUSPENSAO.pdf",
+      "paginas": [
+       1
+      ]
+     }
+    ],
+    "B": [
+     {
+      "arquivo": "01 - Edital - EDITAL.pdf",
+      "paginas": [
+       35
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "pasta": "ABERTO Pregao - Eletronico - Fruta de Leite-MG",
+   "controle": "01612483000148-1-000037/2026",
+   "municipio": "Fruta de Leite/MG",
+   "esperado": "quieta",
+   "requests": [
+    {
+     "camada": "controle",
+     "arquivo": "01 - Edital - EDITAL_PREGAO_ELETRONICO_0072026__INSTITUICAO_FINANCEIR.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "nada_diz": 0.0,
+      "contradiz": 0.0,
+      "sustenta": 1.0
+     },
+     "usd": 6.699000000000001e-05,
+     "tokens": 1595,
+     "chars_estado": 3304
+    },
+    {
+     "camada": "A",
+     "arquivo": "01 - Edital - EDITAL_PREGAO_ELETRONICO_0072026__INSTITUICAO_FINANCEIR.pdf",
+     "paginas": [
+      19,
+      21
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.93,
+     "probabilidades": {
+      "sustenta": 0.95,
+      "contradiz": 0.05,
+      "nada_diz": 0.0
+     },
+     "usd": 9.723e-05,
+     "tokens": 2315,
+     "chars_estado": 6764
+    },
+    {
+     "camada": "B",
+     "arquivo": "01 - Edital - EDITAL_PREGAO_ELETRONICO_0072026__INSTITUICAO_FINANCEIR.pdf",
+     "paginas": [
+      2,
+      19
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "sustenta": 1.0,
+      "nada_diz": 0.0,
+      "contradiz": 0.0
+     },
+     "usd": 0.00010021200000000001,
+     "tokens": 2386,
+     "chars_estado": 6326
+    }
+   ],
+   "fora": [],
+   "fontes": {
+    "01 - Edital - EDITAL_PREGAO_ELETRONICO_0072026__INSTITUICAO_FINANCEIR.pdf": "amostras/.../01 - Edital - EDITAL_PREGAO_ELETRONICO_0072026__INSTITUICAO_FINANCEIR.txt (pdftotext)"
+   },
+   "q2": {
+    "trecho": "OBJETO: “Cessão onerosa do direito de processamento e gerenciamento da folha de \npagamento do Município de Fruta de Leite/MG, mediante contratação de instituição financeira \nautorizada a funcionar pelo Banco Central do Brasil, para centralização, processamento e \noperacionalização dos créditos decorrentes da folha de pagamento dos servidores públicos \nmunicipais, abrangendo os servidores efetivos, contratados, ocupantes de cargos em \ncomissão, agentes políticos, inativos e pensionistas”",
+    "arquivo": "01 - Edital - EDITAL_PREGAO_ELETRONICO_0072026__INSTITUICAO_FINANCEIR.pdf",
+    "pagina": 1,
+    "veredito": "APROVADO",
+    "rn13_na_v3": false,
+    "fonte": "Postgres v3 (verificação vigente)",
+    "resposta": "“Cessão onerosa do direito de processamento e gerenciamento da folha de pagamento do Município de Fruta de Leite/MG, mediante contratação de instituição financeira autorizada a funcionar pelo Banco Central do Brasil, para centralização, processamento e operacionalização dos créditos decorrentes da folha de pagamento dos servidores públicos municipais, abrangendo os servidores efetivos, contratados, ocupantes de cargos em comissão, agentes políticos, inativos e pensionistas”",
+    "arquivo_local": "01 - Edital - EDITAL_PREGAO_ELETRONICO_0072026__INSTITUICAO_FINANCEIR.pdf"
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "01 - Edital - EDITAL_PREGAO_ELETRONICO_0072026__INSTITUICAO_FINANCEIR.pdf",
+      "paginas": [
+       19,
+       21
+      ]
+     }
+    ],
+    "B": [
+     {
+      "arquivo": "01 - Edital - EDITAL_PREGAO_ELETRONICO_0072026__INSTITUICAO_FINANCEIR.pdf",
+      "paginas": [
+       2,
+       19
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "pasta": "ABERTO Pregao - Eletronico - Rio Azul-PR",
+   "controle": null,
+   "municipio": "Rio Azul/PR",
+   "esperado": "quieta",
+   "requests": [],
+   "fora": [
+    {
+     "arquivo": "(pasta inexistente em amostras/)",
+     "motivo": "sem texto em disco"
+    }
+   ],
+   "fontes": {},
+   "nao_medida": "sem resposta da Q2 e sem texto em disco"
+  },
+  {
+   "pasta": "Concorrencia - Eletronica - Sao Lourenco do Sul-RS",
+   "controle": "87893111000152-1-000381/2026",
+   "municipio": "São Lourenço do Sul/RS",
+   "esperado": "quieta",
+   "requests": [
+    {
+     "camada": "controle",
+     "arquivo": "05 - Edital correto (VIGENTE).pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "nada_diz": 0.0,
+      "sustenta": 1.0,
+      "contradiz": 0.0
+     },
+     "usd": 8.211e-05,
+     "tokens": 1955,
+     "chars_estado": 3743
+    },
+    {
+     "camada": "A",
+     "arquivo": "01 - Edital original (digitalizado, 44p).pdf",
+     "paginas": [
+      1,
+      28
+     ],
+     "escolha": "contradiz",
+     "confianca": 0.91,
+     "probabilidades": {
+      "sustenta": 0.06,
+      "contradiz": 0.94,
+      "nada_diz": 0.0
+     },
+     "usd": 9.588600000000001e-05,
+     "tokens": 2283,
+     "chars_estado": 4298
+    },
+    {
+     "camada": "A",
+     "arquivo": "02 - Termo de Referencia corrigido (VIGENTE).pdf",
+     "paginas": [
+      1,
+      13
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "sustenta": 1.0,
+      "contradiz": 0.0,
+      "nada_diz": 0.0
+     },
+     "usd": 0.00010248000000000001,
+     "tokens": 2440,
+     "chars_estado": 4747
+    },
+    {
+     "camada": "A",
+     "arquivo": "03 - Aviso de Retificacao e reabertura de prazo.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.49,
+     "probabilidades": {
+      "nada_diz": 0.32,
+      "contradiz": 0.02,
+      "sustenta": 0.66
+     },
+     "usd": 5.0358e-05,
+     "tokens": 1199,
+     "chars_estado": 2335
+    },
+    {
+     "camada": "A",
+     "arquivo": "04 - Edital corrigido (SUPERADO).pdf",
+     "paginas": [
+      1,
+      19
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.89,
+     "probabilidades": {
+      "nada_diz": 0.0,
+      "sustenta": 0.93,
+      "contradiz": 0.07
+     },
+     "usd": 9.765e-05,
+     "tokens": 2325,
+     "chars_estado": 4790
+    },
+    {
+     "camada": "A",
+     "arquivo": "05 - Edital correto (VIGENTE).pdf",
+     "paginas": [
+      19,
+      21
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.99,
+     "probabilidades": {
+      "contradiz": 0.0,
+      "nada_diz": 0.01,
+      "sustenta": 0.99
+     },
+     "usd": 8.6352e-05,
+     "tokens": 2056,
+     "chars_estado": 5238
+    },
+    {
+     "camada": "B",
+     "arquivo": "01 - Edital original (digitalizado, 44p).pdf",
+     "paginas": [
+      28
+     ],
+     "escolha": "contradiz",
+     "confianca": 0.92,
+     "probabilidades": {
+      "nada_diz": 0.0,
+      "contradiz": 0.95,
+      "sustenta": 0.05
+     },
+     "usd": 5.7666000000000007e-05,
+     "tokens": 1373,
+     "chars_estado": 2234
+    },
+    {
+     "camada": "B",
+     "arquivo": "02 - Termo de Referencia corrigido (VIGENTE).pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "contradiz": 0.0,
+      "sustenta": 1.0,
+      "nada_diz": 0.0
+     },
+     "usd": 8.206800000000001e-05,
+     "tokens": 1954,
+     "chars_estado": 3038
+    }
+   ],
+   "fora": [],
+   "fontes": {
+    "01 - Edital original (digitalizado, 44p).pdf": "saidas/_ocr_sao_lourenco.json (OCR já existente)",
+    "02 - Termo de Referencia corrigido (VIGENTE).pdf": "amostras/.../texto-extraido/02 - Termo de Referencia corrigido.txt",
+    "03 - Aviso de Retificacao e reabertura de prazo.pdf": "amostras/.../texto-extraido/03 - Aviso de Retificacao.txt",
+    "04 - Edital corrigido (SUPERADO).pdf": "amostras/.../texto-extraido/04 - Edital corrigido (SUPERADO).txt",
+    "05 - Edital correto (VIGENTE).pdf": "amostras/.../texto-extraido/05 - Edital correto (VIGENTE).txt"
+   },
+   "q2": {
+    "trecho": "OBJETO: Esta Licitação destina-se a receber Propostas para a contratação de instituição financeira pública \nou privada, ou cooperativa de crédito, autorizada pelo Banco Central do Brasil para a cessão onerosa do \ndireito de efetuar o pagamento da folha dos servidores públicos do Município de São Lourenço do Sul, sendo \neles servidores ativos, inativos, celetistas, pensionistas e contratados temporários, em número aproximado \nde 1.782 (um mil e setecentos e oitenta e dois) servidores do poder executivo, podendo ocorrer variações, \npara mais ou para menos, ao longo do período do contrato.",
+    "arquivo": "05 - Edital correto (VIGENTE).pdf",
+    "pagina": 1,
+    "veredito": "REVISAR",
+    "rn13_na_v3": false,
+    "fonte": "Postgres v3 (verificação vigente)",
+    "resposta": "OBJETO: Esta Licitação destina-se a receber Propostas para a contratação de instituição financeira pública ou privada, ou cooperativa de crédito, autorizada pelo Banco Central do Brasil para a cessão onerosa do direito de efetuar o pagamento da folha dos servidores públicos do Município de São Lourenço do Sul, sendo eles servidores ativos, inativos, celetistas, pensionistas e contratados temporários, em número aproximado de 1.782 (um mil e setecentos e oitenta e dois) servidores do poder executivo, podendo ocorrer variações, para mais ou para menos, ao longo do período do contrato.",
+    "arquivo_local": "05 - Edital correto (VIGENTE).pdf"
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "01 - Edital original (digitalizado, 44p).pdf",
+      "paginas": [
+       1,
+       28
+      ]
+     },
+     {
+      "arquivo": "02 - Termo de Referencia corrigido (VIGENTE).pdf",
+      "paginas": [
+       1,
+       13
+      ]
+     },
+     {
+      "arquivo": "03 - Aviso de Retificacao e reabertura de prazo.pdf",
+      "paginas": [
+       1
+      ]
+     },
+     {
+      "arquivo": "04 - Edital corrigido (SUPERADO).pdf",
+      "paginas": [
+       1,
+       19
+      ]
+     },
+     {
+      "arquivo": "05 - Edital correto (VIGENTE).pdf",
+      "paginas": [
+       19,
+       21
+      ]
+     }
+    ],
+    "B": [
+     {
+      "arquivo": "01 - Edital original (digitalizado, 44p).pdf",
+      "paginas": [
+       28
+      ]
+     },
+     {
+      "arquivo": "02 - Termo de Referencia corrigido (VIGENTE).pdf",
+      "paginas": [
+       1
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "pasta": "Pregao - Eletronico - Santo Antonio do Pinhal-SP",
+   "controle": "45701455000172-1-000034/2026",
+   "municipio": "Santo Antônio do Pinhal/SP",
+   "esperado": "quieta",
+   "requests": [
+    {
+     "camada": "controle",
+     "arquivo": "03 - Outros Documentos - 2_TR_Gestao_da_folha_de_pagamento.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.94,
+     "probabilidades": {
+      "nada_diz": 0.03,
+      "contradiz": 0.01,
+      "sustenta": 0.96
+     },
+     "usd": 6.6192e-05,
+     "tokens": 1576,
+     "chars_estado": 3306
+    },
+    {
+     "camada": "A",
+     "arquivo": "03 - Outros Documentos - 2_TR_Gestao_da_folha_de_pagamento.pdf",
+     "paginas": [
+      4,
+      9
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.99,
+     "probabilidades": {
+      "contradiz": 0.01,
+      "nada_diz": 0.0,
+      "sustenta": 0.99
+     },
+     "usd": 0.00011243400000000001,
+     "tokens": 2677,
+     "chars_estado": 7620
+    },
+    {
+     "camada": "A",
+     "arquivo": "06 - Edital - 4._Edital_PE_382026__GESTO_DA_FOLHA_RETIFICADO.pdf",
+     "paginas": [
+      1,
+      26
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "nada_diz": 0.0,
+      "sustenta": 1.0,
+      "contradiz": 0.0
+     },
+     "usd": 9.777600000000001e-05,
+     "tokens": 2328,
+     "chars_estado": 5739
+    },
+    {
+     "camada": "A",
+     "arquivo": "09 - Outros Documentos - AtaSessaoFinal_5eb20260916091217435.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "nada_diz",
+     "confianca": 0.07,
+     "probabilidades": {
+      "contradiz": 0.26,
+      "sustenta": 0.36,
+      "nada_diz": 0.38
+     },
+     "usd": 8.1186e-05,
+     "tokens": 1933,
+     "chars_estado": 3786
+    },
+    {
+     "camada": "A",
+     "arquivo": "12 - Outros Documentos - AtaSessaoFinal_5eb20260825090256911.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.04,
+     "probabilidades": {
+      "nada_diz": 0.33,
+      "sustenta": 0.36,
+      "contradiz": 0.31
+     },
+     "usd": 6.510000000000001e-05,
+     "tokens": 1550,
+     "chars_estado": 2946
+    },
+    {
+     "camada": "B",
+     "arquivo": "06 - Edital - 4._Edital_PE_382026__GESTO_DA_FOLHA_RETIFICADO.pdf",
+     "paginas": [
+      25
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "sustenta": 1.0,
+      "contradiz": 0.0,
+      "nada_diz": 0.0
+     },
+     "usd": 7.0182e-05,
+     "tokens": 1671,
+     "chars_estado": 3497
+    }
+   ],
+   "fora": [
+    {
+     "arquivo": "04 - Outros Documentos - AVISO_DE_REDESIGNAO.pdf",
+     "motivo": "sem texto extraído (exigiria OCR novo)"
+    },
+    {
+     "arquivo": "08 - Outros Documentos - PropostasProcesso_5eb20260825090257255.pdf",
+     "motivo": "duplicata de 07 - Outros Documentos - PropostasProcesso_5eb20260916091218341.pdf"
+    }
+   ],
+   "fontes": {
+    "03 - Outros Documentos - 2_TR_Gestao_da_folha_de_pagamento.pdf": "amostras/.../03 - Outros Documentos - 2_TR_Gestao_da_folha_de_pagamento.txt (pdftotext)",
+    "06 - Edital - 4._Edital_PE_382026__GESTO_DA_FOLHA_RETIFICADO.pdf": "amostras/.../06 - Edital - 4._Edital_PE_382026__GESTO_DA_FOLHA_RETIFICADO.txt (pdftotext)",
+    "07 - Outros Documentos - PropostasProcesso_5eb20260916091218341.pdf": "amostras/.../07 - Outros Documentos - PropostasProcesso_5eb20260916091218341.txt (pdftotext)",
+    "09 - Outros Documentos - AtaSessaoFinal_5eb20260916091217435.pdf": "amostras/.../09 - Outros Documentos - AtaSessaoFinal_5eb20260916091217435.txt (pdftotext)",
+    "10 - Outros Documentos - VencedoresProcessoFinal_5eb20260916091216685.pdf": "amostras/.../10 - Outros Documentos - VencedoresProcessoFinal_5eb20260916091216685.txt (pdftotext)",
+    "11 - Outros Documentos - VencedoresProcessoFinal_5eb20260825090256864.pdf": "amostras/.../11 - Outros Documentos - VencedoresProcessoFinal_5eb20260825090256864.txt (pdftotext)",
+    "12 - Outros Documentos - AtaSessaoFinal_5eb20260825090256911.pdf": "amostras/.../12 - Outros Documentos - AtaSessaoFinal_5eb20260825090256911.txt (pdftotext)"
+   },
+   "q2": {
+    "trecho": "1.1. OBJETO: CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL PARA OPERACIONALIZAÇÃO, EM CARÁTER DE EXCLUSIVIDADE, DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLICOS MUNICIPAIS ATIVOS, INATIVOS, PENSIONISTAS, AGENTES POLÍTICOS, CONTRATADOS E COMISSIONADOS DO MUNICÍPIO DE SANTO ANTÔNIO DO PINHAL/SP.",
+    "arquivo": "03 - Outros Documentos - 2_TR_Gestao_da_folha_de_pagamento.pdf",
+    "pagina": 1,
+    "veredito": "REVISAR",
+    "rn13_na_v3": false,
+    "fonte": "Postgres v3 (verificação vigente)",
+    "resposta": "CONTRATAÇÃO DE INSTITUIÇÃO FINANCEIRA AUTORIZADA PELO BANCO CENTRAL DO BRASIL PARA OPERACIONALIZAÇÃO, EM CARÁTER DE EXCLUSIVIDADE, DA FOLHA DE PAGAMENTO DOS SERVIDORES PÚBLICOS MUNICIPAIS ATIVOS, INATIVOS, PENSIONISTAS, AGENTES POLÍTICOS, CONTRATADOS E COMISSIONADOS DO MUNICÍPIO DE SANTO ANTÔNIO DO PINHAL/SP, CONFORME ESPECIFICAÇÕES CONSTANTES NO TERMO DE REFERÊNCIA, E DEMAIS ANEXOS DO EDITAL, NOS TERMOS DA LEI FEDERAL 14.133/2021.",
+    "arquivo_local": "03 - Outros Documentos - 2_TR_Gestao_da_folha_de_pagamento.pdf"
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "03 - Outros Documentos - 2_TR_Gestao_da_folha_de_pagamento.pdf",
+      "paginas": [
+       4,
+       9
+      ]
+     },
+     {
+      "arquivo": "06 - Edital - 4._Edital_PE_382026__GESTO_DA_FOLHA_RETIFICADO.pdf",
+      "paginas": [
+       1,
+       26
+      ]
+     },
+     {
+      "arquivo": "09 - Outros Documentos - AtaSessaoFinal_5eb20260916091217435.pdf",
+      "paginas": [
+       1
+      ]
+     },
+     {
+      "arquivo": "12 - Outros Documentos - AtaSessaoFinal_5eb20260825090256911.pdf",
+      "paginas": [
+       1
+      ]
+     }
+    ],
+    "B": [
+     {
+      "arquivo": "06 - Edital - 4._Edital_PE_382026__GESTO_DA_FOLHA_RETIFICADO.pdf",
+      "paginas": [
+       25
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "pasta": "Pregao - Presencial - Paulo Bento-RS",
+   "controle": "04215168000175-1-000044/2025",
+   "municipio": "Paulo Bento/RS",
+   "esperado": "quieta",
+   "requests": [
+    {
+     "camada": "controle",
+     "arquivo": "01 - Edital - Edital e anexos.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.92,
+     "probabilidades": {
+      "contradiz": 0.03,
+      "sustenta": 0.95,
+      "nada_diz": 0.02
+     },
+     "usd": 6.782999999999999e-05,
+     "tokens": 1615,
+     "chars_estado": 3802
+    },
+    {
+     "camada": "A",
+     "arquivo": "01 - Edital - Edital e anexos.pdf",
+     "paginas": [
+      22,
+      26
+     ],
+     "escolha": "contradiz",
+     "confianca": 0.63,
+     "probabilidades": {
+      "sustenta": 0.24,
+      "contradiz": 0.75,
+      "nada_diz": 0.01
+     },
+     "usd": 9.584400000000001e-05,
+     "tokens": 2282,
+     "chars_estado": 6332
+    },
+    {
+     "camada": "A",
+     "arquivo": "05 - Outros Documentos - Atas do procedimento de pre-qualificacao.pdf",
+     "paginas": [
+      1,
+      2
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.67,
+     "probabilidades": {
+      "nada_diz": 0.15,
+      "contradiz": 0.07,
+      "sustenta": 0.78
+     },
+     "usd": 7.7952e-05,
+     "tokens": 1856,
+     "chars_estado": 4284
+    },
+    {
+     "camada": "A",
+     "arquivo": "06 - Outros Documentos - Adjudicacao.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.52,
+     "probabilidades": {
+      "contradiz": 0.07,
+      "nada_diz": 0.25,
+      "sustenta": 0.68
+     },
+     "usd": 5.2122e-05,
+     "tokens": 1241,
+     "chars_estado": 2363
+    },
+    {
+     "camada": "A",
+     "arquivo": "07 - Outros Documentos - Homologacao.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.65,
+     "probabilidades": {
+      "nada_diz": 0.17,
+      "sustenta": 0.76,
+      "contradiz": 0.07
+     },
+     "usd": 4.9938e-05,
+     "tokens": 1189,
+     "chars_estado": 2214
+    },
+    {
+     "camada": "B",
+     "arquivo": "01 - Edital - Edital e anexos.pdf",
+     "paginas": [
+      22
+     ],
+     "escolha": "contradiz",
+     "confianca": 0.73,
+     "probabilidades": {
+      "contradiz": 0.82,
+      "sustenta": 0.17,
+      "nada_diz": 0.01
+     },
+     "usd": 6.2328e-05,
+     "tokens": 1484,
+     "chars_estado": 3578
+    }
+   ],
+   "fora": [
+    {
+     "arquivo": "02 - Outros Documentos - Convocacao-Aviso de edital.pdf",
+     "motivo": "sem texto extraído (exigiria OCR novo)"
+    },
+    {
+     "arquivo": "03 - Outros Documentos - Propostas orcamento e preco.pdf",
+     "motivo": "sem texto extraído (exigiria OCR novo)"
+    },
+    {
+     "arquivo": "04 - Outros Documentos - Documentos de habilitacao.pdf",
+     "motivo": "sem texto extraído (exigiria OCR novo)"
+    }
+   ],
+   "fontes": {
+    "01 - Edital - Edital e anexos.pdf": "amostras/.../01 - Edital - Edital e anexos.txt (pdftotext)",
+    "05 - Outros Documentos - Atas do procedimento de pre-qualificacao.pdf": "amostras/.../05 - Outros Documentos - Atas do procedimento de pre-qualificacao.txt (pdftotext)",
+    "06 - Outros Documentos - Adjudicacao.pdf": "amostras/.../06 - Outros Documentos - Adjudicacao.txt (pdftotext)",
+    "07 - Outros Documentos - Homologacao.pdf": "amostras/.../07 - Outros Documentos - Homologacao.txt (pdftotext)"
+   },
+   "q2": {
+    "trecho": "2.1. Constitui objeto desta licitação a seleção de instituição financeira e/ou \ncooperativa de crédito para a cessão onerosa do direito de efetuar o pagamento da folha \ndos servidores públicos do Município, incluindo-se o serviço de realizar o pagamento dos \nservidores \npúblicos \nmunicipais \nativos, \nestatutários, \nceletistas \ne \ncontratados \ntemporariamente, do Poder Executivo e Legislativo, em número aproximado de 143 (cento e \nquarenta e três) matrículas do Poder Executivo e 13 (treze) matrículas do Poder Legislativo, \npodendo ocorrer variações, para mais ou para menos, ao longo do período de duração do \ncontrato.",
+    "arquivo": "01 - Edital - Edital e anexos.pdf",
+    "pagina": 1,
+    "veredito": "REVISAR",
+    "rn13_na_v3": false,
+    "fonte": "Postgres v3 (verificação vigente)",
+    "resposta": "\"2.1. Constitui objeto desta licitação a seleção de instituição financeira e/ou cooperativa de crédito para a cessão onerosa do direito de efetuar o pagamento da folha dos servidores públicos do Município, incluindo-se o serviço de realizar o pagamento dos servidores públicos municipais ativos, estatutários, celetistas e contratados temporariamente, do Poder Executivo e Legislativo, em número aproximado de 143 (cento e quarenta e três) matrículas do Poder Executivo e 13 (treze) matrículas do Poder Legislativo, podendo ocorrer variações, para mais ou para menos, ao longo do período de duração d",
+    "arquivo_local": "01 - Edital - Edital e anexos.pdf"
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "01 - Edital - Edital e anexos.pdf",
+      "paginas": [
+       22,
+       26
+      ]
+     },
+     {
+      "arquivo": "05 - Outros Documentos - Atas do procedimento de pre-qualificacao.pdf",
+      "paginas": [
+       1,
+       2
+      ]
+     },
+     {
+      "arquivo": "06 - Outros Documentos - Adjudicacao.pdf",
+      "paginas": [
+       1
+      ]
+     },
+     {
+      "arquivo": "07 - Outros Documentos - Homologacao.pdf",
+      "paginas": [
+       1
+      ]
+     }
+    ],
+    "B": [
+     {
+      "arquivo": "01 - Edital - Edital e anexos.pdf",
+      "paginas": [
+       22
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "pasta": "Credenciamento - Santa Efigenia de Minas-MG",
+   "controle": "18307462000111-1-000029/2026",
+   "municipio": "Santa Efigênia de Minas/MG",
+   "esperado": "quieta",
+   "requests": [
+    {
+     "camada": "controle",
+     "arquivo": "01 - Edital - EDITAL_INEX_Cred.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "contradiz": 0.0,
+      "sustenta": 1.0,
+      "nada_diz": 0.0
+     },
+     "usd": 7.4256e-05,
+     "tokens": 1768,
+     "chars_estado": 4578
+    },
+    {
+     "camada": "A",
+     "arquivo": "01 - Edital - EDITAL_INEX_Cred.pdf",
+     "paginas": [
+      4,
+      5
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.97,
+     "probabilidades": {
+      "sustenta": 0.98,
+      "nada_diz": 0.02,
+      "contradiz": 0.0
+     },
+     "usd": 9.597e-05,
+     "tokens": 2285,
+     "chars_estado": 6124
+    },
+    {
+     "camada": "B",
+     "arquivo": "01 - Edital - EDITAL_INEX_Cred.pdf",
+     "paginas": [
+      5
+     ],
+     "escolha": "sustenta",
+     "confianca": 0.99,
+     "probabilidades": {
+      "contradiz": 0.0,
+      "nada_diz": 0.0,
+      "sustenta": 1.0
+     },
+     "usd": 6.799800000000001e-05,
+     "tokens": 1619,
+     "chars_estado": 3768
+    }
+   ],
+   "fora": [
+    {
+     "arquivo": "01 - Edital - EDITAL_INEX_CRED.PDF.pdf",
+     "motivo": "sem texto extraído (exigiria OCR novo)"
+    }
+   ],
+   "fontes": {
+    "01 - Edital - EDITAL_INEX_Cred.pdf": "amostras/.../01 - Edital - EDITAL_INEX_Cred.txt (pdftotext)"
+   },
+   "q2": {
+    "trecho": "1.1. Credenciamento de instituição financeira para prestação de serviços bancários de gerenciamento de créditos \nprovenientes da Folha de Pagamento dos servidores públicos e agentes políticos do Município de Santa \nEfigênia de Minas/MG, assim como a concessão de empréstimos consignados sem exclusividade conforme \nespecificações técnicas constantes do Anexo I – Termo de Referência, que fica fazendo parte integrante deste Edital.",
+    "arquivo": "01 - Edital - EDITAL_INEX_Cred.pdf",
+    "pagina": 1,
+    "veredito": "APROVADO",
+    "rn13_na_v3": false,
+    "fonte": "Postgres v3 (verificação vigente)",
+    "resposta": "Credenciamento de instituição financeira para prestação de serviços bancários de gerenciamento de créditos provenientes da Folha de Pagamento dos servidores públicos e agentes políticos do Município de Santa Efigênia de Minas/MG, assim como a concessão de empréstimos consignados sem exclusividade conforme especificações técnicas constantes do Anexo I – Termo de Referência, que fica fazendo parte integrante deste Edital.",
+    "arquivo_local": "01 - Edital - EDITAL_INEX_Cred.pdf"
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "01 - Edital - EDITAL_INEX_Cred.pdf",
+      "paginas": [
+       4,
+       5
+      ]
+     }
+    ],
+    "B": [
+     {
+      "arquivo": "01 - Edital - EDITAL_INEX_Cred.pdf",
+      "paginas": [
+       5
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "pasta": "Dispensa - Rio Branco-AC",
+   "controle": "04035135000143-1-000015/2026",
+   "municipio": "Rio Branco/AC (TCE-AC)",
+   "esperado": "quieta",
+   "requests": [
+    {
+     "camada": "controle",
+     "arquivo": "01 - Termo de Referência - SEI_0588543_TERMO_DE_REFERENCIA (2).PDF.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "nada_diz": 0.0,
+      "sustenta": 1.0,
+      "contradiz": 0.0
+     },
+     "usd": 6.1782e-05,
+     "tokens": 1471,
+     "chars_estado": 3532
+    },
+    {
+     "camada": "A",
+     "arquivo": "01 - Termo de Referência - SEI_0588543_TERMO_DE_REFERENCIA (2).PDF.pdf",
+     "paginas": [
+      4,
+      5
+     ],
+     "escolha": "nada_diz",
+     "confianca": 0.48,
+     "probabilidades": {
+      "contradiz": 0.01,
+      "nada_diz": 0.65,
+      "sustenta": 0.34
+     },
+     "usd": 0.00011054400000000002,
+     "tokens": 2632,
+     "chars_estado": 7448
+    },
+    {
+     "camada": "A",
+     "arquivo": "02 - Ato que autoriza a Contratação Direta - SEI_0602905_AUTORIZACAO_DA_AUTORIDADE_SUPERIOR_56.PDF.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "contradiz": 0.0,
+      "sustenta": 1.0,
+      "nada_diz": 0.0
+     },
+     "usd": 5.2416e-05,
+     "tokens": 1248,
+     "chars_estado": 2291
+    },
+    {
+     "camada": "A",
+     "arquivo": "03 - Aviso de Contratação Direta - SEI_0618628_RECONHECIMENTO_E_RATIFICACAO_DE_DISPENSA_14.PDF.pdf",
+     "paginas": [
+      1
+     ],
+     "escolha": "sustenta",
+     "confianca": 1.0,
+     "probabilidades": {
+      "contradiz": 0.0,
+      "sustenta": 1.0,
+      "nada_diz": 0.0
+     },
+     "usd": 5.4474e-05,
+     "tokens": 1297,
+     "chars_estado": 2451
+    }
+   ],
+   "fora": [],
+   "fontes": {
+    "01 - Termo de Referência - SEI_0588543_TERMO_DE_REFERENCIA (2).PDF.pdf": "Postgres v3, leitura 88",
+    "02 - Ato que autoriza a Contratação Direta - SEI_0602905_AUTORIZACAO_DA_AUTORIDADE_SUPERIOR_56.PDF.pdf": "Postgres v3, leitura 88",
+    "03 - Aviso de Contratação Direta - SEI_0618628_RECONHECIMENTO_E_RATIFICACAO_DE_DISPENSA_14.PDF.pdf": "Postgres v3, leitura 88"
+   },
+   "q2": {
+    "trecho": "Contratação de instituição financeira oficial para a prestação de serviços financeiros e\noutras avenças, cujo objeto consiste na centralização e no processamento dos créditos provenientes da\nfolha de pagamento Tribunal de Contas do Estado do Acre, com vistas a garantir o regular\nfuncionamento das atividades administrativas e a efetivação tempestiva da remuneração de servidores,\npensionistas e demais beneficiários..",
+    "arquivo": "01 - Termo de Referencia - SEI_0588543_Termo_de_Referencia 2.pdf",
+    "pagina": 1,
+    "veredito": "APROVADO",
+    "rn13_na_v3": false,
+    "fonte": "Postgres v3 (verificação vigente)",
+    "resposta": "Contratação de instituição financeira oficial para a prestação de serviços financeiros e outras avenças, cujo objeto consiste na centralização e no processamento dos créditos provenientes da folha de pagamento Tribunal de Contas do Estado do Acre, com vistas a garantir o regular funcionamento das atividades administrativas e a efetivação tempestiva da remuneração de servidores, pensionistas e demais beneficiários..",
+    "arquivo_local": "01 - Termo de Referência - SEI_0588543_TERMO_DE_REFERENCIA (2).PDF.pdf"
+   },
+   "selecao": {
+    "A": [
+     {
+      "arquivo": "01 - Termo de Referência - SEI_0588543_TERMO_DE_REFERENCIA (2).PDF.pdf",
+      "paginas": [
+       4,
+       5
+      ]
+     },
+     {
+      "arquivo": "02 - Ato que autoriza a Contratação Direta - SEI_0602905_AUTORIZACAO_DA_AUTORIDADE_SUPERIOR_56.PDF.pdf",
+      "paginas": [
+       1
+      ]
+     },
+     {
+      "arquivo": "03 - Aviso de Contratação Direta - SEI_0618628_RECONHECIMENTO_E_RATIFICACAO_DE_DISPENSA_14.PDF.pdf",
+      "paginas": [
+       1
+      ]
+     }
+    ],
+    "B": []
+   }
+  },
+  {
+   "pasta": "Inexigibilidade - Jaboatao dos Guararapes-PE",
+   "controle": "10377679000196-1-000221/2026",
+   "municipio": "Jaboatão dos Guararapes/PE",
+   "esperado": "quieta",
+   "requests": [],
+   "fora": [
+    {
+     "arquivo": "(pasta inexistente em amostras/)",
+     "motivo": "sem texto em disco"
+    }
+   ],
+   "fontes": {},
+   "nao_medida": "sem resposta da Q2 e sem texto em disco"
+  }
+ ],
+ "julgamento_a_mao": [
+  {
+   "municipio": "Pirapó/RS",
+   "classe": "não pegou",
+   "nota": "O Jev leu a página certa: a Cláusula Primeira da minuta (EDITAL p. 18) diz só 'servidores públicos municipais dos Poderes Executivo e Legislativo' contra 'ativos, inativos e pensionistas da Prefeitura, Câmara e FAPS'. Disse sustenta 0,77 (B); no TR p. 1, sustenta 0,74. Omitir população não é 'afirmar o oposto' no critério do 64_."
+  },
+  {
+   "municipio": "Quevedos/RS",
+   "classe": "não pegou",
+   "nota": "EDITAL p. 35, Cláusula Primeira da minuta: 'folha de pagamento dos servidores públicos e demais beneficiários' contra '(ativos, inativos, pensionistas e estagiários)'. sustenta 0,70 (B) e 0,88 (A, p. 31+35)."
+  },
+  {
+   "municipio": "São Lourenço do Sul/RS",
+   "classe": "verdadeiro, já sinalizado",
+   "nota": "O edital ORIGINAL (digitalizado, superado pelo 05) diz 1.925 servidores; o vigente, 1.782. Contradição real, de NÚMERO e contra versão superada — o extrator já a relatou como conflito na Q2 (REVISAR) e a RN-36 deixa divergência de número para o código. Seria uma revisão repetida."
+  },
+  {
+   "municipio": "Paulo Bento/RS",
+   "classe": "falso, abaixo do corte",
+   "nota": "TR (EDITAL p. 22): 'aproximado de 156 matrículas'; a resposta: 143 do Executivo + 13 do Legislativo — soma 156. Não há contradição; o Jev não soma ('not a calculator'). contradiz 0,63 (A) e 0,73 (B), abaixo de 0,75."
+  }
+ ]
+}

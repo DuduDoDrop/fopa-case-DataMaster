@@ -1,0 +1,43 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/emails",
+ "status": 200,
+ "corpo": {
+  "total": 2,
+  "page": 1,
+  "por_pagina": 50,
+  "paginas": 1,
+  "itens": [
+   {
+    "id": 2,
+    "tipo": "licitacao_nova",
+    "controle": "12345678000102-1-000002/2026",
+    "slug": "12345678000102-1-000002-2026",
+    "assunto": "[FOPA] Licitação nova de folha: teste",
+    "corpo_html": "<p>nova</p>",
+    "status": "falhou",
+    "canal": null,
+    "tentativas": 3,
+    "enviado_em": null,
+    "erro": "SMTP recusou",
+    "em": "2026-09-26T08:40:42.324610+00:00",
+    "para": "admin@exemplo.com"
+   },
+   {
+    "id": 1,
+    "tipo": "extracao",
+    "controle": "12345678000101-1-000001/2026",
+    "slug": "12345678000101-1-000001-2026",
+    "assunto": "[FOPA] Processada: teste",
+    "corpo_html": "<p>corpo</p>",
+    "status": "pendente",
+    "canal": null,
+    "tentativas": 0,
+    "enviado_em": null,
+    "erro": null,
+    "em": "2026-09-26T08:40:42.321427+00:00",
+    "para": "pedido@teste.br"
+   }
+  ]
+ }
+}

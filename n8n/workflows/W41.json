@@ -1,0 +1,703 @@
+{
+  "name": "W41 Histórico do PNCP",
+  "nodes": [
+    {
+      "id": "5413d79f-bc2b-5a8f-89ff-3ede1dd1e510",
+      "name": "Sobre o W41",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -72,
+        -748
+      ],
+      "parameters": {
+        "content": "## W41 Histórico do PNCP — todo dia 04:30 (America/Sao_Paulo)\nMantém o **analytics** em dia, sem depender de rodada manual. Custo R$ 0: API pública do PNCP, nenhum modelo.\n\n- **O trabalho é do worker** — regra — `POST /jobs/historico` (api/rotas_jobs.py: jobs_historico) → api/historico_pncp.py: rodada_diaria: licitações nunca coletadas (compra inteira), itens e resultados do acervo inteiro (o vencedor que saiu depois), cabeçalhos pendentes e os **contratos** (api/contratos_pncp.py: coletar — valor, parcelas, vigência e aditivos, db/049).\n- **Laço dos jobs longos** como o do W21 — regra — api/jobs.py: status queued → running → done | error. Wait 30 s → `GET /jobs/{id}` enquanto `queued` ou `running`, até 150 voltas (75 min). Uma rodada leva ~15 min.\n- **04:30** para não disputar o worker com o W01 (06:00) e a fila do W10 (06:00–07:50), e o analytics abrir o dia atualizado.\n- Toda rodada deixa rastro em `execucoes_workflow` (W41) com os números do job — aparece na página de Execuções.",
+        "height": 380,
+        "width": 760
+      }
+    },
+    {
+      "id": "9c3fd6bf-6630-5ec9-bc66-e0fbda10f30b",
+      "name": "Todo dia às 4h30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 4 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "6fd5c5bf-19b5-5bdd-8976-4c11e0ce09f7",
+      "name": "Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        340
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "161852e3-8b95-5c90-80d4-226d62d51814",
+      "name": "Abrir execução",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        288,
+        170
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — toda rodada deixa rastro (plano §5); gatilho = agenda | manual\nINSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status)\nVALUES ('W41', $1, $2, 'em_curso') RETURNING id, gatilho",
+        "options": {
+          "queryReplacement": "={{ [ $execution.id, (() => { try { return $('Todo dia às 4h30').isExecuted; } catch (e) { return false; } })() ? 'agenda' : 'manual' ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "2375f433-8a48-5126-ae40-3680b386dfe4",
+      "name": "POST /jobs/historico",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        170
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/jobs/historico",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "eeae2738-a10a-5ae5-8735-412412ea48de",
+      "name": "Job aceito?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        170
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eeae2738-a10a-5ae5-8735-412412ea48de",
+              "leftValue": "={{ $json.statusCode === 202 && !!($json.body && $json.body.job_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "06c618a4-ffa0-565e-aead-6b5438beaa49",
+      "name": "Esperar 30 s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        0
+      ],
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      }
+    },
+    {
+      "id": "bd9ef315-2a7f-507c-b7d1-715a57173535",
+      "name": "GET /jobs/{id}",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        0
+      ],
+      "parameters": {
+        "url": "={{ $env.FOPA_WORKER_URL }}/jobs/{{ $('POST /jobs/historico').first().json.body.job_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "29b8d2c9-85ba-557b-9550-7a6a520b7598",
+      "name": "Status do job",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// regra — laço dos jobs longos: Wait 30 s → GET /jobs/{id} enquanto `queued` OU `running`\n// (api/rotas_jobs.py; api/jobs.py — sucesso é `done`, não `ok`), máx. 150 voltas = 75 min (a rodada leva ~15 min).\n// Worker sem resposta numa volta (reinício) não mata o laço: conta a volta e pergunta de novo.\nconst MAX = 150;\nconst r = $input.first().json || {};\nconst volta = $runIndex + 1;\nconst jobId = $('POST /jobs/historico').first().json.body.job_id;\nconst b = (r.body && typeof r.body === 'object') ? r.body : {};\nlet status;\nif (r.error) status = 'sem_resposta';\nelse if (r.statusCode !== 200) status = 'http_' + r.statusCode;\nelse status = String(b.status || 'desconhecido');\nconst ativo = status === 'queued' || status === 'running' || status === 'sem_resposta';\nlet motivo = null;\nif (status === 'error') {\n  const e = b.erro || {};\n  motivo = `job ${jobId} falhou: ${e.tipo || 'erro'}: ${String(e.mensagem || '').slice(0, 300)}`;\n} else if (ativo && volta >= MAX) {\n  motivo = `job ${jobId} não terminou em ${MAX} voltas de 30 s (último status: ${status})`;\n} else if (!ativo && status !== 'done') {\n  motivo = `GET /jobs/${jobId} respondeu ${status}`;\n}\nreturn [{ json: {\n  job_id: jobId, volta, status,\n  continuar_esperando: ativo && volta < MAX,\n  concluido: status === 'done',\n  result: status === 'done' ? (b.result || {}) : null,\n  progresso: b.progresso ?? null,\n  motivo,\n} }];\n"
+      }
+    },
+    {
+      "id": "7856cd96-256d-51c3-acdf-4c87f4a4062a",
+      "name": "Ainda na fila ou rodando?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7856cd96-256d-51c3-acdf-4c87f4a4062a",
+              "leftValue": "={{ $json.continuar_esperando === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "d4a8b9ff-c357-5ca4-9ea9-ef8f5f4e8d94",
+      "name": "Job concluído?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2304,
+        170
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d4a8b9ff-c357-5ca4-9ea9-ef8f5f4e8d94",
+              "leftValue": "={{ $json.concluido === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "cbaae959-ca87-5c6e-9a41-32521b44ef4e",
+      "name": "Fechar execução",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2592,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — os números do job (api/historico_pncp.py rodada_diaria) viram os contadores da rodada\nUPDATE execucoes_workflow\n   SET status = 'ok', duracao_s = extract(epoch FROM now() - iniciado_em), contadores = $2::jsonb,\n       cego = COALESCE(($2::jsonb ->> 'cego')::bool, false)  -- a busca de contratos caiu em algum termo\n WHERE id = $1\nRETURNING id, contadores",
+        "options": {
+          "queryReplacement": "={{ [ $('Abrir execução').first().json.id, JSON.stringify($json.result || {}) ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "063308be-19f0-58f6-9e78-91aecacd82da",
+      "name": "Motivo da falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        510
+      ],
+      "parameters": {
+        "jsCode": "// Falha vira MOTIVO escrito na linha da execução, nunca silêncio: POST recusado, worker fora, job com erro, laço esgotado.\nconst j = $input.first().json || {};\nlet motivo = j.motivo || null;\nif (!motivo) {\n  const corpo = (j.body && typeof j.body === 'object') ? j.body : {};\n  if (j.error) motivo = 'worker sem resposta: ' + String(j.error.message || j.error).slice(0, 300);\n  else if (j.statusCode) motivo = `POST /jobs/historico respondeu ${j.statusCode}: ` + String(corpo.detail || JSON.stringify(corpo)).slice(0, 300);\n  else motivo = 'falha sem detalhe';\n}\nreturn [{ json: { motivo } }];\n"
+      }
+    },
+    {
+      "id": "eb42ee10-45ac-5539-9a1d-36670eeeb145",
+      "name": "Fechar com erro",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2880,
+        510
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — falha não some: status erro com o motivo escrito\nUPDATE execucoes_workflow\n   SET status = 'erro', duracao_s = extract(epoch FROM now() - iniciado_em), erro = $2\n WHERE id = $1\nRETURNING id, erro",
+        "options": {
+          "queryReplacement": "={{ [ $('Abrir execução').first().json.id, $json.motivo ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Todo dia às 4h30**\n\nGatilho agendado: todo dia às 04:30, antes de a descoberta e a fila ocuparem o worker. O analytics abre o dia atualizado.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "d60e7a39-0a44-522f-8bc4-ecb581e8c88b",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Manual**\n\nGatilho manual, para atualizar o histórico pelo editor.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "038439ca-920e-575d-8b9d-6002eaca1701",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        490
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · Abrir execução**\n\nAbre a linha da rodada em execucoes_workflow.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "20764a21-2dab-583d-979b-785262c98ef6",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · POST /jobs/historico**\n\nPede ao worker a atualização do histórico no PNCP: licitações nunca coletadas, itens, resultados, vencedores e contratos. Custo zero: só API pública.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3c5c7e57-2f54-5474-9adf-c5fa86d4a1c9",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Job aceito?**\n\nSe o worker aceitou o trabalho, acompanha; senão, registra o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3953767a-3a83-52ad-830e-92c6090a4d1f",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Esperar 30 s**\n\nIntervalo entre as consultas ao andamento.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "a6934cdd-e2b2-5f60-bafd-53d519155a41",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · GET /jobs/{id}**\n\nConsulta no worker o andamento da atualização.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "234ae3cd-2583-5864-9393-64e9b93b89b8",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Status do job**\n\nLê o andamento, com limite de 75 minutos. Uma volta sem resposta não interrompe o acompanhamento.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e3a216a4-e095-541b-b5ae-719cbcf2997c",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Ainda na fila ou rodando?**\n\nEnquanto a atualização não termina, volta a esperar.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "95444a5e-8d11-5858-bfc9-819bd1904e3d",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Job concluído?**\n\nConcluída segue para o fechamento; erro vai para o motivo da falha.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "165d2356-3b57-5386-b897-b9341e049b8a",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · Fechar execução**\n\nFecha a rodada com os números da atualização: novas, acervo, cabeçalhos, contratos e vencedores.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "8dcdc635-80d7-5b82-8bc5-87744c433571",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Motivo da falha**\n\nTransforma a falha em um motivo escrito.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "a8ccccf6-bb43-5441-b5c8-296f90942d90",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Fechar com erro**\n\nFecha a rodada com erro e o motivo, visível na página Execuções.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "74de1439-c8d1-5f8b-a6a5-0ec807d50467",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        660
+      ]
+    }
+  ],
+  "connections": {
+    "Todo dia às 4h30": {
+      "main": [
+        [
+          {
+            "node": "Abrir execução",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual": {
+      "main": [
+        [
+          {
+            "node": "Abrir execução",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir execução": {
+      "main": [
+        [
+          {
+            "node": "POST /jobs/historico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /jobs/historico": {
+      "main": [
+        [
+          {
+            "node": "Job aceito?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job aceito?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job aceito?": {
+      "main": [
+        [
+          {
+            "node": "Esperar 30 s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar 30 s": {
+      "main": [
+        [
+          {
+            "node": "GET /jobs/{id}",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /jobs/{id}": {
+      "main": [
+        [
+          {
+            "node": "Status do job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Status do job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status do job": {
+      "main": [
+        [
+          {
+            "node": "Ainda na fila ou rodando?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ainda na fila ou rodando?": {
+      "main": [
+        [
+          {
+            "node": "Esperar 30 s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job concluído?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job concluído?": {
+      "main": [
+        [
+          {
+            "node": "Fechar execução",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Motivo da falha": {
+      "main": [
+        [
+          {
+            "node": "Fechar com erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "errorWorkflow": "{{WF:W90}}",
+    "saveManualExecutions": true
+  }
+}

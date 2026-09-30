@@ -1,0 +1,12 @@
+{
+ "metodo": "POST",
+ "caminho": "/api/admin/usuarios",
+ "status": 201,
+ "corpo": {
+  "email": "nova@teste.br",
+  "nome": null,
+  "papel": "leitor",
+  "ativo": true,
+  "supremo": false
+ }
+}

@@ -1,0 +1,1485 @@
+{
+  "name": "W22 Ler",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W22 Ler — congela o texto (leituras + paginas)\nSub-fluxo do W20 (sem Error Workflow: a falha sobe para o W20).\n\n- **Estado só por fn_transicao** — baixada_ok|erro_leitura → lendo → preparada | sem_pdf_legivel | erro_leitura (db/002_eventos_transicoes.sql:26-29)\n- **OCR local Tesseract 5.4.0, nunca OCR por LLM** (ADR-008) — o worker lê com `extrator.carregar_paginas` intocado: api/leitura.py, scripts/fopa/extrator.py:182-227\n- **Job longo: Wait 15 s → GET /jobs/{id} enquanto queued|running, máx. 160 voltas = 40 min** (medido até 183,5 s no plano; 881 s em 26/09) — api/rotas_jobs.py:13-16\n- **n_paginas = 0 → sem_pdf_legivel** (uma leitura vazia não pode tirar a vigência de uma boa) — api/leitura.py:222-229\n- **Gêmea por assinatura do conjunto** (informativa; a v3 extrai mesmo assim) — scripts/70_extracao_por_agente.py:489-503\n- **Texto furtivo com cara de instrução para IA → aviso na fila** (o worker classifica: api/injecao.py, db/028; timbre branco e camada de OCR não avisam) — scripts/fopa/furtivo.py, plano §5 W22 passo 6\n- **Sem provedor real, a licitação real para em `preparada`** (`continuar: false`, R$ 0; ensaio segue) — db/032\n- Devolve `{ok, continuar, estado, leitura_id, n_paginas}` ao W20.\n- **Jev com o EDITAL logo depois da leitura** (objeto + páginas com mais termos; falha não para a leitura): a trava da IA na vaga do W23 espera essa nota, porque a só-objeto tem o ponto cego do credenciamento — db/035_trava_ia_com_edital.sql, api/rotas_jev.py:33-62",
+        "height": 380,
+        "width": 760
+      },
+      "id": "75442e1e-fa93-5ffc-a000-b4eeb2b2877b",
+      "name": "Sobre o W22",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -592
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "controle",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "5a51cb25-740e-59b7-9adc-1777a28bf4aa",
+      "name": "Chamado pelo W20",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        24
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — W22 passo 1: baixada_ok (ou erro_leitura, retentativa) → lendo, por fn_transicao (db/013_correcoes_f0.sql:31-72)\nSELECT fn_transicao(l.controle, 'lendo', 'W22: congelar o texto',\n                    jsonb_build_object('n8n_execution_id', $2::text)) AS evento_id,\n       l.controle, l.slug, l.orgao, l.uf, l.municipio\n  FROM licitacoes l\n WHERE l.controle = $1",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, $execution.id ] }}"
+        }
+      },
+      "id": "5f0bce46-1655-53d8-86a6-4d8afeb996a8",
+      "name": "Transição → lendo",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        288,
+        24
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/jobs/paginas",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ controle: $('Chamado pelo W20').first().json.controle }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "e96bc8ae-4a6a-5937-ad97-8f641fdcde9e",
+      "name": "POST /jobs/paginas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        24
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ac57219e-604e-5239-bd88-28ec2190c144",
+              "leftValue": "={{ $json.statusCode === 202 && !!($json.body && $json.body.job_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "d1ec1f22-3b18-5687-9ad4-1e99752a4ad5",
+      "name": "Job aceito?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        24
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 15,
+        "unit": "seconds"
+      },
+      "id": "3a049f79-92e5-5fd4-bec5-6612dc3da831",
+      "name": "Esperar 15 s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        24
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.FOPA_WORKER_URL }}/jobs/{{ $('POST /jobs/paginas').first().json.body.job_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "c3137369-2fb1-5bd9-adcc-2471513e9226",
+      "name": "GET /jobs/{id}",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        24
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — laço dos jobs longos: Wait 15 s → GET /jobs/{id} enquanto `queued` OU `running`\n// (api/rotas_jobs.py:13-16; api/jobs.py:18-20 — sucesso é `done`, não `ok`), máx. 160 voltas = 40 min (plano §5 W22 passo 2; eram 45 = 675 s — em 26/09 a leitura de Lapa/PR levou 776 s e a de Massaranduba/SC 881 s, e o W22 desistia com o texto quase pronto).\n// Worker sem resposta numa volta (reinício) não mata o laço: conta a volta e pergunta de novo.\nconst MAX = 160;\nconst r = $input.first().json || {};\nconst volta = $runIndex + 1;\nconst jobId = $('POST /jobs/paginas').first().json.body.job_id;\nconst b = (r.body && typeof r.body === 'object') ? r.body : {};\nlet status;\nif (r.error) status = 'sem_resposta';\nelse if (r.statusCode !== 200) status = 'http_' + r.statusCode;\nelse status = String(b.status || 'desconhecido');\nconst ativo = status === 'queued' || status === 'running' || status === 'sem_resposta';\nlet motivo = null;\nif (status === 'error') {\n  const e = b.erro || {};\n  motivo = `job ${jobId} falhou: ${e.tipo || 'erro'}: ${String(e.mensagem || '').slice(0, 300)}`;\n} else if (ativo && volta >= MAX) {\n  motivo = `job ${jobId} não terminou em ${MAX} voltas de 15 s (último status: ${status})`;\n} else if (!ativo && status !== 'done') {\n  motivo = `GET /jobs/${jobId} respondeu ${status}`;\n}\nreturn [{ json: {\n  job_id: jobId, volta, status,\n  continuar_esperando: ativo && volta < MAX,\n  concluido: status === 'done',\n  result: status === 'done' ? (b.result || {}) : null,\n  progresso: b.progresso ?? null,\n  motivo,\n} }];\n"
+      },
+      "id": "b6680d54-ede8-5556-9e6b-a221a2461dbc",
+      "name": "Status do job",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        24
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8d3e4b80-1566-5e98-ac1b-8df799be5145",
+              "leftValue": "={{ $json.continuar_esperando === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "9c37025a-432f-584a-aa92-b944b0c4400c",
+      "name": "Ainda na fila ou rodando?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        24
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0755caeb-92f7-5f83-9f43-6898aab1bb0c",
+              "leftValue": "={{ $json.concluido === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "ae1c0379-2d56-5e0f-a216-96827d47e692",
+      "name": "Job concluído?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2304,
+        24
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// O worker gravou leituras + paginas numa transação só e já marcou a vigente (api/leitura.py:170-199).\n// Aqui só se lê o resultado: {leitura_id, n_paginas, chars_total, modo_sugerido, condicoes, assinatura_conjunto, versao_ocr}.\nconst res = $json.result || {};\nconst cond = res.condicoes || {};\nreturn [{ json: {\n  job_id: $json.job_id,\n  leitura_id: res.leitura_id ?? null,\n  n_paginas: res.n_paginas || 0,\n  chars_total: res.chars_total || 0,\n  modo_sugerido: res.modo_sugerido ?? null,\n  versao_ocr: res.versao_ocr ?? null,\n  assinatura_conjunto: res.assinatura_conjunto ?? null,\n  reusada: res.reusada === true,\n  segundos: res.segundos ?? null,\n  paginas_ocr: cond.paginas_ocr || 0,\n  arquivos_ocr: cond.arquivos_ocr || [],\n  furtivos: cond.furtivos || [],\n  // o que o worker classificou como cara de instrução para IA (api/injecao.py): é deles o aviso\n  furtivos_suspeitos: res.furtivos_suspeitos ?? null,\n  furtivos_suspeitos_textos: res.furtivos_suspeitos_textos || [],\n  nao_pdf: cond.nao_pdf || [],\n} }];\n"
+      },
+      "id": "dbd89217-e2a4-5ccc-9b46-f907a09c6c53",
+      "name": "Leitura",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        24
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b5073474-0500-56b4-8a00-a814a2b31e48",
+              "leftValue": "={{ $json.n_paginas > 0 && !!$json.leitura_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "a3b76fe0-60c5-5dcd-a3ca-1415c0630052",
+      "name": "Há página legível?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2880,
+        24
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — n_paginas = 0 → sem_pdf_legivel (plano §5 W22 passo 3); nada foi gravado pelo worker (api/leitura.py:222-229)\nSELECT fn_transicao($1, 'sem_pdf_legivel', 'W22: nenhuma página legível (' || $2 || ' arquivo(s) que não são PDF)',\n                    jsonb_build_object('n8n_execution_id', $3::text, 'job_id', $4::text, 'nao_pdf', $5::jsonb)) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Chamado pelo W20').first().json.controle, $json.nao_pdf.length, $execution.id, $json.job_id, JSON.stringify($json.nao_pdf) ] }}"
+        }
+      },
+      "id": "7021bcb2-7e40-5677-b584-1746b1967415",
+      "name": "Estado sem_pdf_legivel",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        244
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ok: true, continuar: false, estado: 'sem_pdf_legivel',\n  controle: $('Chamado pelo W20').first().json.controle,\n  motivo: 'nenhuma página legível', job_id: $('Leitura').first().json.job_id } }];\n"
+      },
+      "id": "741001ac-1ac8-53f8-a309-84cdf41132f0",
+      "name": "Retorno: sem texto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3456,
+        244
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — gêmea = mesmo conjunto de textos em outro controle (assinatura_conjunto; scripts/70_extracao_por_agente.py:489-503).\n-- Informativo: a v3 extrai mesmo assim (plano §5 W22 passo 4).\nUPDATE licitacoes l\n   SET gemea_de = g.controle\n  FROM (SELECT le.controle FROM leituras le\n         WHERE le.assinatura_conjunto = $2 AND le.controle <> $1\n         ORDER BY le.id LIMIT 1) g\n WHERE l.controle = $1 AND l.gemea_de IS DISTINCT FROM g.controle\nRETURNING l.gemea_de",
+        "options": {
+          "queryReplacement": "={{ [ $('Chamado pelo W20').first().json.controle, $json.assinatura_conjunto ] }}"
+        }
+      },
+      "id": "6746a579-5e3a-5629-bf06-84ee5ffcd826",
+      "name": "Marcar gêmea",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        -108
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — lendo → preparada (db/002:27): o texto está congelado e a licitação entra na fila da extração\nSELECT fn_transicao($1, 'preparada', 'W22: texto congelado na leitura ' || $2,\n                    $3::jsonb) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Chamado pelo W20').first().json.controle, $('Leitura').first().json.leitura_id, JSON.stringify({ n8n_execution_id: String($execution.id), job_id: $('Leitura').first().json.job_id, leitura_id: $('Leitura').first().json.leitura_id, n_paginas: $('Leitura').first().json.n_paginas, chars_total: $('Leitura').first().json.chars_total, modo_sugerido: $('Leitura').first().json.modo_sugerido, versao_ocr: $('Leitura').first().json.versao_ocr, reusada: $('Leitura').first().json.reusada, gemea_de: $json.gemea_de ?? null }) ] }}"
+        }
+      },
+      "id": "839a1f06-f00b-5722-8f4a-7bc2a5e5bdfc",
+      "name": "Transição → preparada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3456,
+        -108
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — leitura_vigente_id aponta para a leitura que acabou de congelar (plano §5 W22 passo 5).\n-- O worker já grava isso na mesma transação da leitura (api/leitura.py:196); aqui fica explícito e idempotente.\nUPDATE licitacoes SET leitura_vigente_id = $2::bigint\n WHERE controle = $1\nRETURNING estado::text AS estado, leitura_vigente_id, gemea_de,\n          -- db/032: sem provedor real (simulado/gravado) a licitação REAL para aqui, preparada (R$ 0); a extração\n          -- de mentira seria recusada na publicação (T15) e as tentativas acabariam em erro_definitivo\n          (fn_extrai_com_ia(controle) OR ensaio) AS extrair_agora   -- db/033: o pedido do botão também libera",
+        "options": {
+          "queryReplacement": "={{ [ $('Chamado pelo W20').first().json.controle, $('Leitura').first().json.leitura_id ] }}"
+        }
+      },
+      "id": "a0b9772a-6b03-525f-bd08-68d104092355",
+      "name": "Conferir leitura vigente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3744,
+        -108
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "db482d8d-2eb3-5fd7-8a9d-6b952d760a4f",
+              "leftValue": "={{ ($('Leitura').first().json.furtivos_suspeitos ?? $('Leitura').first().json.furtivos.length) > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "19da4dc3-76d1-52e1-bbd5-c515da0f935d",
+      "name": "Texto furtivo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5472,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\nconst site = String($env.FOPA_SITE_PUBLIC_URL || '').replace(/\\/+$/, '');\nconst n8nBase = String($env.WEBHOOK_URL || '').replace(/\\/+$/, '');\nconst linkExecucao = `${n8nBase}/workflow/${$workflow.id}/executions/${$execution.id}`;\n// regra — texto furtivo (branco/minúsculo/fora da página) visto ANTES do modelo: vira tag \"Prompt Injection -\n// Conteúdo Suspeito\" na verificação (scripts/fopa/furtivo.py; T4/T5 do 40_fumaca.py) e aviso na fila (plano §5 W22 passo 6)\nconst lic = $('Transição → lendo').first().json;\nconst l = $('Leitura').first().json;\nconst onde = `${lic.municipio || lic.orgao || lic.controle}/${lic.uf || '—'}`;\n// 25/09: só o texto escondido com cara de instrução para IA vira aviso (o timbre branco e a camada de OCR não)\nconst lista = (l.furtivos_suspeitos_textos && l.furtivos_suspeitos_textos.length) ? l.furtivos_suspeitos_textos : l.furtivos;\nconst itens = lista.slice(0, 20).map((f) => '<li>' + esc(typeof f === 'string' ? f : JSON.stringify(f)).slice(0, 300) + '</li>').join('');\nreturn [{ json: {\n  controle: lic.controle,\n  assunto: `[FOPA] Texto furtivo antes do modelo: ${onde}`,\n  corpo_html: `<p>A leitura ${esc(l.leitura_id)} de <b>${esc(lic.orgao || '')}</b> (${esc(onde)}, controle ${esc(lic.controle)}) `\n    + `tem ${lista.length} trecho(s) de texto escondido com cara de instrução para IA. A extração segue; a verificação sai com a tag de injeção e revisão humana.</p>`\n    + `<ul>${itens}</ul>`\n    + `<p><a href=\"${esc(site)}/licitacao/${esc(lic.slug)}\">Abrir no site</a> · <a href=\"${esc(linkExecucao)}\">execução ${esc($execution.id)}</a></p>`,\n} }];\n"
+      },
+      "id": "ffe988c3-15f2-5e5a-922a-a0bfeddfabcf",
+      "name": "Montar aviso furtivo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5760,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — e-mail DESLIGADO (o produto manda só DOIS e-mails — licitação nova, pelo W01,\n-- e a extração pedida no botão do site, pelo W24; db/038-039). O fluxo segue igual; este nó não enfileira.\nSELECT NULL::bigint AS email_id",
+        "options": {}
+      },
+      "id": "cb91e753-57a7-5a79-ad7d-28b7fec3874c",
+      "name": "Enfileirar aviso furtivo",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6048,
+        -240
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const l = $('Leitura').first().json;\n// db/032: sem provedor real, a licitação real para em preparada (a fila das 6h baixa e lê; extrai quando houver IA real)\nconst jevRodou = (() => { try { return $('Jev: interpretar o escopo (worker)').isExecuted; } catch (e) { return false; } })();\nconst jevEdital = jevRodou ? (($('Jev: interpretar o escopo (worker)').first().json.body) || {}).p_sim ?? null : null;\nconst extrair = $('Conferir leitura vigente').first().json.extrair_agora !== false;\nreturn [{ json: { ok: true, continuar: extrair, estado: 'preparada',\n  controle: $('Chamado pelo W20').first().json.controle,\n  motivo: `W22: ${l.n_paginas} página(s), leitura ${l.leitura_id}${l.reusada ? ' (reusada)' : ''}` + (extrair ? '' : ' — a extração espera o provedor real (db/032)'),\n  leitura_id: l.leitura_id, n_paginas: l.n_paginas, chars_total: l.chars_total, modo_sugerido: l.modo_sugerido,\n  paginas_ocr: l.paginas_ocr, furtivos: l.furtivos.length, reusada: l.reusada, job_id: l.job_id,\n  // a nota do Jev COM O EDITAL (db/035): a trava da IA na vaga do W23 decide com ela e a só-objeto\n  jev_edital: jevEdital } }];\n"
+      },
+      "id": "95bee85a-5e9a-5e1e-9004-9abd5ad1cd0f",
+      "name": "Retorno: preparada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6336,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Falha vira MOTIVO escrito (fica em licitacao_eventos e no retorno para o W20), nunca silêncio.\n// Aceita o item de qualquer ramo que falhou: HTTP com erro de rede, HTTP com status ruim, laço esgotado.\nconst j = $input.first().json || {};\nlet motivo = j.motivo || j.falha || null;\nif (!motivo && j.error) {\n  motivo = 'sem resposta (rede/timeout): ' + String(j.error.message || j.error.description || JSON.stringify(j.error)).slice(0, 240);\n}\nif (!motivo && j.statusCode) {\n  const corpo = typeof j.body === 'string' ? j.body : JSON.stringify(j.body ?? '');\n  motivo = `HTTP ${j.statusCode}: ${corpo.slice(0, 300)}`;\n}\nreturn [{ json: { motivo: 'W22: ' + (motivo || 'falha sem motivo declarado') } }];\n"
+      },
+      "id": "401ab3ed-bb66-57ee-86e9-55b1404694a0",
+      "name": "Motivo da falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — lendo → erro_leitura (db/002:29): o W20 conta a tentativa e agenda o backoff (fn_registrar_falha, db/021)\nSELECT fn_transicao($1, 'erro_leitura', $2, jsonb_build_object('n8n_execution_id', $3::text)) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Chamado pelo W20').first().json.controle, $json.motivo, $execution.id ] }}"
+        }
+      },
+      "id": "64b209d5-e39b-54c4-97da-e87298a54610",
+      "name": "Estado erro_leitura",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        464
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ok: false, continuar: false, estado: 'erro_leitura',\n  controle: $('Chamado pelo W20').first().json.controle,\n  motivo: $('Motivo da falha').first().json.motivo } }];\n"
+      },
+      "id": "8bd8eb9d-085c-5f89-a11a-233109000ff6",
+      "name": "Retorno: falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/jev/escopo/edital/corpos",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ controles: [ $('Chamado pelo W20').first().json.controle ] }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "name": "Jev: corpo com o edital (worker)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4032,
+        -108
+      ],
+      "id": "e247e8a0-ce8e-527f-9b2f-2c55e0653a4a",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5414a6ed-f6e7-59f9-bc46-817ec7f14dd9",
+              "leftValue": "={{ $json.statusCode === 200 && Array.isArray($json.body && $json.body.requisicoes) && $json.body.requisicoes.length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "name": "Há corpo para o Jev?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4320,
+        -108
+      ],
+      "id": "65bf8a07-d1a2-5290-a9a6-5076c94a8d42"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — o escopo com o EDITAL (73_: objeto + as páginas da leitura com mais termos da pergunta) logo depois\n// da leitura: é a nota que a trava da IA espera (db/035; a só-objeto tem o ponto cego do credenciamento).\n// O Jev é SINAL (T25): falhar aqui não para a leitura — api/rotas_jev.py:33-62\nconst b = $input.first().json.body;\nreturn b.requisicoes.slice(0, 1).map((r) => ({ json: { url: b.url, body: r.body, controle: r.controle,\n  regra_dentro: r.regra_dentro === true, contexto_enviado: r.contexto_enviado } }));\n"
+      },
+      "name": "Uma requisição (escopo com o edital)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4608,
+        -240
+      ],
+      "id": "4dc101af-ccdf-55e6-b506-6350d47f7de2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "timeout": 30000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 1000
+            }
+          }
+        }
+      },
+      "name": "Jev (TypeSafe)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4896,
+        -240
+      ],
+      "id": "02143103-d9ca-54ff-bba0-df7cb50e2af1",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:jev}}",
+          "name": "jev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/jev/escopo/interpretar",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ controle: $('Uma requisição (escopo com o edital)').first().json.controle, regra_dentro: $('Uma requisição (escopo com o edital)').first().json.regra_dentro, contexto_enviado: $('Uma requisição (escopo com o edital)').first().json.contexto_enviado, resposta: $json.error ? { erro: String($json.error.message || $json.error.code || 'falhou') } : $json }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "name": "Jev: interpretar o escopo (worker)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5184,
+        -240
+      ],
+      "id": "9e2f34a9-7cbb-593a-bebc-c40be9e8d7c3",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Chamado pelo W20**\n\nEntrada do fluxo: recebe o número de controle da licitação.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e6379183-ddef-546e-9586-b64a4b625475",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Transição → lendo**\n\nMarca a licitação como “lendo” e registra o evento.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "958e90bc-c490-52c4-83bf-8560b7727f9e",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · POST /jobs/paginas**\n\nPede ao worker a leitura: texto nativo de cada página e OCR local (Tesseract 5.4.0) onde falta texto, nunca por modelo de IA. Também procura texto escondido com cara de instrução.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "b29b01d4-16b8-5262-bf02-afc4b582b46a",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Job aceito?**\n\nSe o worker aceitou o trabalho, acompanha; senão, registra o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4af3b9ee-507b-5533-b41f-89c80e9c5777",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Esperar 15 s**\n\nIntervalo entre as consultas ao andamento da leitura.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f32918a6-4f4a-5bcf-bc72-bd6c7fae1247",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · GET /jobs/{id}**\n\nConsulta no worker o andamento da leitura.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5103d746-0282-56c3-91fd-53c20e0b7eb1",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · Status do job**\n\nLê o andamento, com limite de 40 minutos: processos grandes, com muitas páginas em OCR, levam mais de 10 minutos.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "f0964f8d-f4b8-5729-adb5-d9eb2a957b5c",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Ainda na fila ou rodando?**\n\nEnquanto a leitura não termina, volta a esperar.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "1f0b73ee-7a0f-5fcd-b32f-6c95cf60f35a",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Job concluído?**\n\nLeitura concluída segue para o resultado; erro vai para o motivo da falha.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c4b3d022-6651-5185-a417-6f8991ebdd73",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Leitura**\n\nLê o resultado: páginas, caracteres, páginas com OCR, trechos escondidos encontrados e arquivos que não são PDF.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4a366f7a-cc78-5d5b-8639-e1a687c913ab",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · Há página legível?**\n\nCom páginas legíveis, segue; sem nenhuma, a licitação fica sem PDF legível. Uma leitura vazia nunca substitui uma boa.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "63c56d84-79c3-51fb-a037-51d40d551762",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        174
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Estado sem_pdf_legivel**\n\nMarca a licitação como sem PDF legível, com o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3f6ff3b1-a0d3-5675-aaba-99ab8b4bb624",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        394
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Retorno: sem texto**\n\nDevolve ao W20 que não há texto a ler. É um desfecho, não um erro.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "aedc73f1-2dd1-587f-8667-e9b640878c38",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        394
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 15 · Marcar gêmea**\n\nSe o mesmo edital já foi lido em outra licitação, registra a ligação entre as duas. É só informativo.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "427dd3f1-07a6-5be1-8a12-22364520888b",
+      "name": "Nota — passo 15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        42
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 16 · Transição → preparada**\n\nMarca a licitação como “preparada”: o texto está congelado e pronto para a extração.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7bbc0a20-5bc8-500b-b7f4-5e4a8f16d607",
+      "name": "Nota — passo 16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        42
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 17 · Conferir leitura vigente**\n\nConfirma a leitura vigente e decide se a extração roda agora: com o provedor real, com um pedido do site ou em licitação de ensaio.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "67c00f43-bb45-532e-8a7d-e4d450df21fe",
+      "name": "Nota — passo 17",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        42
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 18 · Jev: corpo com o edital (worker)**\n\nO worker monta a pergunta ao Jev com o objeto e as páginas do edital. Com o edital, o Jev acerta os credenciamentos que o objeto sozinho esconde.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "a9f3934c-ba93-5ae0-9a22-e85719647d5a",
+      "name": "Nota — passo 18",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        42
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 19 · Há corpo para o Jev?**\n\nSe o worker montou a pergunta, consulta o Jev; senão, segue.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "0dc7953b-4851-5d31-9030-5f5d42c21600",
+      "name": "Nota — passo 19",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4240,
+        42
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 20 · Uma requisição (escopo com o edital)**\n\nPrepara a requisição única ao Jev para esta licitação.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9b861393-9fc9-5ae9-9d07-8a7142c4a3b7",
+      "name": "Nota — passo 20",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4528,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 21 · Jev (TypeSafe)**\n\nConsulta o Jev com o edital. Em caso de erro, segue: o Jev nunca interrompe a leitura.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4e5ca1ba-3c24-5f22-99c9-1f9bd6130bd4",
+      "name": "Nota — passo 21",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4816,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 22 · Jev: interpretar o escopo (worker)**\n\nO worker converte a resposta na probabilidade de ser folha e grava o sinal, que o W23 consulta antes de extrair.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9f053750-3812-5ceb-92e9-bb0b0a8b1a2e",
+      "name": "Nota — passo 22",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5104,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 23 · Texto furtivo?**\n\nVerifica se há texto escondido que fala com uma IA (por exemplo, “ignore as instruções”). Timbre e camada invisível do OCR não contam.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "46897fc0-ee18-56fb-b995-1976f095f072",
+      "name": "Nota — passo 23",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5392,
+        42
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 24 · Montar aviso furtivo**\n\nMonta o aviso com os trechos escondidos e os links, que fica registrado na execução.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "feff9c1f-cd39-5123-a0bf-dbbdc71e5aa7",
+      "name": "Nota — passo 24",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5680,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 25 · Enfileirar aviso furtivo**\n\nDesligado: o produto envia só dois e-mails. A suspeita segue visível na verificação, na revisão humana e no detalhe da licitação.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "ffdd79fd-03e7-5ba7-a4aa-8a466a5cefb9",
+      "name": "Nota — passo 25",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5968,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 26 · Retorno: preparada**\n\nDevolve ao W20 a leitura pronta e se a extração deve seguir agora.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "407ebf9f-7dfe-5cf4-9d7f-26fff90acba4",
+      "name": "Nota — passo 26",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        6256,
+        42
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 27 · Motivo da falha**\n\nTransforma a falha em um motivo escrito. Nenhuma falha passa em silêncio.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "848e8818-fb6a-5c3b-afda-3e467eecb6f2",
+      "name": "Nota — passo 27",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        614
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 28 · Estado erro_leitura**\n\nMarca a licitação com erro de leitura, para nova tentativa mais tarde.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "8f640c18-a037-50f7-90d8-c14e759b42cc",
+      "name": "Nota — passo 28",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        614
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 29 · Retorno: falha**\n\nDevolve ao W20 a falha; ele conta a tentativa e agenda a próxima.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "8c0c6aaa-615a-52bf-95ff-1f2e97bd5fe2",
+      "name": "Nota — passo 29",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        614
+      ]
+    }
+  ],
+  "connections": {
+    "Chamado pelo W20": {
+      "main": [
+        [
+          {
+            "node": "Transição → lendo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transição → lendo": {
+      "main": [
+        [
+          {
+            "node": "POST /jobs/paginas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /jobs/paginas": {
+      "main": [
+        [
+          {
+            "node": "Job aceito?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job aceito?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job aceito?": {
+      "main": [
+        [
+          {
+            "node": "Esperar 15 s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar 15 s": {
+      "main": [
+        [
+          {
+            "node": "GET /jobs/{id}",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /jobs/{id}": {
+      "main": [
+        [
+          {
+            "node": "Status do job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Status do job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status do job": {
+      "main": [
+        [
+          {
+            "node": "Ainda na fila ou rodando?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ainda na fila ou rodando?": {
+      "main": [
+        [
+          {
+            "node": "Esperar 15 s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Job concluído?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job concluído?": {
+      "main": [
+        [
+          {
+            "node": "Leitura",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leitura": {
+      "main": [
+        [
+          {
+            "node": "Há página legível?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Há página legível?": {
+      "main": [
+        [
+          {
+            "node": "Marcar gêmea",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Estado sem_pdf_legivel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado sem_pdf_legivel": {
+      "main": [
+        [
+          {
+            "node": "Retorno: sem texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar gêmea": {
+      "main": [
+        [
+          {
+            "node": "Transição → preparada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transição → preparada": {
+      "main": [
+        [
+          {
+            "node": "Conferir leitura vigente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conferir leitura vigente": {
+      "main": [
+        [
+          {
+            "node": "Jev: corpo com o edital (worker)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Texto furtivo?": {
+      "main": [
+        [
+          {
+            "node": "Montar aviso furtivo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retorno: preparada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar aviso furtivo": {
+      "main": [
+        [
+          {
+            "node": "Enfileirar aviso furtivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enfileirar aviso furtivo": {
+      "main": [
+        [
+          {
+            "node": "Retorno: preparada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Motivo da falha": {
+      "main": [
+        [
+          {
+            "node": "Estado erro_leitura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado erro_leitura": {
+      "main": [
+        [
+          {
+            "node": "Retorno: falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jev: corpo com o edital (worker)": {
+      "main": [
+        [
+          {
+            "node": "Há corpo para o Jev?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Há corpo para o Jev?": {
+      "main": [
+        [
+          {
+            "node": "Uma requisição (escopo com o edital)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Texto furtivo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uma requisição (escopo com o edital)": {
+      "main": [
+        [
+          {
+            "node": "Jev (TypeSafe)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jev (TypeSafe)": {
+      "main": [
+        [
+          {
+            "node": "Jev: interpretar o escopo (worker)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jev: interpretar o escopo (worker)": {
+      "main": [
+        [
+          {
+            "node": "Texto furtivo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "saveManualExecutions": true
+  }
+}

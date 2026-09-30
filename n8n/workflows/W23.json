@@ -1,0 +1,2236 @@
+{
+  "name": "W23 Extrair",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W23 Extrair — o único fluxo que fala com um modelo\nSub-fluxo do W20 (sem Error Workflow: a falha sobe para o W20).\n\n- **Provedor vem da configuração no Postgres, nunca fixo no fluxo** (`configuracao.provedor`, db/016; ledger F1 Ruling). Construção = `simulado` (R$ 0); `claude`/`openai` só em produção/ensaio F7\n- **Freio único de simultaneidade e orçamento: fn_tomar_vaga_extracao** (≤ 4 em `extraindo`, gasto do dia + reservas > teto → recusa; recusa fora do escopo e fora do recorte de 2026) — db/019_fila_guardada_e_escopo_reavaliado.sql:37-90, scripts/20_monitor.py:546\n- **Corpo do lote = o do SDK da v2** (system com cache_control, thinking adaptive, json_schema) montado pelo worker — api/extracao.py:36-57, scripts/fopa/modelos.py:206-233\n- **3 chamadas EM SÉRIE (lote 6)** — ADR-009; `60_pico_taxa`\n- **Parse**: só blocos `text`, nunca `content[0]`; refusal → \"recusa\"; max_tokens → \"truncado\" (sem retentar com mais tokens) — scripts/fopa/modelos.py:238-245\n- **Retentativa só em 408/429/500/502/503/529/rede, 3×, 30 s ou retry-after** — plano §5 W23 passo 10\n- **Custo NA HORA da chamada via /custo** (o preço mora só em `modelos.PRECOS`, T17; desconhecido → NULL, nunca 0, ADR-012) — api/worker.py:236-250\n- **Lote que falha → execução `parcial` + erro_extracao**; a próxima tentativa manda só os `ids_pendentes` — plano §5 W23 passo 13\n- Os ramos `claude` e `openai` existem no canvas; a construção NUNCA os executa (sem credencial na stack).\n- **Pedido do botão \"Extrair com GPT\"** (db/033): o provedor do pedido pendente vale para esta licitação e é gasto ao abrir a execução; o provedor global não muda.\n- **O botão escolhe provedor, modelo e esforço** (Claude ou OpenAI; os níveis e o padrão de cada empresa; o teto de saída sobe no xhigh/max) — db/037_pedido_modelo_esforco.sql, api/modelos_ia.py:1-40\n- **Best-of-N (v3.1, 28/09/2026)**: N=3, só as que falham. Depois dos lotes, `POST /reforco` devolve os lotes só das perguntas que o verificador reprovou ou não localizou e o laço chama o modelo de novo (rodada 1..N-1, gravada em `chamadas_modelo.rodada`; 0 = o lote normal). O worker decide quando acabou e escolhe o melhor no /verificar; falha no reforço (do /reforco ou de uma chamada) nunca derruba a extração: fica o original — db/050_melhor_de_n.sql, scripts/fopa/melhor_de_n.py:3-24",
+        "height": 560,
+        "width": 820
+      },
+      "id": "b11488ff-8cac-50a8-b500-18d187009143",
+      "name": "Sobre o W23",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -640
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "controle",
+              "type": "string"
+            },
+            {
+              "name": "workflow_execucao_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "2dd299bd-b7b0-5d5b-b463-1d4e5ef54eac",
+      "name": "Chamado pelo W20",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — a configuração de execução mora no Postgres (db/016_configuracao_e_papel_do_site.sql:1-35), não no fluxo;\n-- orçamento vigente (db/007) e a execução PARCIAL da mesma leitura, para mandar só o que falta (plano §5 W23 passo 6)\nSELECT l.controle, l.estado::text AS estado, l.leitura_vigente_id, l.modalidade,\n       -- db/033: o pedido do botão \"Extrair com GPT\" (uma licitação, uma execução) passa na frente do global\n       fn_provedor_pedido(l.controle) AS provedor_pedido,\n       -- db/037: a escolha da tela (modelo, esforço e o teto de saída, que sobe no xhigh/max)\n       (SELECT x.modelo FROM fn_pedido_ia(l.controle) x) AS modelo_pedido,\n       (SELECT x.effort FROM fn_pedido_ia(l.controle) x) AS effort_pedido,\n       (SELECT x.max_tokens FROM fn_pedido_ia(l.controle) x) AS max_tokens_pedido,\n       (SELECT jsonb_object_agg(c.chave, c.valor) FROM configuracao c) AS cfg,\n       (SELECT o.teto_brl_dia FROM orcamento o WHERE o.vigente) AS teto_brl_dia,\n       (SELECT array_agg(p.id ORDER BY substr(p.id, 2)::int) FROM perguntas p) AS ids,\n       par.id AS parcial_id, par.cobertos\n  FROM licitacoes l\n  LEFT JOIN LATERAL (\n        SELECT e.id,\n               ARRAY(SELECT DISTINCT unnest(c.lote_ids) FROM chamadas_modelo c\n                      WHERE c.execucao_id = e.id AND COALESCE(c.http_status, 200) = 200\n                        AND COALESCE(c.stop_reason, 'end_turn') = 'end_turn') AS cobertos\n          FROM execucoes_modelo e\n         WHERE e.controle = l.controle AND e.leitura_id = l.leitura_vigente_id AND e.status = 'parcial'\n           AND e.provedor = COALESCE(fn_provedor_pedido(l.controle),\n                                     (SELECT c.valor #>> '{}' FROM configuracao c WHERE c.chave = 'provedor'))\n         ORDER BY e.id DESC LIMIT 1) par ON true\n WHERE l.controle = $1",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle ] }}"
+        }
+      },
+      "id": "df46fed7-147d-519f-9b91-aff270a024c9",
+      "name": "Configuração e licitação",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        288,
+        512
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — provedor por parâmetro (ADR-012): simulado | gravado | claude | openai. Só claude/openai gastam.\n// origem simulado/gravado nunca é canônica nem vira vigente fora de ensaio (T15; db/004 CHECK, db/005 trigger).\nconst ORIGEM = { simulado: 'simulado', gravado: 'gravado', claude: 'api', openai: 'api' };\nconst c = $input.first().json || {};\nconst pedido = $('Chamado pelo W20').first().json;\nif (!c.controle) throw new Error('licitação não existe: ' + pedido.controle);\nconst cfg = c.cfg || {};\n// db/033: o pedido do botão \"Extrair com GPT\" vale para esta licitação e esta execução; o global fica como está\nconst provedor = String(c.provedor_pedido || (cfg.provedor ?? ''));\nif (!(provedor in ORIGEM)) throw new Error(`configuracao.provedor inválido: '${provedor}' (simulado | gravado | claude | openai)`);\n// db/037: o botão escolhe modelo e esforço (validados pela API: api/modelos_ia.py); sem escolha, a configuração\nconst modelo = c.modelo_pedido ? String(c.modelo_pedido)\n  : (provedor === 'openai' ? String(cfg.modelo_openai || cfg.modelo) : String(cfg.modelo));\nconst ids = c.ids || [];\nconst cobertos = new Set(c.cobertos || []);\nconst pendentes = c.parcial_id ? ids.filter((i) => !cobertos.has(i)) : [];\nreturn [{ json: {\n  controle: c.controle, estado: c.estado, leitura_id: c.leitura_vigente_id, modalidade: c.modalidade,\n  provedor, origem: ORIGEM[provedor], modelo, pedido_ia: !!c.provedor_pedido,\n  effort: String(c.effort_pedido || cfg.effort || 'high'), lote: Number(cfg.lote || 6), k_rag: Number(cfg.k_rag || 6),\n  max_tokens: Number(c.max_tokens_pedido || cfg.max_tokens || 16000), max_extracoes: Number(cfg.max_extracoes || 4),\n  teto_brl_dia: c.teto_brl_dia == null ? null : Number(c.teto_brl_dia),\n  parcial_id: (c.parcial_id && pendentes.length) ? c.parcial_id : null,\n  ids_pendentes: (c.parcial_id && pendentes.length) ? pendentes : null,\n  workflow_execucao_id: Number.isFinite(Number(pedido.workflow_execucao_id)) && pedido.workflow_execucao_id !== null\n    && pedido.workflow_execucao_id !== '' ? Number(pedido.workflow_execucao_id) : null,\n} }];\n"
+      },
+      "id": "79d5c7b0-bbd2-5ed5-b691-2b7857180b20",
+      "name": "Parâmetros da extração",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o ÚNICO freio: ≤ max em `extraindo` + orçamento do dia com reserva de R$ 6,56 por extração em curso,\n-- sob pg_advisory_xact_lock; recusa fora do escopo (ADR-003/015) e fora do recorte de 2026 ANTES de qualquer conta.\n-- Aceita → a transição para `extraindo` acontece aqui dentro (db/019_fila_guardada_e_escopo_reavaliado.sql:37-90).\nSELECT ok, motivo FROM fn_tomar_vaga_extracao($1, $2::int, $3::numeric)",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, $json.max_extracoes, $json.teto_brl_dia ] }}"
+        }
+      },
+      "id": "fa654f9b-6a04-59e6-b9e5-e60019fbc24e",
+      "name": "Tomar vaga (fn_tomar_vaga_extracao)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        512
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1303750f-6779-536f-b01b-d1c92efd7a8d",
+                    "leftValue": "={{ $json.ok === true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "vaga tomada"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a696687f-aa95-57f6-a3d0-b2ca77adea84",
+                    "leftValue": "={{ $json.motivo === 'sem_vaga' }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sem vaga"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e1f31f72-4e0a-5325-af49-bf30ac28227f",
+                    "leftValue": "={{ $json.motivo === 'sem_orcamento' }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sem orçamento"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "recusada"
+        }
+      },
+      "id": "647a5966-2169-5e15-9252-1f68005a4189",
+      "name": "Vaga?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1152,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — sem vaga: continua (ou volta a ser) `preparada` e tenta de novo em 10 min (plano §5 W23 passo 3)\nSELECT fn_transicao($1, 'preparada', 'W23: sem vaga (limite de extrações simultâneas)',\n                    jsonb_build_object('n8n_execution_id', $2::text)) AS evento_id",
+        "options": {
+          "queryReplacement": "={{ [ $('Parâmetros da extração').first().json.controle, $execution.id ] }}"
+        }
+      },
+      "id": "65a79ed9-abe3-5dde-978e-f68c4b2342fe",
+      "name": "Voltar à fila (sem vaga)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        1052
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE licitacoes SET proxima_tentativa_em = now() + interval '10 minutes'\n WHERE controle = $1\nRETURNING estado::text AS estado, proxima_tentativa_em",
+        "options": {
+          "queryReplacement": "={{ [ $('Parâmetros da extração').first().json.controle ] }}"
+        }
+      },
+      "id": "b427510e-018e-5332-8895-56d9901322f9",
+      "name": "Adiar 10 min",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1728,
+        1052
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ok: true, continuar: false, adiado: true, estado: $json.estado,\n  controle: $('Parâmetros da extração').first().json.controle, motivo: 'W23: sem vaga; nova tentativa em 10 min',\n  proxima_tentativa_em: $json.proxima_tentativa_em } }];\n"
+      },
+      "id": "b030b19e-6632-5cf0-96e7-79fece524ffd",
+      "name": "Retorno: sem vaga",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        1052
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — teto do dia atingido: aguardando_orcamento (db/002:31-33) quando a transição existe; o gasto já feito\n-- conta pelas chamadas (view gasto_diario), inclusive de execuções parciais\nSELECT CASE WHEN fn_transicao_permitida(l.estado, 'aguardando_orcamento')\n            THEN fn_transicao(l.controle, 'aguardando_orcamento', 'W23: teto de gasto do dia atingido',\n                              jsonb_build_object('n8n_execution_id', $2::text, 'teto_brl_dia', $3::numeric))\n       END AS evento_id\n  FROM licitacoes l WHERE l.controle = $1",
+        "options": {
+          "queryReplacement": "={{ [ $('Parâmetros da extração').first().json.controle, $execution.id, $('Parâmetros da extração').first().json.teto_brl_dia ] }}"
+        }
+      },
+      "id": "3dceda75-85af-5d36-9dba-e266282f4c7a",
+      "name": "Aguardar orçamento",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        1448
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\nconst site = String($env.FOPA_SITE_PUBLIC_URL || '').replace(/\\/+$/, '');\nconst n8nBase = String($env.WEBHOOK_URL || '').replace(/\\/+$/, '');\nconst linkExecucao = `${n8nBase}/workflow/${$workflow.id}/executions/${$execution.id}`;\n// regra — teto do dia (orcamento.teto_brl_dia, db/007) com reserva de R$ 6,56 por extração em curso (db/019):\n// o aviso vai para a fila com o link do admin do site, onde o teto se muda\nconst p = $('Parâmetros da extração').first().json;\nconst teto = Number(p.teto_brl_dia).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nreturn [{ json: { controle: p.controle,\n  assunto: `[FOPA] Teto de gasto do dia atingido (R$ ${teto})`,\n  corpo_html: `<p>A extração de ${esc(p.controle)} esperou: o gasto do dia mais as extrações em curso (R$ 6,56 de reserva`\n    + ` cada) passaria do teto de R$ ${esc(teto)}. Nova tentativa em 1 h.</p>`\n    + `<p><a href=\"${esc(site)}/admin\">Mudar o teto no admin do site</a> · `\n    + `<a href=\"${esc(site)}/licitacao/${esc(String(p.controle).replace('/', '-'))}\">a licitação</a> · `\n    + `<a href=\"${esc(linkExecucao)}\">execução ${esc($execution.id)} no n8n</a></p>` } }];\n"
+      },
+      "id": "8dcf71cb-90e6-56be-9a23-41dd1a1957dc",
+      "name": "Montar aviso de orçamento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        1448
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — e-mail DESLIGADO (o produto manda só DOIS e-mails — licitação nova, pelo W01,\n-- e a extração pedida no botão do site, pelo W24; db/038-039). O fluxo segue igual; este nó não enfileira.\n-- A espera de 1 h para tentar de novo continua.\nUPDATE licitacoes SET proxima_tentativa_em = now() + interval '1 hour'\n WHERE controle = $1\nRETURNING estado::text AS estado, proxima_tentativa_em, NULL::bigint AS email_id",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle ] }}"
+        }
+      },
+      "id": "686139a6-a93f-5733-b3e5-abe78f1d50ec",
+      "name": "Avisar orçamento (1 por dia)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2016,
+        1448
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ok: true, continuar: false, adiado: true, estado: $json.estado,\n  controle: $('Parâmetros da extração').first().json.controle, motivo: 'W23: teto de gasto do dia atingido',\n  proxima_tentativa_em: $json.proxima_tentativa_em, email_id: $json.email_id ?? null } }];\n"
+      },
+      "id": "78ba89a6-c3bb-5001-bda9-7966016c5724",
+      "name": "Retorno: sem orçamento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        1448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — recusada pela guarda da fila (fora do escopo, fora do recorte de 2026, estado que não extrai):\n// nenhum provedor foi chamado e nada foi gravado (db/019:37-60)\nconst p = $('Parâmetros da extração').first().json;\nreturn [{ json: { ok: false, continuar: false, recusada: true, estado: p.estado, controle: p.controle,\n  motivo: 'W23: ' + $json.motivo } }];\n"
+      },
+      "id": "0027bf78-3de1-5853-97c1-ca1c10a57bd9",
+      "name": "Retorno: recusada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        1844
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/prompt",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ leitura_id: $('Parâmetros da extração').first().json.leitura_id, modalidade: $('Parâmetros da extração').first().json.modalidade, lote: $('Parâmetros da extração').first().json.lote, k_rag: $('Parâmetros da extração').first().json.k_rag, provedor: $('Parâmetros da extração').first().json.provedor, modelo: $('Parâmetros da extração').first().json.modelo, effort: $('Parâmetros da extração').first().json.effort, max_tokens: $('Parâmetros da extração').first().json.max_tokens, ids_pendentes: $('Parâmetros da extração').first().json.ids_pendentes }) }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "3ae4cd95-a37f-5016-9b5f-3f153e160fd5",
+      "name": "POST /prompt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        512
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "973f2f9d-186c-5564-9b48-48b644020579",
+              "leftValue": "={{ $json.statusCode === 200 && Array.isArray($json.body && $json.body.lotes) && $json.body.lotes.length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "3db54153-bab0-5da4-a9d0-d1d0dfee9889",
+      "name": "Prompt pronto?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1728,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — a execução nasce `em_curso` ANTES da primeira chamada (plano §5 W23 passo 6); simulado/gravado nunca canônica\n-- (db/004 CHECK execucoes_modelo_simulado_nao_canonica). Com ids pendentes, reabre a PARCIAL em vez de criar outra.\nWITH reuso AS (\n    UPDATE execucoes_modelo SET status = 'em_curso', erro = NULL\n     WHERE id = $11::bigint AND status = 'parcial'\n    RETURNING id, true AS reaproveitada\n), nova AS (\n    INSERT INTO execucoes_modelo (controle, leitura_id, origem, provedor, modelo, modo, effort, lote, k_rag,\n                                  versao_prompt, status, canonica, workflow_execucao_id)\n    SELECT $1, $2::bigint, $3, $4, $5, $6, $7, $8::int, $9::int, $10, 'em_curso', $3 = 'api', $12::bigint\n     WHERE NOT EXISTS (SELECT 1 FROM reuso)\n    RETURNING id, false AS reaproveitada\n), usado AS (\n    -- db/033: o pedido do botão \"Extrair com GPT\" é gasto AQUI, junto com a execução que ele abriu: se a extração\n    -- falhar no meio, ninguém tenta de novo com o GPT sozinho (é outro clique)\n    UPDATE pedidos_extracao p\n       SET usado_em = now(), execucao_id = (SELECT id FROM reuso UNION ALL SELECT id FROM nova LIMIT 1)\n     WHERE p.controle = $1 AND p.usado_em IS NULL AND p.provedor = $4\n    RETURNING p.id\n)\nSELECT id, reaproveitada FROM reuso\nUNION ALL\nSELECT id, reaproveitada FROM nova",
+        "options": {
+          "queryReplacement": "={{ [ $('Parâmetros da extração').first().json.controle, $('Parâmetros da extração').first().json.leitura_id, $('Parâmetros da extração').first().json.origem, $('Parâmetros da extração').first().json.provedor, $('Parâmetros da extração').first().json.modelo, $json.body.modo, $('Parâmetros da extração').first().json.effort, $('Parâmetros da extração').first().json.lote, $('Parâmetros da extração').first().json.k_rag, $json.body.versao_prompt, $('Parâmetros da extração').first().json.parcial_id, $('Parâmetros da extração').first().json.workflow_execucao_id ] }}"
+        }
+      },
+      "id": "754ac852-d3b4-56bf-851e-7f704ab172e6",
+      "name": "Abrir execução",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2016,
+        512
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Um item por lote (ids + sha do corpo); o corpo em si fica no nó POST /prompt e é lido na hora de chamar,\n// para não multiplicar 180 mil caracteres pelos nós da execução. Rodada 0 = o lote normal (db/050).\nconst lotes = $('POST /prompt').first().json.body.lotes;\nreturn lotes.map((l, i) => ({ json: { lote_idx: i, ids: l.ids, request_sha256: l.request_sha256, tentativa: 0,\n  rodada: 0 } }));\n"
+      },
+      "id": "227239f4-ea50-50b1-90b4-957838b66e1d",
+      "name": "Lotes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {
+          "reset": "={{ $prevNode.name === 'Lotes do reforço' }}"
+        }
+      },
+      "id": "b15319d2-2ad5-5946-ae03-8e149dd56e16",
+      "name": "Loop lotes",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2592,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — 3 chamadas EM SÉRIE, uma por lote (ADR-009; 60_pico_taxa). Vem do laço (tentativa 0) ou da espera de retentativa.\n// A rodada (db/050: 0 = o lote normal; 1..N-1 = o reforço do Best-of-N) passa adiante, também na retentativa.\nconst i = $input.first().json;\nreturn [{ json: { lote_idx: i.lote_idx, ids: i.ids, request_sha256: i.request_sha256,\n  tentativa: (i.tentativa || 0) + 1, t0: Date.now(), rodada: i.rodada || 0 } }];\n"
+      },
+      "id": "b155ab79-4066-54fb-8589-29a27e81b320",
+      "name": "Preparar chamada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        728
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7c8495a7-c09f-5391-ba3f-5bab2aaad01e",
+                    "leftValue": "={{ $('Parâmetros da extração').first().json.provedor === 'claude' }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "claude"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a7a0df32-6931-5517-ae61-04b9c94101c7",
+                    "leftValue": "={{ $('Parâmetros da extração').first().json.provedor === 'openai' }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "openai"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "633ac17f-aa91-588f-abc6-dd068745fb3b",
+                    "leftValue": "={{ $('Parâmetros da extração').first().json.provedor === 'simulado' }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "simulado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cac7de20-e1d0-5f27-9b08-4a844536b674",
+                    "leftValue": "={{ $('Parâmetros da extração').first().json.provedor === 'gravado' }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "gravado"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "47398ff8-f379-5310-992d-76efe85d53ec",
+      "name": "Provedor",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        3168,
+        728
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify((($json.rodada || 0) > 0 ? $('POST /reforco').last().json.body.lotes : $('POST /prompt').first().json.body.lotes)[$json.lote_idx].body) }}",
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "181f9a92-8bd9-5157-b56a-538f1bb34ff9",
+      "name": "Anthropic /v1/messages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3456,
+        80
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "{{CRED:anthropic}}",
+          "name": "anthropic"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify((($json.rodada || 0) > 0 ? $('POST /reforco').last().json.body.lotes : $('POST /prompt').first().json.body.lotes)[$json.lote_idx].body_openai) }}",
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "ff990ca9-dead-5c9f-9454-577cd073e7cd",
+      "name": "OpenAI /v1/responses",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3456,
+        440
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:openai}}",
+          "name": "openai"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/responder-simulado",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ body: (($json.rodada || 0) > 0 ? $('POST /reforco').last().json.body.lotes : $('POST /prompt').first().json.body.lotes)[$json.lote_idx].body }) }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "3347c6f6-4760-5fd2-8526-55bc05c8cdbf",
+      "name": "Worker /responder-simulado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3456,
+        800
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/gravado/v1/messages?controle={{ encodeURIComponent($('Parâmetros da extração').first().json.controle) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ body: (($json.rodada || 0) > 0 ? $('POST /reforco').last().json.body.lotes : $('POST /prompt').first().json.body.lotes)[$json.lote_idx].body }) }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "ff09b537-ba70-559e-9539-07803dce0038",
+      "name": "Worker /gravado/v1/messages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3456,
+        1160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — parse equivalente a scripts/fopa/modelos.py:238-245, mais o que a v2 não checava (plano §5 W23 passo 11):\n// só blocos type=text (nunca content[0]: pode ser thinking); refusal → \"recusa\"; max_tokens → \"truncado\" (sem\n// retentar com mais tokens: mantém a linha de base medida); o JSON tem de cobrir os ids do lote.\n// regra — retentativa só em 408/429/500/502/503/529 e rede, até 3 tentativas, 30 s ou retry-after (plano §5 W23 passo 10)\nconst RETENTAVEIS = [408, 429, 500, 502, 503, 529];\nconst r = $input.first().json || {};\nconst lote = $('Preparar chamada').first().json;\nconst p = $('Parâmetros da extração').first().json;\nconst segundos = Math.round(Date.now() - lote.t0) / 1000;\nconst status = r.statusCode ?? null;\nlet erro = null, retentavel = false, espera_s = 30;\nlet envelope = null, stop_reason = null, usage = {};\nif (r.error) {\n  erro = 'sem resposta (rede/timeout): ' + String(r.error.message || r.error.description || JSON.stringify(r.error)).slice(0, 300);\n  retentavel = true;\n} else if (status !== 200) {\n  const corpo = typeof r.body === 'string' ? r.body : JSON.stringify(r.body ?? '');\n  erro = `HTTP ${status}: ${corpo.slice(0, 300)}`;\n  retentavel = RETENTAVEIS.includes(status);\n  const ra = Number((r.headers || {})['retry-after']);\n  if (Number.isFinite(ra) && ra > 0) espera_s = Math.min(Math.ceil(ra), 60);\n  envelope = (r.body && typeof r.body === 'object') ? r.body : { erro: corpo.slice(0, 2000) };\n} else {\n  envelope = typeof r.body === 'string' ? JSON.parse(r.body) : (r.body || {});\n  let texto = '';\n  if (p.provedor === 'openai') {\n    // Responses API (ADR-012): output[].content[] do tipo output_text; incompleto por max_output_tokens = truncado\n    const saidas = (envelope.output || []).flatMap((o) => o.content || []);\n    const inc = envelope.incomplete_details && envelope.incomplete_details.reason;\n    stop_reason = saidas.some((x) => x.type === 'refusal') ? 'refusal'\n      : envelope.status === 'completed' ? 'end_turn'\n      : (inc === 'max_output_tokens' ? 'max_tokens' : String(envelope.status || 'desconhecido'));\n    texto = envelope.output_text || saidas.filter((x) => x.type === 'output_text').map((x) => x.text).join('');\n    const u = envelope.usage || {};\n    const cache = (u.input_tokens_details || {}).cached_tokens || 0;\n    // input_tokens SOMA a entrada nova, a gravada e a lida no cache (fatura de 23/09); a gravada custa 1,25x\n    // (US$ 5/M no gpt-5.6-sol): vai para cache_creation, nunca fica na entrada (medição da v3.1, 28/09)\n    const gravado = (u.input_tokens_details || {}).cache_write_tokens || 0;\n    usage = { input_tokens: Math.max((u.input_tokens || 0) - cache - gravado, 0), output_tokens: u.output_tokens || 0,\n              cache_creation_input_tokens: gravado, cache_read_input_tokens: cache };\n  } else {\n    stop_reason = envelope.stop_reason ?? null;\n    texto = (envelope.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('');\n    usage = envelope.usage || {};\n  }\n  if (stop_reason === 'refusal') erro = 'recusa do modelo (stop_reason=refusal)';\n  else if (stop_reason === 'max_tokens') erro = 'truncado (stop_reason=max_tokens)';\n  else if (stop_reason !== 'end_turn') erro = `stop_reason inesperado: ${stop_reason}`;\n  if (!erro) {\n    try {\n      const dados = JSON.parse(texto);\n      const vieram = new Set((dados.respostas || []).map((x) => x.id));\n      const faltam = lote.ids.filter((id) => !vieram.has(id));\n      if (faltam.length) erro = 'lote incompleto: faltam ' + faltam.join(', ');\n    } catch (e) {\n      erro = 'a resposta não é JSON: ' + String(e.message).slice(0, 120);\n    }\n  }\n}\n// a rodada (db/050) vai para o Gravar chamada e, no Falha no reforço?, decide se o lote que falhou derruba a extração\nreturn [{ json: {\n  lote_idx: lote.lote_idx, ids: lote.ids, request_sha256: lote.request_sha256, tentativa: lote.tentativa,\n  rodada: lote.rodada || 0, http_status: status, stop_reason, envelope, usage, segundos,\n  ok: !erro, erro, retentar: !!erro && retentavel && lote.tentativa < 3, espera_s,\n} }];\n"
+      },
+      "id": "fa097937-4951-5264-9fc1-7f980c936f23",
+      "name": "Interpretar resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        728
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b7acb6a9-3db1-5d9c-9656-3af125f945bf",
+              "leftValue": "={{ $json.retentar === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "76ab16c6-a18c-547d-865e-1ae00326b703",
+      "name": "Retentar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4032,
+        728
+      ]
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.espera_s }}",
+        "unit": "seconds"
+      },
+      "id": "e11da021-43ac-5160-aa0d-540d3aa9cfe0",
+      "name": "Esperar para retentar",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4032,
+        1160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/custo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ modelo: $('Parâmetros da extração').first().json.modelo, usage: $json.usage || {} }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "f453834f-315c-5e0c-a112-cbb4913b6e2e",
+      "name": "POST /custo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4320,
+        512
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o gasto entra na contabilidade NA HORA da chamada, não no fechamento (plano §5 W23 passo 12;\n-- a view gasto_diario soma chamadas_modelo, inclusive de execuções parciais). Preço desconhecido = NULL (ADR-012).\n-- Best-of-N (db/050): rodada 0 = o lote normal; 1..N-1 = o reforço das perguntas que falharam no verificador.\nINSERT INTO chamadas_modelo (execucao_id, lote_ids, dados, stop_reason, http_status, tentativas,\n                             tok_entrada, tok_saida, tok_cache_escrita, tok_cache_leitura, segundos,\n                             request_sha256, usd, brl, preco_conhecido, rodada)\nVALUES ($1::bigint, ARRAY(SELECT jsonb_array_elements_text($2::jsonb)), $3::jsonb, $4, $5::int, $6::int,\n        $7::bigint, $8::bigint, $9::bigint, $10::bigint, $11::numeric, $12, $13::numeric, $14::numeric, $15::bool,\n        $16::int)\nRETURNING id AS chamada_id, lote_ids, brl, preco_conhecido, rodada",
+        "options": {
+          "queryReplacement": "={{ [ $('Abrir execução').first().json.id, JSON.stringify($('Interpretar resposta').first().json.ids), JSON.stringify($('Interpretar resposta').first().json.envelope), $('Interpretar resposta').first().json.stop_reason, $('Interpretar resposta').first().json.http_status, $('Interpretar resposta').first().json.tentativa, $('Interpretar resposta').first().json.usage.input_tokens ?? 0, $('Interpretar resposta').first().json.usage.output_tokens ?? 0, $('Interpretar resposta').first().json.usage.cache_creation_input_tokens ?? 0, $('Interpretar resposta').first().json.usage.cache_read_input_tokens ?? 0, $('Interpretar resposta').first().json.segundos, $('Interpretar resposta').first().json.request_sha256, ($json.body && $json.body.usd != null) ? $json.body.usd : null, ($json.body && $json.body.brl != null) ? $json.body.brl : null, ($json.body && $json.body.preco_conhecido === true), $('Interpretar resposta').first().json.rodada ?? 0 ] }}"
+        }
+      },
+      "id": "21008517-68bc-5091-9840-604c76452ee2",
+      "name": "Gravar chamada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4608,
+        512
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "08252302-f77b-59fb-b058-428d574ec9ed",
+              "leftValue": "={{ $('Interpretar resposta').first().json.ok === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "409b1940-6276-5440-a1d1-bd2bcce839a8",
+      "name": "Lote respondido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4896,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FOPA_WORKER_URL }}/reforco",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ leitura_id: $('Parâmetros da extração').first().json.leitura_id, modalidade: $('Parâmetros da extração').first().json.modalidade, lote: $('Parâmetros da extração').first().json.lote, k_rag: $('Parâmetros da extração').first().json.k_rag, provedor: $('Parâmetros da extração').first().json.provedor, modelo: $('Parâmetros da extração').first().json.modelo, effort: $('Parâmetros da extração').first().json.effort, max_tokens: $('Parâmetros da extração').first().json.max_tokens, ids_pendentes: $('Parâmetros da extração').first().json.ids_pendentes, execucao_id: $('Abrir execução').first().json.id }) }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "d28057b8-a2cb-57fd-8208-ee675f094f4c",
+      "name": "POST /reforco",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2880,
+        -280
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{CRED:worker}}",
+          "name": "worker"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "090d4d09-feec-51ca-9756-bcbe7b3b42e5",
+              "leftValue": "={{ $json.statusCode === 200 && !!$json.body && $json.body.fim === false && Number($json.body.rodada) > 0 && Array.isArray($json.body.lotes) && $json.body.lotes.length > 0 && $json.body.lotes.every((l) => !!l && Array.isArray(l.ids) && l.ids.length > 0) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "5078384a-9c9f-581d-8194-85f895207dc9",
+      "name": "Reforço?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3168,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Best-of-N (v3.1, db/050): um item por lote do reforço, como o `Lotes`; o corpo fica no POST /reforco e é\n// lido na hora de chamar. rodada > 0 faz os provedores lerem o corpo de lá (não do /prompt) e vai para o\n// Gravar chamada; vindo daqui, o `Loop lotes` recomeça o conjunto (reset).\nconst r = $('POST /reforco').last().json.body;\nreturn r.lotes.map((l, i) => ({ json: { lote_idx: i, ids: l.ids, request_sha256: l.request_sha256, tentativa: 0,\n  rodada: Number(r.rodada) } }));\n"
+      },
+      "id": "5d43990f-f0fb-5f0d-accc-011416ff895d",
+      "name": "Lotes do reforço",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3456,
+        -640
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — extraindo → respondida (db/002:34): a fusão dos lotes, o custo total e o veredito são do W24 (/verificar)\nSELECT fn_transicao($1, 'respondida', 'W23: todos os lotes respondidos por ' || $2,\n                    jsonb_build_object('n8n_execution_id', $3::text, 'execucao_id', $4::bigint)) AS evento_id,\n       (SELECT sum(c.brl) FROM chamadas_modelo c WHERE c.execucao_id = $4::bigint) AS brl,\n       (SELECT count(*) FROM chamadas_modelo c WHERE c.execucao_id = $4::bigint) AS chamadas",
+        "options": {
+          "queryReplacement": "={{ [ $('Parâmetros da extração').first().json.controle, $('Parâmetros da extração').first().json.provedor, $execution.id, $('Abrir execução').first().json.id ] }}"
+        }
+      },
+      "id": "8bce17ce-73b3-5233-acc7-f31d53b67a86",
+      "name": "Transição → respondida",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3456,
+        -280
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $('Parâmetros da extração').first().json;\nreturn [{ json: { ok: true, continuar: true, estado: 'respondida', controle: p.controle,\n  execucao_id: $('Abrir execução').first().json.id, reaproveitada: $('Abrir execução').first().json.reaproveitada,\n  provedor: p.provedor, origem: p.origem, modelo: p.modelo, chamadas: Number($json.chamadas),\n  brl: $json.brl == null ? null : Number($json.brl),\n  motivo: `W23: ${$json.chamadas} chamada(s) por ${p.provedor}` } }];\n"
+      },
+      "id": "876ba2c4-62d1-51f7-8f76-173742a7d898",
+      "name": "Retorno: respondida",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9c0982a4-0f9d-5fb2-ad6f-d4cb61f262b7",
+              "leftValue": "={{ $('Interpretar resposta').first().json.rodada > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "d7a48bd5-4044-59fe-b34f-a4876326d6ca",
+      "name": "Falha no reforço?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5184,
+        1052
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Falha vira MOTIVO escrito, nunca silêncio. Vem do /prompt (sem execução aberta) ou de um lote que esgotou as tentativas.\nconst j = $input.first().json || {};\nlet motivo;\nif ($('Interpretar resposta').isExecuted && j.chamada_id !== undefined) {\n  const r = $('Interpretar resposta').first().json;\n  motivo = `lote ${r.ids.join(',')} falhou após ${r.tentativa} tentativa(s): ${r.erro}`;\n} else if (j.error) {\n  motivo = '/prompt sem resposta: ' + String(j.error.message || JSON.stringify(j.error)).slice(0, 240);\n} else {\n  const corpo = typeof j.body === 'string' ? j.body : JSON.stringify(j.body ?? '');\n  motivo = `/prompt respondeu HTTP ${j.statusCode}: ${corpo.slice(0, 300)}`;\n}\nreturn [{ json: { motivo: 'W23: ' + motivo,\n  execucao_id: $('Abrir execução').isExecuted ? $('Abrir execução').first().json.id : null } }];\n"
+      },
+      "id": "c8a367fb-a529-52f5-a088-19576221a5ee",
+      "name": "Motivo da falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5472,
+        1052
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — lote que falha: execução `parcial` (os lotes pagos ficam gravados) e extraindo → erro_extracao (db/002:35);\n-- o W20 conta a tentativa e agenda o backoff; a próxima tentativa manda só os ids pendentes (plano §5 W23 passo 13)\nWITH exec AS (\n    UPDATE execucoes_modelo SET status = 'parcial', erro = $2\n     WHERE id = $3::bigint AND status = 'em_curso'\n    RETURNING id)\nSELECT fn_transicao($1, 'erro_extracao', $2,\n                    jsonb_build_object('n8n_execution_id', $4::text, 'execucao_id', $3::bigint)) AS evento_id,\n       (SELECT id FROM exec) AS execucao_parcial",
+        "options": {
+          "queryReplacement": "={{ [ $('Parâmetros da extração').first().json.controle, $json.motivo, $json.execucao_id, $execution.id ] }}"
+        }
+      },
+      "id": "12da8796-d4f3-5451-b0ff-770bc5d2ec7d",
+      "name": "Estado erro_extracao",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5760,
+        1052
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const m = $('Motivo da falha').first().json;\nreturn [{ json: { ok: false, continuar: false, estado: 'erro_extracao',\n  controle: $('Parâmetros da extração').first().json.controle, motivo: m.motivo, execucao_id: m.execucao_id } }];\n"
+      },
+      "id": "b42ccb67-96ff-5aac-bc35-d6c9a5d45c19",
+      "name": "Retorno: falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6048,
+        1052
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Chamado pelo W20**\n\nEntrada do fluxo: recebe a licitação e o registro do W20, para ligar o custo à rodada.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "bb4db5a9-8efe-56e1-8f4a-7c9bcc2b7e9b",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Configuração e licitação**\n\nLê a licitação, o pedido feito no botão do site (se houver), a configuração de IA, o teto do dia e uma extração parcial a retomar.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "540bf4c1-40f6-5da4-bf43-5dcafef79dd5",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · Parâmetros da extração**\n\nDefine o provedor, o modelo, o esforço, o tamanho dos lotes e o limite de resposta. Se há parcial, pede só as perguntas pendentes.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "bf0dd2fe-fb8b-501c-a948-29b2c9da6f94",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Tomar vaga (fn_tomar_vaga_extracao)**\n\nO banco decide se a extração pode rodar: escopo, trava da IA, recorte de ano, limite de 4 simultâneas e teto de gasto do dia. É o único freio, e vale de verdade.",
+        "height": 222,
+        "width": 260,
+        "color": 4
+      },
+      "id": "38c19c6f-fe93-5550-aec5-f3c8b55dd16b",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Vaga?**\n\nQuatro caminhos: vaga concedida, sem vaga, sem orçamento ou recusada.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "94c45683-8e0a-5959-a5b9-3bdf965bf718",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Voltar à fila (sem vaga)**\n\nSem vaga, a licitação volta a “preparada”, com o motivo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "def114e5-abfd-5f66-9955-b3db3676bd1f",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        1202
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · Adiar 10 min**\n\nAgenda a próxima tentativa para daqui a 10 minutos.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "88391eb0-57ee-5016-8052-72e021b6ca66",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        1202
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Retorno: sem vaga**\n\nDevolve ao W20 que a extração foi adiada. Adiamento não conta como falha.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "b5a6a769-9243-5086-aa28-4e004f238739",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        1202
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · Aguardar orçamento**\n\nTeto do dia atingido: a licitação fica aguardando orçamento.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "50901d2d-1485-52c9-bf7e-094924c121d4",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        1598
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Montar aviso de orçamento**\n\nMonta o texto do aviso de teto atingido, com o link para o Admin.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "2d20568c-39fc-5121-9750-55f9591133ad",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        1598
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · Avisar orçamento (1 por dia)**\n\nO e-mail está desligado; o nó agenda nova tentativa para daqui a 1 hora.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "49bfcb27-5df1-598b-99a8-718ed9eb1514",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        1598
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Retorno: sem orçamento**\n\nDevolve ao W20 que a extração foi adiada por orçamento.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "95b177d6-ead2-5785-9949-88f95a1bd20e",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        1598
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Retorno: recusada**\n\nDevolve ao W20 o motivo da recusa. Nenhum modelo foi chamado e nada foi gravado.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "af693c8c-1216-537d-8a5d-08b682529644",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        1994
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 15 · POST /prompt**\n\nO worker monta o prompt: o edital (inteiro ou as páginas mais relevantes, por BM25) e as perguntas, divididos em lotes, no formato de cada provedor.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "108f2675-7305-5b93-aa12-752270e872e9",
+      "name": "Nota — passo 15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 16 · Prompt pronto?**\n\nCom o prompt pronto, abre a execução; senão, registra a falha.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "488ec5f1-01ac-5fdd-8f3d-ea40aead182b",
+      "name": "Nota — passo 16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 17 · Abrir execução**\n\nCria (ou retoma) o registro da extração antes da primeira chamada: todo gasto fica ligado a ele, mesmo se o processo cair.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "cb503903-4d28-5105-8a2a-47b82d91ca47",
+      "name": "Nota — passo 17",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 18 · Lotes**\n\nSepara um item por lote de perguntas. O texto do prompt não é copiado; é lido na hora da chamada.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9c4c1901-5be1-5297-a9ec-85c020af842c",
+      "name": "Nota — passo 18",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 19 · Loop lotes**\n\nLaço que chama o modelo, um lote por vez. Ao terminar, segue para o reforço.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "72bb6b88-ad9f-5b79-b8ec-960cb16304e5",
+      "name": "Nota — passo 19",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 20 · Preparar chamada**\n\nConta a tentativa e marca o início da chamada.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e73a90c9-83ff-59d3-b2c6-4cc6129a0930",
+      "name": "Nota — passo 20",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        878
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 21 · Provedor**\n\nEscolhe o caminho pelo provedor: Claude, OpenAI, simulado ou gravado.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "eb1cd1ab-2d02-5bbe-bb0b-18d7a24151b3",
+      "name": "Nota — passo 21",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        878
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 22 · Anthropic /v1/messages**\n\nChama o modelo Claude (Anthropic) com o lote. A chave fica só na credencial do n8n; limite de 10 minutos.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "67b19c7c-9784-52de-9744-b0abda4a5c51",
+      "name": "Nota — passo 22",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        230
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 23 · OpenAI /v1/responses**\n\nChama o modelo da OpenAI com o lote, com resposta em JSON estrito. O cache é automático, por isso os documentos vêm primeiro.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "b3377c93-8dbd-5f4e-845c-4845dc38c2f1",
+      "name": "Nota — passo 23",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        590
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 24 · Worker /responder-simulado**\n\nProvedor de teste: respostas por regras simples, no mesmo formato, custo zero.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "dbd57864-a476-5547-9c49-2e8152308a4c",
+      "name": "Nota — passo 24",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        950
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 25 · Worker /gravado/v1/messages**\n\nProvedor de teste: repete respostas reais já gravadas da licitação, custo zero.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3d4c8ebe-bd94-57f4-8554-060d9eb9f7d1",
+      "name": "Nota — passo 25",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        1310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 26 · Interpretar resposta**\n\nConfere a resposta: JSON válido com todas as perguntas do lote, recusa ou corte do modelo viram erro, e mede os tokens (inclusive o cache).",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e718bdff-42b8-5a1b-a086-854273bde661",
+      "name": "Nota — passo 26",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        878
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 27 · Retentar?**\n\nErro passageiro (limite da API, instabilidade) com tentativas restantes: espera e repete; senão, grava a chamada.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e5694757-4368-52ad-8288-0e84be78bc5c",
+      "name": "Nota — passo 27",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        878
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 28 · Esperar para retentar**\n\nEspera 30 segundos, ou o tempo que a API indicar, e repete a chamada.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7377e73f-c863-528c-bba1-389389ca1cde",
+      "name": "Nota — passo 28",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        1310
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 29 · POST /custo**\n\nO worker calcula o custo em US$ e R$ pela tabela de preços. Modelo sem preço conhecido fica sem valor, nunca zero.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "83481c33-a8fe-54bd-96a4-54bff7932c80",
+      "name": "Nota — passo 29",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4240,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 30 · Gravar chamada**\n\nGrava a chamada com a resposta completa, os tokens, o tempo e o custo. O gasto do dia soma essas linhas, e o teto funciona de verdade.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5cc5d331-9f84-57b8-abf7-f16f69c95acf",
+      "name": "Nota — passo 30",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4528,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 31 · Lote respondido?**\n\nResposta válida segue para o próximo lote; inválida vai para a checagem de reforço.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4da8c619-0b6e-5e9e-881d-b858433c68c6",
+      "name": "Nota — passo 31",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4816,
+        662
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 32 · Falha no reforço?**\n\nFalha num lote de reforço não derruba nada: fica a resposta original. Falha num lote normal encerra a extração com erro.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4b89233a-4015-567c-bcab-4e205bfff315",
+      "name": "Nota — passo 32",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5104,
+        1202
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 33 · POST /reforco**\n\nBest-of-N: o worker verifica as respostas e devolve novos lotes só com as que falharam, em até 2 rodadas extras (N = 3).",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "176bb18d-a999-5c7a-9409-432a5714cf39",
+      "name": "Nota — passo 33",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        -130
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 34 · Reforço?**\n\nSe há lotes de reforço, volta ao laço; senão, fecha a extração.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "779796b7-b73d-5946-b5ac-258fa73cf823",
+      "name": "Nota — passo 34",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        -130
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 35 · Lotes do reforço**\n\nSepara os lotes do reforço, com a rodada, e volta ao laço de chamadas.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9e127143-395c-581b-9fd0-cf5d8cf6954a",
+      "name": "Nota — passo 35",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        -490
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 36 · Transição → respondida**\n\nMarca a licitação como respondida e soma o custo e as chamadas da extração.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e5366ac1-ab40-5979-afe8-27838c3b6895",
+      "name": "Nota — passo 36",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        -130
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 37 · Retorno: respondida**\n\nDevolve ao W20 a extração concluída, com o provedor, o modelo e o custo.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "da9329f6-cfb4-5d06-a3d4-07194e62f766",
+      "name": "Nota — passo 37",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        -130
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 38 · Motivo da falha**\n\nMonta o motivo da falha: o lote que não respondeu e por quê, ou a falha do prompt.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e3163caa-4ac8-51ed-9d60-b8beb81d08b0",
+      "name": "Nota — passo 38",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5392,
+        1202
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 39 · Estado erro_extracao**\n\nGuarda a extração como parcial e marca erro. Na próxima tentativa, só as perguntas pendentes são pedidas: nada já pago é pago de novo.",
+        "height": 200,
+        "width": 260,
+        "color": 4
+      },
+      "id": "efcb521d-ec87-5fda-90ab-f6ec3b16bb4c",
+      "name": "Nota — passo 39",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5680,
+        1202
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 40 · Retorno: falha**\n\nDevolve ao W20 a falha; ele conta a tentativa e agenda a próxima.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "452eb4d3-d981-5b61-9fb9-ac88f580e358",
+      "name": "Nota — passo 40",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5968,
+        1202
+      ]
+    }
+  ],
+  "connections": {
+    "Chamado pelo W20": {
+      "main": [
+        [
+          {
+            "node": "Configuração e licitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuração e licitação": {
+      "main": [
+        [
+          {
+            "node": "Parâmetros da extração",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parâmetros da extração": {
+      "main": [
+        [
+          {
+            "node": "Tomar vaga (fn_tomar_vaga_extracao)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tomar vaga (fn_tomar_vaga_extracao)": {
+      "main": [
+        [
+          {
+            "node": "Vaga?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vaga?": {
+      "main": [
+        [
+          {
+            "node": "POST /prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Voltar à fila (sem vaga)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aguardar orçamento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retorno: recusada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Voltar à fila (sem vaga)": {
+      "main": [
+        [
+          {
+            "node": "Adiar 10 min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adiar 10 min": {
+      "main": [
+        [
+          {
+            "node": "Retorno: sem vaga",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aguardar orçamento": {
+      "main": [
+        [
+          {
+            "node": "Montar aviso de orçamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar aviso de orçamento": {
+      "main": [
+        [
+          {
+            "node": "Avisar orçamento (1 por dia)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar orçamento (1 por dia)": {
+      "main": [
+        [
+          {
+            "node": "Retorno: sem orçamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /prompt": {
+      "main": [
+        [
+          {
+            "node": "Prompt pronto?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prompt pronto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt pronto?": {
+      "main": [
+        [
+          {
+            "node": "Abrir execução",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir execução": {
+      "main": [
+        [
+          {
+            "node": "Lotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lotes": {
+      "main": [
+        [
+          {
+            "node": "Loop lotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop lotes": {
+      "main": [
+        [
+          {
+            "node": "POST /reforco",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar chamada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /reforco": {
+      "main": [
+        [
+          {
+            "node": "Reforço?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reforço?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reforço?": {
+      "main": [
+        [
+          {
+            "node": "Lotes do reforço",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Transição → respondida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lotes do reforço": {
+      "main": [
+        [
+          {
+            "node": "Loop lotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transição → respondida": {
+      "main": [
+        [
+          {
+            "node": "Retorno: respondida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar chamada": {
+      "main": [
+        [
+          {
+            "node": "Provedor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Provedor": {
+      "main": [
+        [
+          {
+            "node": "Anthropic /v1/messages",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OpenAI /v1/responses",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Worker /responder-simulado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Worker /gravado/v1/messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic /v1/messages": {
+      "main": [
+        [
+          {
+            "node": "Interpretar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Interpretar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI /v1/responses": {
+      "main": [
+        [
+          {
+            "node": "Interpretar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Interpretar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Worker /responder-simulado": {
+      "main": [
+        [
+          {
+            "node": "Interpretar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Interpretar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Worker /gravado/v1/messages": {
+      "main": [
+        [
+          {
+            "node": "Interpretar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Interpretar resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interpretar resposta": {
+      "main": [
+        [
+          {
+            "node": "Retentar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retentar?": {
+      "main": [
+        [
+          {
+            "node": "Esperar para retentar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "POST /custo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar para retentar": {
+      "main": [
+        [
+          {
+            "node": "Preparar chamada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /custo": {
+      "main": [
+        [
+          {
+            "node": "Gravar chamada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar chamada": {
+      "main": [
+        [
+          {
+            "node": "Lote respondido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lote respondido?": {
+      "main": [
+        [
+          {
+            "node": "Loop lotes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Falha no reforço?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Falha no reforço?": {
+      "main": [
+        [
+          {
+            "node": "Loop lotes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Motivo da falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Motivo da falha": {
+      "main": [
+        [
+          {
+            "node": "Estado erro_extracao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado erro_extracao": {
+      "main": [
+        [
+          {
+            "node": "Retorno: falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "saveManualExecutions": true
+  }
+}

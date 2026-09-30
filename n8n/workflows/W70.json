@@ -1,0 +1,941 @@
+{
+  "name": "W70 Retificações",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W70 Retificações — domingo 05:00\nPergunta ao PNCP, licitação por licitação, se apareceu documento que o banco não conhece. Havendo, a licitação volta a `retificada` e o W10 a reprocessa (plano §5, W70).\n\n- **Documento novo = seqs ativos − seqs conhecidos** — scripts/28_baixar_licitacao.py:798-803 (`mudou_no_portal`); conhecido é TODO arquivo com `sequencialDocumento`, inclusive recusado por teto ou formato — senão o mesmo arquivo seria acusado de novo toda semana\n- **statusAtivo, nunca 1..N** — scripts/fopa/pncp.py:10 (RN-07) e :365-375\n- **Quem entra**: recorte de 2026 (db/018, ADR-015), no escopo, sessão ainda aberta, sem lease e em estado que admite `retificada` (`fn_transicao_permitida`, db/002 + db/013). **`reserva_demo` nunca é retificada** (a demo precisa dela parada em `preparada`): pulada e contada à parte\n- **PNCP: Never Error + On Error → continue**, pausa de 3 s entre chamadas, 429/5xx → espera 30 s e tenta 1×; sem resposta = \"não conferida\", nunca \"sem novidade\" (ADR-007)\n- **Limite por rodada** em `configuracao.w70_limite` (padrão 200); o que ficou de fora vai para `execucoes_workflow.contadores`\n- Reabrir solta o carimbo do PNCP (`atualizado_pncp = NULL`): o W01 guarda o novo em vez de acusar a mesma mudança de novo (db/020, regra 3; scripts/20_monitor.py:148-153).",
+        "height": 470,
+        "width": 720
+      },
+      "id": "0495fdb2-9626-5ee3-ae94-97889b329209",
+      "name": "Sobre o W70",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -72,
+        -798
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 5 * * 0"
+            }
+          ]
+        }
+      },
+      "id": "b7912731-6ca3-528d-9d53-6cc02c1e93a1",
+      "name": "Domingo 05:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        154
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "0e561f89-cb66-5bae-b88a-4825e54a7c8d",
+      "name": "Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        494
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — quem o W70 confere (plano §5, W70): recorte de 2026 (ADR-015, fn_no_recorte), no escopo\n-- (ADR-003), sessão ainda aberta, sem lease (em processamento), sem reserva de demo e em estado que\n-- admite 'retificada' — a regra é da tabela transicoes (db/002 + db/013), não deste nó.\n-- Limite por rodada: configuracao.w70_limite (padrão 200). A sessão mais próxima vem primeiro; o que\n-- passa do limite fica registrado na rodada (execucoes_workflow.contadores), nunca some em silêncio.\n-- Reservadas para a demo (reserva_demo) ficam paradas onde estão — a demo precisa delas em 'preparada' —\n-- e são contadas à parte, para a rodada dizer quantas pulou e por quê.\nWITH cfg AS (\n    SELECT GREATEST(1, COALESCE((SELECT (valor #>> '{}')::int FROM configuracao WHERE chave = 'w70_limite'),\n                                200)) AS limite\n), candidatas AS (\n    SELECT l.controle, l.cnpj, l.ano, l.seq, l.estado::text AS estado, l.reserva_demo, l.fim_prazo\n      FROM licitacoes l\n     WHERE fn_no_recorte(l.fim_prazo, l.publicado_em)\n       AND fn_transicao_permitida(l.estado, 'retificada')\n       AND l.escopo_dentro\n       AND l.lease_por IS NULL\n       AND (l.fim_prazo IS NULL\n            OR (l.fim_prazo AT TIME ZONE 'America/Sao_Paulo')::date >= (now() AT TIME ZONE 'America/Sao_Paulo')::date)\n), elegiveis AS (\n    SELECT c.controle, c.cnpj, c.ano, c.seq, c.estado,\n           row_number() OVER (ORDER BY c.fim_prazo NULLS LAST, c.controle) AS ordem\n      FROM candidatas c\n     WHERE NOT c.reserva_demo\n), reg AS (\n    INSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status, argumentos, contadores)\n    SELECT 'W70', $1, $2, 'em_curso', jsonb_build_object('limite', cfg.limite),\n           jsonb_build_object(\n               'elegiveis', (SELECT count(*) FROM elegiveis),\n               'puladas_reserva_demo', (SELECT count(*) FROM candidatas c WHERE c.reserva_demo),\n               'puladas_reserva_demo_controles',\n                   COALESCE((SELECT jsonb_agg(c.controle ORDER BY c.controle) FROM candidatas c\n                              WHERE c.reserva_demo), '[]'::jsonb),\n               'na_rodada', (SELECT count(*) FROM elegiveis e WHERE e.ordem <= cfg.limite),\n               'fora_do_limite', (SELECT count(*) FROM elegiveis e WHERE e.ordem > cfg.limite),\n               'fora_do_limite_controles',\n                   COALESCE((SELECT jsonb_agg(e.controle ORDER BY e.ordem) FROM elegiveis e\n                              WHERE e.ordem > cfg.limite), '[]'::jsonb))\n      FROM cfg\n    RETURNING id\n)\nSELECT e.controle, e.cnpj, e.ano, e.seq, e.estado, e.ordem, (SELECT id FROM reg) AS rodada_id,\n       COALESCE((SELECT array_agg(DISTINCT a.seq ORDER BY a.seq) FROM arquivos a\n                  WHERE a.controle = e.controle AND a.seq IS NOT NULL), '{}'::int[]) AS conhecidos,\n       (SELECT count(*) FROM arquivos a WHERE a.controle = e.controle)::int AS n_arquivos\n  FROM elegiveis e, cfg\n WHERE e.ordem <= cfg.limite\n ORDER BY e.ordem",
+        "options": {
+          "queryReplacement": "={{ [ $execution.id, $execution.mode ] }}"
+        }
+      },
+      "id": "2ae1b254-078d-5166-8137-db765221ccec",
+      "name": "Abrir rodada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        288,
+        324
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "259fdb4a-36c7-515b-9b6f-0c1141c7156b",
+              "leftValue": "={{ $json.controle }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {},
+        "looseTypeValidation": true
+      },
+      "id": "317ce94a-035a-56b4-a9ad-4f18c4b03c09",
+      "name": "Tem licitação?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        324
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b9b25376-e13a-52b3-9296-541f8752e1ef",
+      "name": "Uma por vez",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        864,
+        154
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "243f7a39-1280-5cbb-ade6-6c0362ac87e3",
+      "name": "Pausa 3 s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        324
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://pncp.gov.br/api/pncp/v1/orgaos/{{ $json.cnpj }}/compras/{{ $json.ano }}/{{ $json.seq }}/arquivos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "FOPA/3 (monitoramento de licitacoes de folha; estudo de viabilidade; contato: contato@exemplo.com)"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "04920024-e725-51d2-bc44-448d88d3a07c",
+      "name": "GET /arquivos no PNCP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        324
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// regra — HTTP do PNCP com Never Error + On Error → continue (plano §5, convenções): código HTTP e erro\n// de rede viram DADO aqui, nunca exceção muda. 429 e 5xx (o 503 \"JDBC\" dura horas, BACKLOG) e erro de rede\n// pedem uma espera de 30 s e UMA nova tentativa; o 429 do PNCP vem em HTML, sem Retry-After.\nconst TENTATIVA = 1;\nconst r = $json || {};\nconst lic = $('Uma por vez').item.json;\nconst status = r.statusCode ?? null;\nlet erroRede = null;\nif (r.error) {\n  const e = r.error;\n  erroRede = String(e.message || e.description || e.code || JSON.stringify(e)).slice(0, 300);\n}\nlet docs = null;\nif (erroRede === null && status !== null && status >= 200 && status < 300) {\n  if (Array.isArray(r.body)) docs = r.body;\n  else if (status === 204 || r.body === '' || r.body === null || r.body === undefined) docs = [];\n}\nconst repetir = TENTATIVA === 1 && docs === null\n  && (erroRede !== null || status === 429 || (status !== null && status >= 500));\nreturn { json: {\n  controle: lic.controle, cnpj: lic.cnpj, ano: lic.ano, seq: lic.seq, estado: lic.estado,\n  conhecidos: lic.conhecidos || [], n_arquivos: lic.n_arquivos, rodada_id: lic.rodada_id,\n  tentativa: TENTATIVA, http_status: status, erro_rede: erroRede, docs, repetir,\n} };\n"
+      },
+      "id": "3da72012-56df-5da2-bc10-8d72a08afa9f",
+      "name": "Ler resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        324
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "76d6f768-b594-52c1-bfef-b19acf83051f",
+              "leftValue": "={{ $json.repetir }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {},
+        "looseTypeValidation": true
+      },
+      "id": "2bb2459b-c11e-59f1-98bd-0e765240cb12",
+      "name": "PNCP pediu espera?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        324
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "34e4b02d-5f9b-56cc-b331-0c5eae5902af",
+      "name": "Espera 30 s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2304,
+        630
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://pncp.gov.br/api/pncp/v1/orgaos/{{ $json.cnpj }}/compras/{{ $json.ano }}/{{ $json.seq }}/arquivos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "FOPA/3 (monitoramento de licitacoes de folha; estudo de viabilidade; contato: contato@exemplo.com)"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "a58e4759-79d2-5f76-9178-f1b4f5dcf44c",
+      "name": "GET /arquivos (2ª tentativa)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2592,
+        630
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// regra — HTTP do PNCP com Never Error + On Error → continue (plano §5, convenções): código HTTP e erro\n// de rede viram DADO aqui, nunca exceção muda. 429 e 5xx (o 503 \"JDBC\" dura horas, BACKLOG) e erro de rede\n// pedem uma espera de 30 s e UMA nova tentativa; o 429 do PNCP vem em HTML, sem Retry-After.\nconst TENTATIVA = 2;\nconst r = $json || {};\nconst lic = $('Uma por vez').item.json;\nconst status = r.statusCode ?? null;\nlet erroRede = null;\nif (r.error) {\n  const e = r.error;\n  erroRede = String(e.message || e.description || e.code || JSON.stringify(e)).slice(0, 300);\n}\nlet docs = null;\nif (erroRede === null && status !== null && status >= 200 && status < 300) {\n  if (Array.isArray(r.body)) docs = r.body;\n  else if (status === 204 || r.body === '' || r.body === null || r.body === undefined) docs = [];\n}\nconst repetir = TENTATIVA === 1 && docs === null\n  && (erroRede !== null || status === 429 || (status !== null && status >= 500));\nreturn { json: {\n  controle: lic.controle, cnpj: lic.cnpj, ano: lic.ano, seq: lic.seq, estado: lic.estado,\n  conhecidos: lic.conhecidos || [], n_arquivos: lic.n_arquivos, rodada_id: lic.rodada_id,\n  tentativa: TENTATIVA, http_status: status, erro_rede: erroRede, docs, repetir,\n} };\n"
+      },
+      "id": "8fbe3b2f-7d1a-56fa-8eb7-6914cf452359",
+      "name": "Ler resposta (2ª)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        630
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// regra — seqs ativos no PNCP − seqs que o banco conhece (scripts/28_baixar_licitacao.py:798-803,\n// mudou_no_portal). Conhecido = TODO arquivo com sequencialDocumento, inclusive os recusados por teto ou\n// formato (senão o mesmo arquivo seria acusado de novo toda semana). statusAtivo === false não conta\n// (pncp.py:365-375; o 28 usa `is not False`); nunca iterar 1..N (pncp.py:10, RN-07).\n// Sem resposta do PNCP é \"não conferida\" — nunca \"sem novidade\" (ADR-007: NADA VISTO ≠ NADA A FAZER).\nconst x = $json;\nconst base = { controle: x.controle, estado_antes: x.estado, http_status: x.http_status, tentativas: x.tentativa,\n  conhecidos: x.conhecidos || [] };\nif (x.docs === null) {\n  const motivo = x.erro_rede ? 'rede: ' + x.erro_rede : 'PNCP respondeu HTTP ' + x.http_status;\n  return { json: { ...base, resultado: 'nao_conferida', motivo, novos: [] } };\n}\nif (x.estado === 'falha_rede' && !Number(x.n_arquivos)) {\n  return { json: { ...base, resultado: 'nao_comparavel', novos: [],\n    motivo: 'nunca baixada (falha_rede sem arquivo conhecido): não há com o que comparar; o W10 já retenta' } };\n}\nconst conhecidos = (x.conhecidos || []).map(Number);\nconst vistos = [];\nconst novos = [];\nfor (const d of x.docs) {\n  if (!d || d.statusAtivo === false || d.sequencialDocumento === null || d.sequencialDocumento === undefined) continue;\n  const seq = Number(d.sequencialDocumento);\n  if (!Number.isFinite(seq) || vistos.includes(seq)) continue;\n  vistos.push(seq);\n  if (!conhecidos.includes(seq)) {\n    novos.push({ seq, titulo: String(d.titulo || '').slice(0, 200),\n      tipo: d.tipoDocumentoNome || d.tipoDocumentoDescricao || null, publicado_pncp: d.dataPublicacaoPncp || null });\n  }\n}\nnovos.sort((a, b) => a.seq - b.seq);\nif (!novos.length) return { json: { ...base, resultado: 'sem_novidade', motivo: null, novos: [], ativos: vistos.length } };\nreturn { json: { ...base, resultado: 'documento_novo', motivo: 'W70: documento novo no PNCP', novos, ativos: vistos.length } };\n"
+      },
+      "id": "e824ccd3-71b5-5b14-8a54-15ad93f5fe0b",
+      "name": "Comparar com o conhecido",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        324
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d81abdbb-0d3b-5e2b-838f-65de3f956d31",
+              "leftValue": "={{ $json.resultado }}",
+              "rightValue": "documento_novo",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {},
+        "looseTypeValidation": true
+      },
+      "id": "a98ce945-3bb9-5dab-a50c-c10d5e1a16dd",
+      "name": "Documento novo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3456,
+        324
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — documento novo reabre a licitação pela máquina de estados: fn_transicao valida contra a tabela\n-- transicoes e grava licitacao_eventos com o que mudou (db/013_correcoes_f0.sql:31-72). Reconferido aqui:\n-- o estado pode ter andado desde a seleção (sem lease, sem reserva de demo e estado que admite\n-- 'retificada'); se não admite, evento_id volta NULL e a rodada registra o caso em vez de estourar.\nSELECT l.controle, 'documento_novo' AS resultado, l.estado::text AS estado_antes,\n       CASE WHEN fn_transicao_permitida(l.estado, 'retificada') AND l.lease_por IS NULL\n                 AND NOT l.reserva_demo\n            THEN fn_transicao(l.controle, 'retificada', 'W70: documento novo no PNCP',\n                              $2::jsonb || jsonb_build_object('n8n_execution_id', $3::text,\n                                                              'atualizado_pncp_antes', l.atualizado_pncp))\n       END AS evento_id,\n       $2::jsonb -> 'novos' AS novos\n  FROM licitacoes l\n WHERE l.controle = $1",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, JSON.stringify({ novos: $json.novos, conhecidos: $json.conhecidos, http_status: $json.http_status }), $execution.id ] }}"
+        }
+      },
+      "id": "b4d9fa14-d402-5577-abcf-9332140dc2ad",
+      "name": "Marcar retificada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3744,
+        154
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o W01 detecta retificação pelo carimbo do PNCP (db/020_registrar_vista.sql, fn_vista_pura). Se o\n-- W70 já reabriu a licitação, o carimbo guardado ficou velho e o W01 acusaria a MESMA mudança depois do\n-- reprocessamento (outra extração paga). Carimbo NULL = \"guarda na próxima vista, compara da seguinte\"\n-- (scripts/20_monitor.py:148-153, regra 3 do fn_vista_pura).\nWITH c AS (\n    UPDATE licitacoes SET atualizado_pncp = NULL\n     WHERE controle = $1 AND $2::bigint IS NOT NULL AND estado = 'retificada'\n    RETURNING controle\n)\nSELECT $1::text AS controle, 'documento_novo' AS resultado, $2::bigint AS evento_id, $3::jsonb AS novos,\n       $4::text AS estado_antes, EXISTS (SELECT 1 FROM c) AS carimbo_solto",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle, $json.evento_id, JSON.stringify($json.novos || []), $json.estado_antes ] }}"
+        }
+      },
+      "id": "f8a02d90-1f66-5ebe-9edf-2b9d6ea0cd74",
+      "name": "Soltar carimbo do PNCP",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4032,
+        154
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — a rodada diz o que viu e o que NÃO viu (ADR-007): \"sem resposta do PNCP\" não é \"sem novidade\";\n// se nenhuma foi conferida, a rodada foi cega. O que passou do limite já está em contadores (Abrir rodada).\nconst itens = $input.all().map((i) => i.json).filter((x) => x && x.controle);\nconst de = (r) => itens.filter((x) => x.resultado === r);\nconst docNovo = de('documento_novo');\nconst retificadas = docNovo.filter((x) => x.evento_id !== null && x.evento_id !== undefined);\nconst semTransicao = docNovo.filter((x) => x.evento_id === null || x.evento_id === undefined);\nconst naoConferidas = de('nao_conferida');\nconst cego = itens.length > 0 && naoConferidas.length === itens.length;\nreturn [{ json: {\n  status: cego ? 'cego' : (naoConferidas.length ? 'parcial' : 'ok'),\n  cego,\n  contadores: {\n    tentadas: itens.length,\n    conferidas: itens.length - naoConferidas.length,\n    sem_novidade: de('sem_novidade').length,\n    sem_novidade_controles: de('sem_novidade').map((x) => x.controle),\n    retificadas: retificadas.length,\n    retificadas_controles: retificadas.map((x) => ({ controle: x.controle,\n      novos: (x.novos || []).map((n) => n.seq), evento_id: String(x.evento_id) })),\n    documento_novo_sem_transicao: semTransicao.map((x) => ({ controle: x.controle, estado: x.estado_antes })),\n    nao_conferidas: naoConferidas.length,\n    nao_conferidas_controles: naoConferidas.map((x) => ({ controle: x.controle, motivo: x.motivo })),\n    nao_comparaveis: de('nao_comparavel').map((x) => x.controle),\n  },\n} }];\n"
+      },
+      "id": "0135ee14-77c1-592c-a969-564650e620f8",
+      "name": "Resumir rodada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — toda rodada deixa rastro com contadores (plano §5; execucoes_workflow, db/007): conferidas,\n-- retificadas, não conferidas (com o motivo) e cego quando o PNCP não respondeu a nenhuma.\nUPDATE execucoes_workflow\n   SET status = $2,\n       cego = $3::bool,\n       duracao_s = round(extract(epoch FROM now() - iniciado_em)::numeric, 3),\n       contadores = COALESCE(contadores, '{}'::jsonb) || $4::jsonb\n WHERE workflow = 'W70' AND n8n_execution_id = $1\nRETURNING id, status, cego, contadores",
+        "options": {
+          "queryReplacement": "={{ [ $execution.id, $json.status, $json.cego, JSON.stringify($json.contadores) ] }}"
+        }
+      },
+      "id": "912a1ad6-b856-58f9-9055-ff7862b7ce06",
+      "name": "Fechar rodada",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        -220
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Domingo 05:00**\n\nGatilho agendado: todo domingo às 05:00, quando não disputa o worker nem a API com a descoberta e a fila dos dias úteis.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5a59a50a-0d4c-59cf-97e8-15357bb8e9c6",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Manual**\n\nGatilho manual, para conferir as retificações pelo editor.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5cd47939-b066-5235-8ccd-a5962c779b46",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        644
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · Abrir rodada**\n\nSeleciona as licitações a conferir (as de sessão mais próxima primeiro), abre o registro da rodada e traz os documentos já conhecidos de cada uma.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e0a9b392-98fb-587d-8d1c-a9c7acffabbe",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        474
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Tem licitação?**\n\nSe há licitação a conferir, percorre; senão, vai ao resumo.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e8baafd5-0af0-59ac-b223-8229d1434321",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        474
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Uma por vez**\n\nLaço que confere uma licitação por vez.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3f2d2fb8-d235-551e-97f5-df3f6b3426a6",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Pausa 3 s**\n\nPausa de 3 segundos entre licitações: cuidado com a API pública.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "e4cb25c7-e482-5b73-9fb6-7e22fecc21e5",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        474
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 8 · GET /arquivos no PNCP**\n\nPede ao PNCP a lista atual de documentos da licitação.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9f8ded63-71cb-5a31-8c92-c6c2785799c2",
+      "name": "Nota — passo 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        474
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 9 · Ler resposta**\n\nLê a resposta. Limite da API ou instabilidade na primeira tentativa pedem espera.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3cb6ab28-f685-56e5-94a6-8164995b9929",
+      "name": "Nota — passo 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        474
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 10 · PNCP pediu espera?**\n\nSe o PNCP pediu espera, aguarda 30 s; senão, compara.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "5444fc98-ed6f-598b-b891-bd6d224b6cc5",
+      "name": "Nota — passo 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        474
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 11 · Espera 30 s**\n\nEspera 30 segundos antes de repetir o pedido.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "bf05c157-f232-523a-9d6c-23d391f067dd",
+      "name": "Nota — passo 11",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 12 · GET /arquivos (2ª tentativa)**\n\nRepete o pedido da lista de documentos.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "7273ad1f-7ff2-57ba-9f9a-8c7e5358db92",
+      "name": "Nota — passo 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 13 · Ler resposta (2ª)**\n\nLê a segunda resposta, sem nova repetição.",
+        "height": 112,
+        "width": 260,
+        "color": 4
+      },
+      "id": "0f7c9bb8-d426-5861-b271-42a532bdbbf3",
+      "name": "Nota — passo 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 14 · Comparar com o conhecido**\n\nCompara com os documentos conhecidos: documento novo, sem novidade, não conferida (PNCP sem resposta) ou não comparável. Sem resposta nunca vira “sem novidade”.",
+        "height": 222,
+        "width": 260,
+        "color": 4
+      },
+      "id": "4737d86e-4731-5558-abbb-e5f2d99ec681",
+      "name": "Nota — passo 14",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        474
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 15 · Documento novo?**\n\nCom documento novo, marca a licitação como retificada; senão, volta ao laço.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "eae7c735-4b42-5535-9e08-0d582855597c",
+      "name": "Nota — passo 15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        474
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 16 · Marcar retificada**\n\nConfere de novo se a licitação pode ser reaberta e a marca como retificada, com os documentos novos no evento. Ela volta ao processamento.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c58eccc0-49ca-5086-b611-951b37890266",
+      "name": "Nota — passo 16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 17 · Soltar carimbo do PNCP**\n\nZera a data de atualização guardada, para que a descoberta não acuse de novo a mesma mudança e pague outra extração.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "9a97c61d-3175-5f76-abd0-5c197feb2aa8",
+      "name": "Nota — passo 17",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 18 · Resumir rodada**\n\nSoma os contadores: conferidas, sem novidade, retificadas, não conferidas (com o motivo) e não comparáveis.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "35c463cf-c9e9-5c4e-ad67-6903cc4564b6",
+      "name": "Nota — passo 18",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -70
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 19 · Fechar rodada**\n\nFecha a rodada com o status (ok, parcial ou cega) e os contadores, visíveis na página Execuções.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "fa45285d-ccf6-5bfb-99ab-1a463610a2ac",
+      "name": "Nota — passo 19",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -70
+      ]
+    }
+  ],
+  "connections": {
+    "Domingo 05:00": {
+      "main": [
+        [
+          {
+            "node": "Abrir rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual": {
+      "main": [
+        [
+          {
+            "node": "Abrir rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir rodada": {
+      "main": [
+        [
+          {
+            "node": "Tem licitação?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem licitação?": {
+      "main": [
+        [
+          {
+            "node": "Uma por vez",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumir rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uma por vez": {
+      "main": [
+        [
+          {
+            "node": "Resumir rodada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pausa 3 s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pausa 3 s": {
+      "main": [
+        [
+          {
+            "node": "GET /arquivos no PNCP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /arquivos no PNCP": {
+      "main": [
+        [
+          {
+            "node": "Ler resposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ler resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler resposta": {
+      "main": [
+        [
+          {
+            "node": "PNCP pediu espera?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PNCP pediu espera?": {
+      "main": [
+        [
+          {
+            "node": "Espera 30 s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Comparar com o conhecido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Espera 30 s": {
+      "main": [
+        [
+          {
+            "node": "GET /arquivos (2ª tentativa)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /arquivos (2ª tentativa)": {
+      "main": [
+        [
+          {
+            "node": "Ler resposta (2ª)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ler resposta (2ª)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler resposta (2ª)": {
+      "main": [
+        [
+          {
+            "node": "Comparar com o conhecido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comparar com o conhecido": {
+      "main": [
+        [
+          {
+            "node": "Documento novo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Documento novo?": {
+      "main": [
+        [
+          {
+            "node": "Marcar retificada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Uma por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar retificada": {
+      "main": [
+        [
+          {
+            "node": "Soltar carimbo do PNCP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Soltar carimbo do PNCP": {
+      "main": [
+        [
+          {
+            "node": "Uma por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumir rodada": {
+      "main": [
+        [
+          {
+            "node": "Fechar rodada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "errorWorkflow": "{{WF:W90}}",
+    "saveManualExecutions": true
+  }
+}

@@ -1,0 +1,17 @@
+# FOPA — dependências
+# Python 3.10+ (testado em 3.12.10)
+
+anthropic==1.8.0        # SDK oficial; structured outputs + thinking adaptativo
+openai==3.19.0          # provedor alternativo; Responses API + structured outputs
+tiktoken==0.14.0        # conta tokens LOCALMENTE, sem chamar API (27_orcamento)
+pymupdf==1.28.2         # rasterização de PDF para OCR e leitura de texto nativo
+pytesseract==0.3.13     # binding do Tesseract (o binário é instalado à parte)
+pillow==11.3.0          # manipulação das imagens rasterizadas
+openpyxl==3.1.5         # planilha de saída (3 abas)
+
+# Sem dependência de banco vetorial ou serviço de embeddings:
+# a recuperação é BM25 puro, implementado em fopa/recuperacao.py.
+# Ver Fopa-v2/07-Decisoes/ADR-010 RAG vs contexto completo.md
+
+# Desenvolvimento — nao e dependencia de execucao.
+pyflakes==3.4.0         # 40_fumaca.py usa; achou `_slug` indefinida no monitor

@@ -1,0 +1,21 @@
+{
+ "metodo": "GET",
+ "caminho": "/api/licitacoes?filtro=sem-extracao",
+ "status": 422,
+ "corpo": {
+  "detail": [
+   {
+    "type": "literal_error",
+    "loc": [
+     "query",
+     "filtro"
+    ],
+    "msg": "Input should be 'todas', 'urgentes', 'alerta', 'conflito', 'extraidas', 'sem_extracao', 'injecao', 'retificadas', 'revisao', 'encerradas' or 'ensaio'",
+    "input": "sem-extracao",
+    "ctx": {
+     "expected": "'todas', 'urgentes', 'alerta', 'conflito', 'extraidas', 'sem_extracao', 'injecao', 'retificadas', 'revisao', 'encerradas' or 'ensaio'"
+    }
+   }
+  ]
+ }
+}

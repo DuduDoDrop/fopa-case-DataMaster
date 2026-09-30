@@ -1,0 +1,299 @@
+{
+  "name": "W90 Erro",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W90 Erro — Error Workflow das raízes\nConfigurado como Error Workflow **só nas raízes** (W00, W50; depois W01, W10, W11, W20, W30, W40, W70). Nunca em W21-W24: em modo integrated o Error Trigger dispara em cascata com o id da sub-execução e o lease 'W20:'||id não casaria.\n\n- **Erro vira registro + e-mail, não print** — scripts/20_monitor.py:600-617\n- **Lease devolvido e backoff de 15 min** — plano §5 W90/W10 (o W10 retenta; 4 tentativas → erro_definitivo)\n- **Estado de erro por fn_transicao** — db/013_correcoes_f0.sql:31-72 (fica na linha do tempo)\n- **E-mails do W50 que morreu voltam para a fila** com a mesma espera do W50 (2, 5, 15, 40 min); 'falhou' só na 5ª tentativa\n- **Fecha a linha 'em_curso' da execução que morreu** (não insere outra): o site não mostra \"em curso\" para sempre\n- **Anti-tempestade** — iguais (fluxo + mensagem) em 1 h geram um e-mail só; a contagem é no Postgres\n- Error Trigger **não dispara em execução manual**: ensaio de erro é por schedule ou webhook.",
+        "height": 330,
+        "width": 660
+      },
+      "id": "ae1f6187-0c35-58ec-8c72-1a270172e32a",
+      "name": "Sobre o W90",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -72,
+        -460
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "813f437f-2600-56b0-bc7a-4be49a18302d",
+      "name": "Erro em fluxo raiz",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// regra — erro vira registro e e-mail, nunca só uma linha de log: scripts/20_monitor.py:600-617\n// O Error Trigger entrega `execution` (falha no meio do fluxo) ou `trigger`\n// (falha no próprio gatilho, sem execução): os dois viram o mesmo contexto.\nconst e = $input.first().json || {};\nconst exec = e.execution || {};\nconst wf = e.workflow || {};\nconst nome = String(wf.name || 'fluxo desconhecido');\nconst codigo = (nome.match(/^W\\d{2}/) || [nome])[0];\nconst erro = exec.error || (e.trigger && e.trigger.error) || {};\nconst mensagem = String(erro.message || 'erro sem mensagem').slice(0, 500);\nconst execucaoId = exec.id != null ? String(exec.id) : '';\nconst url = exec.url || '';\nconst esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst corpo = [\n  `<p><b>${esc(nome)}</b> falhou${exec.lastNodeExecuted ? ' no nó <b>' + esc(exec.lastNodeExecuted) + '</b>' : ''}.</p>`,\n  `<p>${esc(mensagem)}</p>`,\n  url ? `<p><a href=\"${esc(url)}\">Abrir a execução ${esc(execucaoId)} no n8n</a></p>` : '<p>Falha no gatilho: não há execução para abrir.</p>',\n  `<p>Modo: ${esc(exec.mode || 'gatilho')}. Iguais nesta hora não geram outro e-mail (anti-tempestade).</p>`,\n].join('');\nreturn [{ json: {\n  workflow: codigo, workflow_nome: nome, execucao_id: execucaoId, url, mensagem,\n  ultimo_no: exec.lastNodeExecuted || null, corpo_html: corpo,\n} }];\n"
+      },
+      "id": "d16d39a2-2da2-543e-b1b3-a0f6c92d5688",
+      "name": "Montar contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — plano §5 W90: devolve o lease 'W20:'||id da execução que morreu e agenda retentativa (backoff do W10)\n-- Só o W20 toma lease; para os outros fluxos esta consulta não casa nada (e segue sem item).\nUPDATE licitacoes l\n   SET tentativas = l.tentativas + 1,\n       proxima_tentativa_em = now() + interval '15 minutes',\n       lease_por = NULL,\n       lease_ate = NULL\n  FROM (SELECT controle, estado FROM licitacoes\n         WHERE lease_por = 'W20:' || $1\n         FOR UPDATE) antes\n WHERE l.controle = antes.controle\nRETURNING l.controle, antes.estado::text AS estado_antes",
+        "options": {
+          "queryReplacement": "={{ [ $json.execucao_id ] }}"
+        }
+      },
+      "id": "a68514c6-236e-5511-ab3d-3a09f5bdfc33",
+      "name": "Devolver lease do W20",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        576,
+        100
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — o estado de erro passa por fn_transicao para ficar em licitacao_eventos (db/013_correcoes_f0.sql:31-72)\n-- baixando→falha_rede, lendo→erro_leitura, extraindo→erro_extracao; outros estados ficam como estão.\nSELECT fn_transicao($1,\n         (CASE $2 WHEN 'baixando' THEN 'falha_rede'\n                  WHEN 'lendo' THEN 'erro_leitura'\n                  WHEN 'extraindo' THEN 'erro_extracao' END)::estado_licitacao,\n         'W90: ' || $3,\n         jsonb_build_object('n8n_execution_id', $4::text)) AS evento_id\n WHERE $2 IN ('baixando', 'lendo', 'extraindo')",
+        "options": {
+          "queryReplacement": "={{ [ $json.controle ?? null, $json.estado_antes ?? null, $('Montar contexto').first().json.mensagem, $('Montar contexto').first().json.execucao_id ] }}"
+        }
+      },
+      "id": "e6737fa8-7aa8-55a0-9f6b-17cb5cb486f1",
+      "name": "Estado de erro",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        100
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — se quem morreu foi o W50, a marca 'em envio' dele segue a MESMA regra do \"Marcar falha\" do W50:\n-- volta para a fila com espera crescente (2, 5, 15 e 40 min, escrita no erro como \"nova tentativa a partir\n-- de <UTC>\", que a reserva lê) e só vira 'falhou' na 5ª tentativa, com o motivo. Antes virava 'falhou' na\n-- hora: uma queda do SMTP no meio do lote matava e-mails que o próprio W50 teria reenviado. Nunca silêncio.\n-- Só mexe nas marcas DESTA execução (as de outra execução do W50 são dela).\nUPDATE emails\n   SET status = CASE WHEN tentativas >= 5 THEN 'falhou' ELSE 'pendente' END,\n       erro = CASE WHEN tentativas >= 5\n                   THEN 'falhou nas 5 tentativas; a última: W50 morreu no meio do envio (execução '\n                        || $1 || '): ' || $2\n                   ELSE 'tentativa ' || tentativas || '/5 falhou; nova tentativa a partir de '\n                        || to_char((now() + CASE tentativas WHEN 1 THEN interval '2 minutes'\n                                                            WHEN 2 THEN interval '5 minutes'\n                                                            WHEN 3 THEN interval '15 minutes'\n                                                            ELSE interval '40 minutes' END)\n                                   AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')\n                        || ': W50 morreu no meio do envio (execução ' || $1 || '): ' || $2 END\n WHERE status = 'pendente' AND erro = 'em envio: W50 execução ' || $1\nRETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ [ $('Montar contexto').first().json.execucao_id, $('Montar contexto').first().json.mensagem ] }}"
+        }
+      },
+      "id": "b66832e5-aca8-558f-bb3f-b5841fa8f4ad",
+      "name": "Soltar e-mails do W50",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1152,
+        100
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- regra — e-mail DESLIGADO (o produto manda só DOIS e-mails — licitação nova, pelo W01,\n-- e a extração pedida no botão do site, pelo W24; db/038-039). O fluxo segue igual; este nó não enfileira.\n-- O erro continua registrado em execucoes_workflow (a página /execucoes mostra); `iguais_na_ultima_hora`\n-- segue contando o mesmo erro do mesmo fluxo em 1 h (disjuntor do scripts/20_monitor.py:600-617).\nWITH ctx AS (\n    SELECT $1::text AS workflow, $2::text AS exec_id, $3::text AS mensagem,\n           NULLIF($4::text, '') AS controle, $5::text AS assunto, $6::text AS corpo_html,\n           jsonb_build_object('url', $7::text, 'ultimo_no', $8::text) AS argumentos\n), iguais AS (\n    SELECT count(*) AS n\n      FROM execucoes_workflow e, ctx\n     WHERE e.workflow = ctx.workflow AND e.status = 'erro' AND e.erro = ctx.mensagem\n       AND e.iniciado_em > now() - interval '1 hour'\n), aberta AS (\n    -- regra — a linha que o próprio fluxo abriu ('em_curso', com o id desta execução: o W20 no \"Tomar lease\",\n    -- o W50 na reserva) é FECHADA como erro, não duplicada. Antes o W90 inseria outra: o W20 que morria ficava\n    -- \"em curso\" para sempre no site. Contar a morte continua sendo UMA linha 'erro' (disjuntor do W10,\n    -- db/021), só que agora é a do próprio fluxo. Sem linha aberta (morreu antes de abrir), vale a do W90.\n    UPDATE execucoes_workflow e\n       SET status = 'erro', erro = ctx.mensagem,\n           duracao_s = COALESCE(e.duracao_s, extract(epoch FROM now() - e.iniciado_em)),\n           controle = COALESCE(e.controle, ctx.controle),\n           argumentos = COALESCE(e.argumentos, '{}'::jsonb) || ctx.argumentos\n      FROM ctx\n     WHERE ctx.exec_id <> '' AND e.n8n_execution_id = ctx.exec_id AND e.status = 'em_curso'\n    RETURNING e.id\n), registro AS (\n    INSERT INTO execucoes_workflow (workflow, n8n_execution_id, gatilho, status, erro, controle, argumentos)\n    SELECT workflow, exec_id, 'erro', 'erro', mensagem, controle, argumentos FROM ctx\n     WHERE NOT EXISTS (SELECT 1 FROM aberta)\n    RETURNING id\n)\nSELECT COALESCE((SELECT min(id) FROM aberta), (SELECT id FROM registro)) AS execucao_workflow_id,\n       NULL::bigint AS email_id,\n       (SELECT n FROM iguais) AS iguais_na_ultima_hora",
+        "options": {
+          "queryReplacement": "={{ [ $('Montar contexto').first().json.workflow, $('Montar contexto').first().json.execucao_id, $('Montar contexto').first().json.mensagem, $('Devolver lease do W20').first().json.controle ?? '', '[FOPA][ERRO] ' + $('Montar contexto').first().json.workflow + ' · ' + ($('Devolver lease do W20').first().json.controle ?? '—'), $('Montar contexto').first().json.corpo_html, $('Montar contexto').first().json.url, $('Montar contexto').first().json.ultimo_no ?? '' ] }}"
+        }
+      },
+      "id": "368e4167-e29b-5168-a1d3-7c44d52ea7b4",
+      "name": "Registrar e avisar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        100
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "{{CRED:fopa-postgres (n8n_rw)}}",
+          "name": "fopa-postgres (n8n_rw)"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "content": "**Passo 2 · Erro em fluxo raiz**\n\nGatilho de erro: dispara quando um fluxo principal falha sem tratar o erro. Recebe o fluxo, a execução e a mensagem.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "dbdf6bfc-82de-577a-a123-b03ad00f917c",
+      "name": "Nota — passo 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 3 · Montar contexto**\n\nIdentifica o fluxo e a execução que falharam, a mensagem e o último nó executado.",
+        "height": 134,
+        "width": 260,
+        "color": 4
+      },
+      "id": "084de2c9-54c8-5fbc-981a-006ead264973",
+      "name": "Nota — passo 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 4 · Devolver lease do W20**\n\nSe quem falhou foi o W20, libera a licitação que ele segurava e agenda nova tentativa em 15 minutos.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "6a178355-a621-5306-a9cc-67231faadc73",
+      "name": "Nota — passo 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 5 · Estado de erro**\n\nSe a licitação estava no meio de um passo, grava o estado de erro correspondente (falha de rede, erro de leitura ou erro de extração).",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c4b2b0bc-ce3e-5d0c-be37-1cb08fc638ca",
+      "name": "Nota — passo 5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 6 · Soltar e-mails do W50**\n\nSe quem falhou foi o W50, devolve à fila os e-mails que ele estava enviando, com a mesma espera crescente.",
+        "height": 178,
+        "width": 260,
+        "color": 4
+      },
+      "id": "c60fce61-6b31-50e4-b23b-adba6c07b099",
+      "name": "Nota — passo 6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Passo 7 · Registrar e avisar**\n\nRegistra o erro na página Execuções, fechando a linha da execução que falhou. Erros iguais na mesma hora contam juntos.",
+        "height": 156,
+        "width": 260,
+        "color": 4
+      },
+      "id": "826a5964-c3e2-53d4-9cfe-5e6ceb634399",
+      "name": "Nota — passo 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        250
+      ]
+    }
+  ],
+  "connections": {
+    "Erro em fluxo raiz": {
+      "main": [
+        [
+          {
+            "node": "Montar contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar contexto": {
+      "main": [
+        [
+          {
+            "node": "Devolver lease do W20",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Devolver lease do W20": {
+      "main": [
+        [
+          {
+            "node": "Estado de erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado de erro": {
+      "main": [
+        [
+          {
+            "node": "Soltar e-mails do W50",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Soltar e-mails do W50": {
+      "main": [
+        [
+          {
+            "node": "Registrar e avisar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "saveManualExecutions": true
+  }
+}

@@ -1,0 +1,260 @@
+# FOPA v3 — stack local (plano, seção 4 "Componentes").
+#
+# Convive com outra stack n8n na MESMA máquina sem tocar nela:
+# projeto `fopa`, volumes `fopa_*`, portas próprias (5679 em vez de 5678; 5433 em
+# vez da 5432, que é do PostgreSQL 17 nativo) e `N8N_ENCRYPTION_KEY` própria.
+# Tudo publicado só em 127.0.0.1: nada desta stack aparece na rede local.
+#
+# Tudo vem de variável de ambiente (`docker/.env`, copiado de `.env.exemplo`).
+# `${VAR:?}` = obrigatória, o compose recusa subir sem ela; `${VAR:-x}` = padrão.
+#
+# NENHUM serviço recebe ANTHROPIC_API_KEY: a chave existe só na Credential do
+# n8n. Por isso também não há `env_file:` em serviço nenhum — despejaria o .env
+# inteiro no container. Cada variável é passada por nome, de propósito.
+#
+#   cp .env.exemplo .env                      # e preencha
+#   docker compose build fopa-worker          # compila o Tesseract 5.4.0 (demora)
+#   docker compose up -d fopa-postgres fopa-worker fopa-api
+#   docker compose --profile migrate run --rm fopa-migrate
+#   docker compose up -d fopa-n8n             # F4
+name: fopa
+
+services:
+  # ------------------------------------------------------------ Postgres
+  # Um container, dois bancos: `fopa` (negócio, criado por POSTGRES_DB) e `n8n`
+  # (metadados do n8n, criado por postgres/init/01_bancos.sql na primeira
+  # subida). Os papéis de aplicação (n8n_rw, worker_rw, api_ro) vêm da
+  # migração, não do init.
+  fopa-postgres:
+    image: postgres:16-alpine
+    container_name: fopa-postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD ausente no docker/.env}
+      POSTGRES_DB: fopa
+      # Lida pelo 01_bancos.sql via \getenv: senha do usuário `n8n` do banco `n8n`.
+      N8N_DB_PASSWORD: ${N8N_DB_PASSWORD:?N8N_DB_PASSWORD ausente no docker/.env}
+    volumes:
+      - fopa_postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fopa"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ------------------------------------------------------------ n8n
+  # Sobe na F4. Definido aqui para o `docker compose config` validar a stack
+  # inteira desde a F0.
+  fopa-n8n:
+    image: n8nio/n8n:2.37.10
+    container_name: fopa-n8n
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5679:5678"
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: fopa-postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: n8n
+      DB_POSTGRESDB_PASSWORD: ${N8N_DB_PASSWORD:?N8N_DB_PASSWORD ausente no docker/.env}
+
+      # NUNCA mudar depois de subir: quebra todas as Credentials salvas.
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY ausente no docker/.env}
+
+      # URL pública (webhooks e links de execução nos e-mails/site). Na nuvem
+      # troca só a env; nenhum fluxo carrega localhost fixo.
+      WEBHOOK_URL: ${FOPA_N8N_PUBLIC_URL:?FOPA_N8N_PUBLIC_URL ausente no docker/.env}
+      N8N_EDITOR_BASE_URL: ${FOPA_N8N_PUBLIC_URL}
+      N8N_PORT: 5678
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-false}   # true atrás de TLS (F8)
+
+      GENERIC_TIMEZONE: America/Sao_Paulo
+      TZ: America/Sao_Paulo
+
+      # Sem SAVE_ON_PROGRESS a aba Executions não mostra nó a nó em produção;
+      # 720 h porque e-mails e site guardam links de execução (168 h mataria
+      # todo link em 7 dias).
+      EXECUTIONS_DATA_SAVE_ON_PROGRESS: "true"
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: 720
+
+      # `$env` liberado na stack própria só para as URLs abaixo (economiza um
+      # nó por fluxo); segredos continuam em Credentials. NÃO usar
+      # N8N_CONCURRENCY_PRODUCTION_LIMIT como freio: o freio de extrações
+      # simultâneas é fn_tomar_vaga_extracao no Postgres (plano, seção 4).
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      FOPA_WORKER_URL: http://fopa-worker:8000
+      FOPA_SITE_URL: http://fopa-api:8080
+      # URL do site VISTA DE FORA (a do navegador), só para os links dos e-mails
+      # (W21/W22/W23/W24/W30). A de cima é o hostname interno do compose, que o
+      # cliente de e-mail não resolve. Mesma variável que o fopa-api recebe como
+      # FOPA_SITE_URL (docker/.env); na nuvem (F8) troca-se só o .env.
+      FOPA_SITE_PUBLIC_URL: ${FOPA_SITE_URL:-http://localhost:8080}
+      # O W00 compara o /health do worker contra os MESMOS pinos do build do
+      # worker (mesmas variáveis, mesmos padrões): uma verdade só.
+      FOPA_TESSERACT_ESPERADO: ${FOPA_TESSERACT_ESPERADO:-5.4.0}
+      FOPA_TESSDATA_SHA256: ${FOPA_TESSDATA_SHA256:-c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb}
+      # Remetente do W50. Não é segredo (a senha fica na Credential "smtp").
+      FOPA_EMAIL_FROM: ${SMTP_FROM:-fopa@localhost}
+      # "sim" só quando SMTP_HOST está preenchido (o valor do host não entra).
+      # O W50 usa isto para dizer POR QUE falhou quando o Send Email morre
+      # antes de devolver motivo por item (credencial 'smtp' ausente).
+      FOPA_SMTP_CONFIGURADO: ${SMTP_HOST:+sim}
+
+      # Servidor MCP da instância (/mcp-server/http) ligado por env, não por
+      # clique: a 2.37.10 lê isto no boot e trava o toggle da UI. Que fluxos
+      # aparecem no MCP é por fluxo (settings.availableInMCP, versionado no JSON).
+      # O token do cliente MCP NÃO passa por aqui: n8n/bootstrap.py o grava em
+      # n8n/.segredos/mcp_token (docs/n8n-credenciais.md).
+      N8N_MCP_MANAGED_BY_ENV: "true"
+      N8N_MCP_ACCESS_ENABLED: "true"
+
+      N8N_RUNNERS_ENABLED: "true"
+      N8N_DEFAULT_BINARY_DATA_MODE: filesystem
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      # Escolha registrada no Sticky do W00: nada roda comando nem lê disco do host.
+      NODES_EXCLUDE: '["n8n-nodes-base.executeCommand","n8n-nodes-base.localFileTrigger"]'
+    volumes:
+      - fopa_n8n_data:/home/node/.n8n
+    depends_on:
+      fopa-postgres:
+        condition: service_healthy
+
+  # ------------------------------------------------------------ worker
+  # Porta 8000 só na rede do compose: quem fala com ele é o n8n e a api,
+  # ambos com Bearer FOPA_WORKER_TOKEN. Imagem única, compartilhada com
+  # fopa-api e fopa-migrate.
+  fopa-worker:
+    image: fopa/worker:v3
+    build:
+      context: ..
+      dockerfile: docker/worker.Dockerfile
+      args:
+        # Preencha na hora do build: FOPA_GIT_SHA=$(git rev-parse HEAD) docker compose build
+        FOPA_GIT_SHA: ${FOPA_GIT_SHA:-desconhecido}
+    container_name: fopa-worker
+    restart: unless-stopped
+    environment:
+      FOPA_ENV: ${FOPA_ENV:-dev}
+      DATABASE_URL: postgresql://worker_rw:${WORKER_RW_PASSWORD:?WORKER_RW_PASSWORD ausente no docker/.env}@fopa-postgres:5432/fopa
+      FOPA_WORKER_TOKEN: ${FOPA_WORKER_TOKEN:?FOPA_WORKER_TOKEN ausente no docker/.env}
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-fs}
+      STORAGE_ROOT: ${STORAGE_ROOT:-/dados}
+      FOPA_JOBS_CONCORRENCIA: ${FOPA_JOBS_CONCORRENCIA:-2}
+      FOPA_TESSERACT_ESPERADO: ${FOPA_TESSERACT_ESPERADO:-5.4.0}
+      FOPA_TESSDATA_SHA256: ${FOPA_TESSDATA_SHA256:-c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb}
+      USD_BRL: ${USD_BRL:-}
+    volumes:
+      - fopa_dados:/dados
+    healthcheck:
+      # 503 (Tesseract errado, sem `por`) vira HTTPError → exit 1: um worker
+      # com OCR errado nunca fica "healthy".
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      fopa-postgres:
+        condition: service_healthy
+
+  # ------------------------------------------------------------ api do site
+  # Mesma imagem, outro processo. Entra no Postgres como api_rw (016: grava só as tabelas do site), o storage só
+  # leitura, e fala com o worker/n8n pelos hostnames internos do compose.
+  fopa-api:
+    image: fopa/worker:v3
+    container_name: fopa-api
+    restart: unless-stopped
+    command: ["uvicorn", "api.site:app", "--host", "0.0.0.0", "--port", "8080"]
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      FOPA_ENV: ${FOPA_ENV:-dev}
+      FOPA_AUTH_MODE: ${FOPA_AUTH_MODE:-google}
+      DATABASE_URL: postgresql://api_rw:${API_RW_PASSWORD:?API_RW_PASSWORD ausente no docker/.env}@fopa-postgres:5432/fopa
+      FOPA_WORKER_URL: http://fopa-worker:8000
+      FOPA_WORKER_TOKEN: ${FOPA_WORKER_TOKEN:?FOPA_WORKER_TOKEN ausente no docker/.env}
+      FOPA_SITE_TOKEN: ${FOPA_SITE_TOKEN:?FOPA_SITE_TOKEN ausente no docker/.env}
+      FOPA_SITE_URL: ${FOPA_SITE_URL:-http://localhost:8080}
+      FOPA_N8N_URL: http://fopa-n8n:5678
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-fs}
+      STORAGE_ROOT: ${STORAGE_ROOT:-/dados}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      OAUTH_REDIRECT_URI: ${OAUTH_REDIRECT_URI:-}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET ausente no docker/.env}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+    volumes:
+      - fopa_dados:/dados:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/saude', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      fopa-postgres:
+        condition: service_healthy
+      fopa-worker:
+        condition: service_started
+
+  # ------------------------------------------------------------ migração
+  # Só no profile `migrate`: `up -d` nunca migra sozinho. Roda como superusuário
+  # porque cria papéis (cluster-wide); as senhas dos papéis vêm das envs e são
+  # aplicadas por ALTER ROLE no migrar.py — nunca ficam no SQL.
+  #   docker compose --profile migrate run --rm fopa-migrate
+  fopa-migrate:
+    image: fopa/worker:v3
+    profiles: ["migrate"]
+    restart: "no"
+    command: ["python", "db/migrar.py"]
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD ausente no docker/.env}@fopa-postgres:5432/fopa
+      N8N_RW_PASSWORD: ${N8N_RW_PASSWORD:?N8N_RW_PASSWORD ausente no docker/.env}
+      WORKER_RW_PASSWORD: ${WORKER_RW_PASSWORD:?WORKER_RW_PASSWORD ausente no docker/.env}
+      API_RO_PASSWORD: ${API_RO_PASSWORD:?API_RO_PASSWORD ausente no docker/.env}
+      API_RW_PASSWORD: ${API_RW_PASSWORD:?API_RW_PASSWORD ausente no docker/.env}
+    depends_on:
+      fopa-postgres:
+        condition: service_healthy
+
+  # Importação do acervo v2 (plano, seção 9). Só no profile `importar`: `up -d`
+  # nunca importa sozinho. Roda como worker_rw (não superusuário), com o
+  # snapshot e o amostras/ vivo montados SÓ PARA LEITURA — o v2 nunca é
+  # escrito — e o volume fopa_dados gravável, que é para onde os PDFs vão.
+  #   docker compose --profile importar run --rm fopa-importar
+  #   FOPA_SNAPSHOT=2026-09-24_0150 docker compose --profile importar run --rm fopa-importar
+  fopa-importar:
+    image: fopa/worker:v3
+    profiles: ["importar"]
+    restart: "no"
+    command: ["python", "-m", "migracao.importar",
+              "--snapshot", "/acervo/${FOPA_SNAPSHOT:-2026-09-24_0150}", "--amostras", "/amostras"]
+    environment:
+      DATABASE_URL: postgresql://worker_rw:${WORKER_RW_PASSWORD:?WORKER_RW_PASSWORD ausente no docker/.env}@fopa-postgres:5432/fopa
+      STORAGE_ROOT: /dados
+    volumes:
+      - fopa_dados:/dados
+      - ../acervo:/acervo:ro
+      - ../amostras:/amostras:ro
+    depends_on:
+      fopa-postgres:
+        condition: service_healthy
+
+volumes:
+  fopa_postgres_data:
+    name: fopa_postgres_data
+  fopa_n8n_data:
+    name: fopa_n8n_data
+  fopa_dados:
+    name: fopa_dados

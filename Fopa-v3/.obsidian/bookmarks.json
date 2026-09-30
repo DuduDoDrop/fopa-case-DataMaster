@@ -1,0 +1,49 @@
+{
+  "items": [
+    {
+      "type": "file",
+      "path": "00-Entrada/Home.md",
+      "title": "🏠 Home"
+    },
+    {
+      "type": "file",
+      "path": "00-Entrada/Requisitos do case — onde cada um está atendido.md",
+      "title": "📋 Requisitos do case"
+    },
+    {
+      "type": "file",
+      "path": "00-Entrada/Mapa mental.md",
+      "title": "🧠 Mapa mental"
+    },
+    {
+      "type": "file",
+      "path": "00-Entrada/Mapa da solução.canvas",
+      "title": "🗺️ Mapa da solução"
+    },
+    {
+      "type": "file",
+      "path": "02-Solucao/Visão geral da solução.md",
+      "title": "🧩 Visão geral"
+    },
+    {
+      "type": "file",
+      "path": "03-Fluxos-n8n/MOC Fluxos n8n.md",
+      "title": "🔁 Fluxos n8n"
+    },
+    {
+      "type": "file",
+      "path": "05-Site/MOC Site.md",
+      "title": "🖥️ Site"
+    },
+    {
+      "type": "file",
+      "path": "07-IA/MOC IA.md",
+      "title": "🤖 Técnicas de IA"
+    },
+    {
+      "type": "file",
+      "path": "09-Decisoes/MOC Decisões.md",
+      "title": "🧭 Decisões e trade-offs"
+    }
+  ]
+}

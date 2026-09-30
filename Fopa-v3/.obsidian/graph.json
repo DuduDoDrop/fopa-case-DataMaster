@@ -1,0 +1,135 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:00-Entrada",
+      "color": {
+        "a": 1,
+        "rgb": 7041664
+      }
+    },
+    {
+      "query": "path:01-Negocio",
+      "color": {
+        "a": 1,
+        "rgb": 11680306
+      }
+    },
+    {
+      "query": "path:02-Solucao",
+      "color": {
+        "a": 1,
+        "rgb": 9141223
+      }
+    },
+    {
+      "query": "path:03-Fluxos-n8n",
+      "color": {
+        "a": 1,
+        "rgb": 15354737
+      }
+    },
+    {
+      "query": "path:04-Worker-e-API",
+      "color": {
+        "a": 1,
+        "rgb": 2060267
+      }
+    },
+    {
+      "query": "path:05-Site",
+      "color": {
+        "a": 1,
+        "rgb": 3127208
+      }
+    },
+    {
+      "query": "path:06-Dados",
+      "color": {
+        "a": 1,
+        "rgb": 4096733
+      }
+    },
+    {
+      "query": "path:07-IA",
+      "color": {
+        "a": 1,
+        "rgb": 15246141
+      }
+    },
+    {
+      "query": "path:08-Avaliacao",
+      "color": {
+        "a": 1,
+        "rgb": 5490878
+      }
+    },
+    {
+      "query": "path:09-Decisoes",
+      "color": {
+        "a": 1,
+        "rgb": 65378
+      }
+    },
+    {
+      "query": "path:10-Infra",
+      "color": {
+        "a": 1,
+        "rgb": 10119996
+      }
+    },
+    {
+      "query": "path:11-Seguranca-e-Etica",
+      "color": {
+        "a": 1,
+        "rgb": 7760254
+      }
+    },
+    {
+      "query": "path:12-Legal",
+      "color": {
+        "a": 1,
+        "rgb": 16711680
+      }
+    },
+    {
+      "query": "path:13-Escalabilidade",
+      "color": {
+        "a": 1,
+        "rgb": 12720219
+      }
+    },
+    {
+      "query": "path:14-Reproducao",
+      "color": {
+        "a": 1,
+        "rgb": 8172354
+      }
+    },
+    {
+      "query": "path:15-Evolucao",
+      "color": {
+        "a": 1,
+        "rgb": 16044095
+      }
+    }
+  ],
+  "collapse-display": false,
+  "showArrow": true,
+  "textFadeMultiplier": -0.3,
+  "nodeSizeMultiplier": 1.2,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": false,
+  "centerStrength": 0.5,
+  "repelStrength": 11,
+  "linkStrength": 0.9,
+  "linkDistance": 260,
+  "scale": 1,
+  "close": false
+}

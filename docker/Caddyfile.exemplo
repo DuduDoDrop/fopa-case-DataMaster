@@ -1,0 +1,63 @@
+# Caddyfile de PRODUÇÃO da FOPA v3 (F8) — lido pelo serviço fopa-caddy do
+# docker/compose.prod.yml. Na VPS:
+#
+#   cp docker/Caddyfile.exemplo docker/Caddyfile
+#
+# Nada aqui é segredo e nada precisa ser editado: domínios, e-mail do ACME e o
+# HASH bcrypt do basic auth chegam pelo ambiente do container ({$VAR}, vindos
+# do docker/.env pelo compose). A senha em claro do basic auth não fica em
+# arquivo nenhum da VPS.
+#
+# Antes do 1º `up` (docs/DEPLOY.md): os registros DNS dos dois domínios já
+# apontando para a VPS (o Let's Encrypt valida pela porta 80), portas 80 e 443
+# abertas, e docker/interno/worker.crt + worker.key gerados.
+#
+# Validar sem subir nada:
+#   docker compose -f compose.yml -f compose.prod.yml run --rm --no-deps fopa-caddy \
+#     caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+{
+	email {$ACME_EMAIL}
+}
+
+# ------------------------------------------------------------------ site
+# Tudo vai para o fopa-api: /api, /auth, /login e o build do React (mesma
+# origem, sem CORS). O PDF, no s3, sai daqui como 302 para o bucket.
+{$FOPA_DOMINIO_SITE} {
+	encode zstd gzip
+	header Strict-Transport-Security "max-age=31536000"
+	reverse_proxy fopa-api:8080
+}
+
+# ------------------------------------------------------------------ n8n
+{$FOPA_DOMINIO_N8N} {
+	encode zstd gzip
+	header Strict-Transport-Security "max-age=31536000"
+
+	# Público: só os webhooks de produção. Quem autentica é o próprio fluxo
+	# (o W11 confere o X-FOPA-Token do site); o n8n Community não tem SSO.
+	@webhook path /webhook/*
+	handle @webhook {
+		reverse_proxy fopa-n8n:5678
+	}
+
+	# Todo o resto (editor, /rest, /webhook-test, callback OAuth2 do Gmail,
+	# /mcp-server) pede basic auth ANTES do login do próprio n8n.
+	handle {
+		basic_auth {
+			{$CADDY_N8N_USUARIO} {$CADDY_N8N_HASH}
+		}
+		reverse_proxy fopa-n8n:5678
+	}
+}
+
+# ------------------------------------------------------------------ worker (só na rede interna)
+# n8n -> worker por HTTPS + Bearer sem publicar porta: este endereço só existe
+# dentro da rede do compose (alias `fopa-worker-tls` do container do Caddy; a
+# 8443 não é publicada). Certificado autoassinado gerado na VPS; o n8n confia
+# nele por NODE_EXTRA_CA_CERTS. O Bearer continua sendo conferido pelo worker:
+# o Caddy só repassa o cabeçalho Authorization.
+https://fopa-worker-tls:8443 {
+	tls /etc/caddy/interno/worker.crt /etc/caddy/interno/worker.key
+	reverse_proxy fopa-worker:8000
+}
